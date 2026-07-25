@@ -100,7 +100,7 @@ await upsert('accommodations',accommodations.map(item=>({
 })));
 report.imported.accommodations=accommodations.length;report.uncertain_records+=accommodations.length;
 await upsert('vehicles',vehicles.map(item=>({
-  listing_title:item.name,slug:slug(item.id||item.name),vehicle_type:item.type,vehicle_model:cleanDescription(item.description),
+  listing_title:item.name,slug:slug(item.id||item.name),vehicle_type:item.type,short_description:cleanDescription(item.description),
   hero_image_url:item.heroImage||null,image_alt:item.heroImage?item.name:null,passenger_capacity:Number(String(item.capacity).match(/\d+/)?.[0]||1),
   luggage_capacity:item.luggage,air_conditioned:Boolean(item.airConditioning),driver_included:Boolean(item.driverIncluded),
   price_guide:null,daily_price_guide:null,verified:false,featured:false,sponsored:false,is_sample:true,status:'draft',active:true,needs_review:true,

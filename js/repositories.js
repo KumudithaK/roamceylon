@@ -93,7 +93,7 @@ export class VehicleRepository extends BaseRepository {
   constructor(){super({table:'vehicles',nameField:'listing_title',mapper:row=>({
     id:row.slug,name:row.listing_title,type:row.vehicle_type,capacity:`${row.passenger_capacity||1} guests`,luggage:row.luggage_capacity,
     airConditioning:row.air_conditioned,driverIncluded:row.driver_included,dayRate:Number((row.price_guide||'').match(/[\\d.]+/)?.[0]||0),
-    perKm:0,priceGuide:row.price_guide,heroImage:row.hero_image_url,verified:row.verified,featured:row.featured,description:row.vehicle_model||row.vehicle_type
+    perKm:0,priceGuide:row.daily_price_guide||row.price_guide,heroImage:row.hero_image_url,verified:row.verified,featured:row.featured,description:row.short_description
   })});}
 }
 export class GuideRepository extends BaseRepository {
