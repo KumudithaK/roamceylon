@@ -172,6 +172,9 @@ async function saveEditor(event){
   const type=contentTypes[activeType],data=new FormData(event.currentTarget);
   try{
     const record=formRecord(data);
+    for(const relation of type.relations||[]){
+      record[relation.nested]=data.getAll(relation.name).map(id=>({id}));
+    }
     const file=data.get('image_upload');
     if(file?.size)record[type.image]=await type.repository.uploadImage(file,type.folder);
     if(record.status==='published'){
@@ -181,6 +184,7 @@ async function saveEditor(event){
       const usages=await type.repository.findImageUsage(record[type.image],editing);
       if(usages.length&&!confirm('This image is already used by another card. Save anyway?'))return;
     }
+    for(const relation of type.relations||[])delete record[relation.nested];
     const saved=editing?await type.repository.update(editing,record):await type.repository.create(record);
     for(const relation of type.relations||[]){
       const selected=data.getAll(relation.name);
