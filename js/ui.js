@@ -76,6 +76,7 @@ function renderGrid(containerId, items, stateSet, type){
 }
 
 function renderAllGrids(){
+  renderGrid('grid-themes', THEMES, state.themes, 'themes');
   renderGrid('grid-destinations', DESTINATIONS, state.destinations, 'destinations');
   renderGrid('grid-experiences', EXPERIENCES, state.experiences, 'experiences');
   renderGrid('grid-excursions', EXCURSIONS, state.excursions, 'excursions');
@@ -116,4 +117,3 @@ document.addEventListener('keydown', e=>{
     addOther(e.target.dataset.otherInput);
   }
 });
-

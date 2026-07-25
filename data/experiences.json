@@ -1,0 +1,220 @@
+[
+  {
+    "id": "safari",
+    "name": "Private jeep safari",
+    "tag": "Wildlife",
+    "icon": "i-elephant",
+    "wiki": "Safari|Jeep|Sri Lankan elephant",
+    "desc": "Sunrise or sunset game drive with a specialist tracker."
+  },
+  {
+    "id": "tearalk",
+    "name": "Tea estate walk & tasting",
+    "tag": "Culture",
+    "icon": "i-tea",
+    "wiki": "Tea production in Sri Lanka",
+    "desc": "Walk the plantations, then taste single-estate teas with a planter."
+  },
+  {
+    "id": "whale",
+    "name": "Whale & dolphin watching",
+    "tag": "Ocean",
+    "icon": "i-whale",
+    "wiki": "Blue whale",
+    "desc": "Boat out from Mirissa for blue whales and spinner dolphins."
+  },
+  {
+    "id": "train",
+    "name": "Scenic highlands train",
+    "tag": "Iconic",
+    "icon": "i-train",
+    "wiki": "Nine Arches Bridge|Nine Arch Bridge, Sri Lanka|Ella, Sri Lanka",
+    "desc": "The Kandy–Ella railway, widely called one of the world's great rail journeys."
+  },
+  {
+    "id": "cooking",
+    "name": "Sri Lankan cooking class",
+    "tag": "Food",
+    "icon": "i-drum",
+    "wiki": "Sri Lankan cuisine",
+    "desc": "Market visit followed by a hands-on curry-and-sambol lesson."
+  },
+  {
+    "id": "balloon",
+    "name": "Hot air balloon at dawn",
+    "tag": "Adventure",
+    "icon": "i-balloon",
+    "wiki": "Hot air balloon",
+    "desc": "Drift over the ancient plains around Dambulla as the sun comes up."
+  },
+  {
+    "id": "surf",
+    "name": "Learn to surf",
+    "tag": "Ocean",
+    "icon": "i-wave",
+    "wiki": "Surfing|Arugam Bay",
+    "desc": "Beginner-friendly breaks on the south coast, board and coach included."
+  },
+  {
+    "id": "templeblessing",
+    "name": "Temple blessing ceremony",
+    "tag": "Culture",
+    "icon": "i-stupa",
+    "wiki": "Dambulla cave temple",
+    "desc": "A private morning blessing with a resident monk, respectfully arranged."
+  },
+  {
+    "id": "birding",
+    "name": "Birding at dawn",
+    "tag": "Nature",
+    "icon": "i-bird",
+    "wiki": "Birdwatching|Sri Lanka junglefowl|Sri Lanka frogmouth",
+    "desc": "Sri Lanka has 34 endemic species — go looking with a specialist guide."
+  },
+  {
+    "id": "photo",
+    "name": "Golden-hour photo walk",
+    "tag": "Creative",
+    "icon": "i-camera",
+    "wiki": "Galle Fort",
+    "desc": "A local photographer takes you to the shots the guidebooks miss."
+  },
+  {
+    "id": "ravanazip",
+    "name": "Ravana Zip Lining",
+    "tag": "Adventure",
+    "icon": "i-mountain",
+    "wiki": "Zip-line|Ella, Sri Lanka",
+    "desc": "One of Asia's longest zip line networks, strung across the Ella valley."
+  },
+  {
+    "id": "pearlbay",
+    "name": "Pearl Bay Water Park",
+    "tag": "Family fun",
+    "icon": "i-wave",
+    "wiki": "Pearl Bay|Water park|Water slide",
+    "desc": "Slides, wave pools and lazy rivers — a favourite cool-down for families."
+  },
+  {
+    "id": "perahera",
+    "name": "Kandy Esala Perahera (August)",
+    "tag": "Festival",
+    "icon": "i-drum",
+    "wiki": "Esala Perahera|Temple of the Sacred Tooth Relic",
+    "desc": "Torch-lit elephants, drummers and fire-dancers parade through Kandy each August."
+  },
+  {
+    "id": "kalpitiyakite",
+    "name": "Kite Surfing in Kalpitiya",
+    "tag": "Adventure",
+    "icon": "i-wave",
+    "wiki": "Kitesurfing|Kalpitiya",
+    "desc": "Steady cross-shore winds make this lagoon one of Asia's best kite spots."
+  },
+  {
+    "id": "turtles",
+    "name": "Meet the Sea Turtles",
+    "tag": "Nature",
+    "icon": "i-fish",
+    "wiki": "Sea turtle|Kosgoda Sea Turtle Conservation Project",
+    "desc": "Visit a coastal hatchery and wade in to meet gentle sea turtles up close."
+  },
+  {
+    "id": "kayakdambulla",
+    "name": "Kayaking at Thalkotte Lake, Dambulla",
+    "tag": "Adventure",
+    "icon": "i-kayak",
+    "wiki": "Kayaking|Dambulla",
+    "desc": "Paddle a quiet reservoir beneath Dambulla's rock outcrops at sunrise."
+  },
+  {
+    "id": "polonnaruwa",
+    "name": "Polonnaruwa ruins day trip",
+    "tag": "Half day",
+    "icon": "i-lotus",
+    "wiki": "Polonnaruwa",
+    "desc": "Cycle between 12th-century temples and reservoirs.",
+    "kind": "excursion"
+  },
+  {
+    "id": "rafting",
+    "name": "Kitulgala white-water rafting",
+    "tag": "Half day",
+    "icon": "i-kayak",
+    "wiki": "Whitewater rafting|Kitulgala",
+    "desc": "Grade 2–3 rapids on the river made famous by \"Bridge on the River Kwai\".",
+    "kind": "excursion"
+  },
+  {
+    "id": "lagoon",
+    "name": "Negombo lagoon fishing trip",
+    "tag": "Half day",
+    "icon": "i-fish",
+    "wiki": "Negombo",
+    "desc": "Go out with local fishermen on a traditional oruwa outrigger boat.",
+    "kind": "excursion"
+  },
+  {
+    "id": "bawa",
+    "name": "Geoffrey Bawa architecture tour",
+    "tag": "Full day",
+    "icon": "i-compass",
+    "wiki": "Lunuganga|Geoffrey Bawa",
+    "desc": "The tropical-modern houses and gardens of Sri Lanka's most famous architect.",
+    "kind": "excursion"
+  },
+  {
+    "id": "cycling",
+    "name": "Countryside cycling loop",
+    "tag": "Half day",
+    "icon": "i-bike",
+    "wiki": "Cycling|Paddy field",
+    "desc": "Paddy fields, village temples and roadside tea stalls, at a gentle pace.",
+    "kind": "excursion"
+  },
+  {
+    "id": "sinharaja",
+    "name": "Sinharaja rainforest hike",
+    "tag": "Full day",
+    "icon": "i-leaf",
+    "wiki": "Sinharaja Forest Reserve",
+    "desc": "A UNESCO rainforest reserve thick with endemic flora and fauna.",
+    "kind": "excursion"
+  },
+  {
+    "id": "udawalawe",
+    "name": "Udawalawe elephant park",
+    "tag": "Half day",
+    "icon": "i-elephant",
+    "wiki": "Udawalawe National Park",
+    "desc": "Reliable elephant herds in open grassland, plus an elephant transit home.",
+    "kind": "excursion"
+  },
+  {
+    "id": "ballooning2",
+    "name": "Little England walking tour",
+    "tag": "Half day",
+    "icon": "i-mountain",
+    "wiki": "Nuwara Eliya",
+    "desc": "Explore Nuwara Eliya's colonial racecourse, golf club and post office.",
+    "kind": "excursion"
+  },
+  {
+    "id": "yoga",
+    "name": "Sunrise yoga & meditation",
+    "tag": "Morning",
+    "icon": "i-lotus",
+    "wiki": "Yoga|Meditation",
+    "desc": "A quiet session overlooking rice paddies or the ocean, your choice.",
+    "kind": "excursion"
+  },
+  {
+    "id": "spice",
+    "name": "Spice garden visit",
+    "tag": "Half day",
+    "icon": "i-leaf",
+    "wiki": "Cinnamon|Black pepper",
+    "desc": "See cinnamon, pepper and cardamom growing, with an Ayurvedic tea tasting.",
+    "kind": "excursion"
+  }
+]

@@ -5,9 +5,12 @@ const io = new IntersectionObserver((entries)=>{
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
 /* ---------------- INIT ---------------- */
-renderAllGrids();
-renderTabs();
-updateTripCard();
+async function initApp(){
+  await loadTravelData();
+  renderAllGrids();
+  renderTabs();
+  updateTripCard();
+}
 
 const navToggle = document.getElementById('navToggle');
 const navLinks = document.getElementById('navLinks');
@@ -23,3 +26,7 @@ navLinks.addEventListener('click', event => {
   navLinks.classList.remove('open');
 });
 window.addEventListener('scroll', () => siteHeader.classList.toggle('scrolled', window.scrollY > 12), {passive:true});
+initApp().catch(error => {
+  console.error('Unable to initialize Roam Ceylon', error);
+  document.getElementById('builder').classList.add('load-error');
+});

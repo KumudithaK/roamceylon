@@ -1,10 +1,29 @@
+let THEMES = [];
+let DESTINATIONS = [];
+let EXPERIENCES = [];
+let EXCURSIONS = [];
+
+async function loadTravelData(){
+  const [themes, destinations, experiences] = await Promise.all([
+    fetch('data/themes.json').then(response => response.json()),
+    fetch('data/destinations.json').then(response => response.json()),
+    fetch('data/experiences.json').then(response => response.json())
+  ]);
+  THEMES = themes;
+  DESTINATIONS = destinations;
+  EXPERIENCES = experiences.filter(item => item.kind !== 'excursion');
+  EXCURSIONS = experiences.filter(item => item.kind === 'excursion');
+}
+
 const TIER_LABEL = {boutique:'Boutique & guesthouses',['4star']:'4-star comfort',['5star']:'5-star hotels',luxury:'Luxury villas & suites'};
 const TIER_RATE = {boutique:60,['4star']:95,['5star']:155,luxury:270};
 
 const state = {
+  themes: new Set(),
   destinations: new Set(),
   experiences: new Set(),
   excursions: new Set(),
+  otherThemes: [],
   otherDestinations: [],
   otherExperiences: [],
   otherExcursions: [],
@@ -14,7 +33,7 @@ const state = {
   pace: 'balanced',
   vehicle: 'van',
 };
-const OTHER_KEY = {destinations:'otherDestinations', experiences:'otherExperiences', excursions:'otherExcursions'};
+const OTHER_KEY = {themes:'otherThemes', destinations:'otherDestinations', experiences:'otherExperiences', excursions:'otherExcursions'};
 const VEHICLE_LABEL = {car:'Private car (1–3 pax)', van:'Van (4–7 pax)', suv:'SUV / 4x4', minicoach:'Mini-coach (8–14 pax)', luxurycoach:'Luxury coach (15+ pax)'};
 const VEHICLE_RATE = {
   car:{day:34, perKm:0.34},
@@ -31,5 +50,5 @@ function haversineKm(lat1,lon1,lat2,lon2){
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-const STEPS = ['destinations','experiences','excursions','customize','enquire'];
-const STEP_LABELS = {destinations:'1. Destinations',experiences:'2. Experiences',excursions:'3. Excursions',customize:'4. Customize',enquire:'5. Send it'};
+const STEPS = ['themes','destinations','experiences','excursions','customize','enquire'];
+const STEP_LABELS = {themes:'1. Theme',destinations:'2. Destinations',experiences:'3. Experiences',excursions:'4. Excursions',customize:'5. Customize',enquire:'6. Send it'};

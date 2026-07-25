@@ -1,0 +1,6 @@
+[
+  {"id":"signature","name":"Signature Ceylon","tag":"First journey","icon":"i-compass","wiki":"Sigiriya","desc":"Ancient cities, tea country, wildlife and the south coast in one considered journey."},
+  {"id":"wild","name":"Wild Ceylon","tag":"Nature","icon":"i-elephant","wiki":"Sri Lankan elephant|Yala National Park","desc":"Private safaris, rainforest walks and quiet stays close to Sri Lanka's wild heart."},
+  {"id":"coastal","name":"Coastal Ceylon","tag":"Ocean","icon":"i-wave","wiki":"Mirissa|Galle Fort","desc":"Slow days between hidden coves, heritage forts, surf breaks and oceanfront villas."},
+  {"id":"wellness","name":"Wellness & Slow Travel","tag":"Restore","icon":"i-lotus","wiki":"Ayurveda|Tea production in Sri Lanka","desc":"Ayurveda, thoughtful food, tea-country air and stays designed for genuine rest."}
+]

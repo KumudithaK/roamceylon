@@ -132,14 +132,24 @@
         <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
         <div class="tabs" id="tabs"></div>
 
+        <!-- STEP 1: THEMES -->
+        <div class="panel active" data-panel="themes">
+          <div class="panel-intro">
+            <h3>What kind of journey are you imagining?</h3>
+            <p>Start with a mood. You can mix themes and refine every detail as you go.</p>
+          </div>
+          <div class="card-grid" id="grid-themes"></div>
+          <div class="panel-nav"><span></span><button class="btn btn-coral" data-next="destinations">Choose destinations →</button></div>
+        </div>
+
         <!-- STEP 1: DESTINATIONS -->
-        <div class="panel active" data-panel="destinations">
+        <div class="panel" data-panel="destinations">
           <div class="panel-intro">
             <h3>Where do you want to wake up?</h3>
             <p>Choose the regions and towns you'd like as bases for your journey. We'll sequence them sensibly for you.</p>
           </div>
           <div class="card-grid" id="grid-destinations"></div>
-          <div class="panel-nav"><span></span><button class="btn btn-coral" data-next="experiences">Next: Experiences →</button></div>
+          <div class="panel-nav"><button class="btn btn-outline" data-prev="themes">← Themes</button><button class="btn btn-coral" data-next="experiences">Next: Experiences →</button></div>
         </div>
 
         <!-- STEP 2: EXPERIENCES -->
@@ -258,6 +268,7 @@
         </svg>
         <div id="tripEmpty" class="trip-empty">Pick a destination to start your route</div>
         <div id="tripBody" style="display:none;">
+          <div class="trip-section"><div class="lbl">Theme</div><div class="chip-list" id="chipsTheme"></div></div>
           <div class="trip-section"><div class="lbl">Destinations</div><div class="chip-list" id="chipsDest"></div></div>
           <div class="trip-section"><div class="lbl">Experiences</div><div class="chip-list" id="chipsExp"></div></div>
           <div class="trip-section"><div class="lbl">Excursions</div><div class="chip-list" id="chipsExc"></div></div>
@@ -345,7 +356,6 @@
   </div>
 </footer>
 
-<script src="data/trip-data.js"></script>
 <script src="js/state.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/builder.js"></script>

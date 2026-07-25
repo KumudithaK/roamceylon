@@ -8,7 +8,7 @@ function renderTabs(){
     </button>
   `).join('');
 }
-let currentStep = 'destinations';
+let currentStep = 'themes';
 function goStep(step){
   currentStep = step;
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.dataset.panel===step));
@@ -65,11 +65,15 @@ function otherChip(val, type, idx){
 
 function updateTripCard(){
   renderTabs();
-  const otherCount = state.otherDestinations.length + state.otherExperiences.length + state.otherExcursions.length;
-  const total = state.destinations.size + state.experiences.size + state.excursions.size + otherCount;
+  const otherCount = state.otherThemes.length + state.otherDestinations.length + state.otherExperiences.length + state.otherExcursions.length;
+  const total = state.themes.size + state.destinations.size + state.experiences.size + state.excursions.size + otherCount;
   document.getElementById('tripEmpty').style.display = total ? 'none' : 'block';
   document.getElementById('tripBody').style.display = total ? 'block' : 'none';
 
+  document.getElementById('chipsTheme').innerHTML =
+    [...state.themes].map(id=>chip(THEMES.find(d=>d.id===id).name,'themes',id)).join('') +
+    state.otherThemes.map((v,i)=>otherChip(v,'themes',i)).join('') ||
+    '<span style="opacity:.5;font-size:.78rem">None yet</span>';
   document.getElementById('chipsDest').innerHTML =
     [...state.destinations].map(id=>chip(DESTINATIONS.find(d=>d.id===id).name,'destinations',id)).join('') +
     state.otherDestinations.map((v,i)=>otherChip(v,'destinations',i)).join('') ||
@@ -174,4 +178,3 @@ Email: ${fd.get('email')} | Phone: ${fd.get('phone')||'—'} | Nationality: ${fd
   this.style.display = 'none';
   document.getElementById('confirmBox').style.display = 'block';
 });
-
