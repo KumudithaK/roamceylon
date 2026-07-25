@@ -32,4 +32,5 @@
   .tabs { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
   .tab { white-space: nowrap; }
   .market-grid { grid-template-columns: 1fr; }
+  .admin-login { grid-template-columns: 1fr; }
 }

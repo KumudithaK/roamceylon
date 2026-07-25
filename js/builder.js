@@ -151,7 +151,7 @@ document.addEventListener('click', e=>{
 });
 
 /* ---------------- FORM SUBMIT ---------------- */
-document.getElementById('enquireForm').addEventListener('submit', function(e){
+document.getElementById('enquireForm').addEventListener('submit', async function(e){
   e.preventDefault();
   const fd = new FormData(this);
   const name = fd.get('name') || 'there';
@@ -185,4 +185,16 @@ Email: ${fd.get('email')} | Phone: ${fd.get('phone')||'—'} | Nationality: ${fd
 
   this.style.display = 'none';
   document.getElementById('confirmBox').style.display = 'block';
+  try {
+    await RoamBackend.submitEnquiry({
+      name,
+      email:fd.get('email'),
+      phone:fd.get('phone') || null,
+      nationality:fd.get('nationality') || null,
+      summary:summaryText,
+      trip_state:{themes:[...state.themes],destinations:[...state.destinations],experiences:[...state.experiences],excursions:[...state.excursions],nights:state.nights,travelers:state.travelers,tier:state.tier,vehicle:state.vehicle,travelMonth:state.travelMonth}
+    });
+  } catch(error) {
+    console.warn('Enquiry persistence unavailable; email fallback remains active.');
+  }
 });

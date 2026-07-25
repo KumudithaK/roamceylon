@@ -25,3 +25,15 @@ python3 -m http.server 8000
 ```
 
 Then visit `http://localhost:8000`.
+
+## Optional Supabase backend
+
+The public site works without a backend and keeps its email enquiry fallback.
+To enable persistence and the admin foundation:
+
+1. Apply `supabase/schema.sql` to a Supabase project.
+2. Copy `js/config.example.js` to the ignored `js/config.js` and set the project
+   URL and anon key.
+3. Load `js/config.js` before `js/backend.js` in `index.html` and
+   `admin/index.html` during deployment.
+4. Restrict authenticated admin access further with staff roles before launch.

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow">
+  <title>Roam Ceylon Admin</title>
+  <link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body class="admin-page">
+  <main class="admin-shell">
+    <a class="logo" href="../index.html"><img src="../assets/logo/roam-ceylon-elephant.png" alt="Roam Ceylon"></a>
+    <section class="admin-card">
+      <div class="eyebrow">Operations</div><h1>Journey enquiries</h1>
+      <p id="adminStatus">Connect Supabase in <code>js/config.js</code> to enable secure staff authentication and enquiry management.</p>
+      <form id="adminLogin" class="admin-login">
+        <div class="field"><label for="adminEmail">Email</label><input id="adminEmail" type="email" required autocomplete="username"></div>
+        <div class="field"><label for="adminPassword">Password</label><input id="adminPassword" type="password" required autocomplete="current-password"></div>
+        <button class="btn btn-dark" type="submit">Sign in</button>
+      </form>
+      <div id="adminResults" class="admin-results" aria-live="polite"></div>
+    </section>
+  </main>
+  <script src="../js/backend.js"></script><script src="../js/admin.js"></script>
+</body>
+</html>
