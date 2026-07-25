@@ -5,15 +5,18 @@ let EXCURSIONS = [];
 let HOTELS = [];
 let VEHICLES = [];
 let GUIDES = [];
+let PRICING = {};
+let TIER_LABEL = {};
 
 async function loadTravelData(){
-  const [themes, destinations, experiences, hotels, vehicles, guides] = await Promise.all([
+  const [themes, destinations, experiences, hotels, vehicles, guides, pricing] = await Promise.all([
     fetch('data/themes.json').then(response => response.json()),
     fetch('data/destinations.json').then(response => response.json()),
     fetch('data/experiences.json').then(response => response.json()),
     fetch('data/hotels.json').then(response => response.json()),
     fetch('data/vehicles.json').then(response => response.json()),
-    fetch('data/guides.json').then(response => response.json())
+    fetch('data/guides.json').then(response => response.json()),
+    fetch('data/pricing.json').then(response => response.json())
   ]);
   THEMES = themes;
   DESTINATIONS = destinations;
@@ -22,10 +25,9 @@ async function loadTravelData(){
   HOTELS = hotels;
   VEHICLES = vehicles;
   GUIDES = guides;
+  PRICING = pricing;
+  TIER_LABEL = Object.fromEntries(Object.entries(pricing.tiers).map(([id, tier]) => [id, tier.label]));
 }
-
-const TIER_LABEL = {boutique:'Boutique & guesthouses',['4star']:'4-star comfort',['5star']:'5-star hotels',luxury:'Luxury villas & suites'};
-const TIER_RATE = {boutique:60,['4star']:95,['5star']:155,luxury:270};
 
 const state = {
   themes: new Set(),
@@ -41,16 +43,14 @@ const state = {
   tier: '4star',
   pace: 'balanced',
   vehicle: 'van',
+  travelMonth: '',
 };
 const OTHER_KEY = {themes:'otherThemes', destinations:'otherDestinations', experiences:'otherExperiences', excursions:'otherExcursions'};
 const VEHICLE_LABEL = {car:'Private car (1–3 pax)', van:'Van (4–7 pax)', suv:'SUV / 4x4', minicoach:'Mini-coach (8–14 pax)', luxurycoach:'Luxury coach (15+ pax)'};
-const VEHICLE_RATE = {
-  car:{day:34, perKm:0.34},
-  van:{day:52, perKm:0.44},
-  suv:{day:66, perKm:0.52},
-  minicoach:{day:92, perKm:0.68},
-  luxurycoach:{day:145, perKm:0.92},
-};
+function getSeason(monthValue){
+  const month = Number((monthValue || '').split('-')[1]) || new Date().getMonth() + 1;
+  return Object.values(PRICING.seasons).find(season => season.months.includes(month));
+}
 function haversineKm(lat1,lon1,lat2,lon2){
   const R = 6371;
   const dLat = (lat2-lat1) * Math.PI/180;

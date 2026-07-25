@@ -220,6 +220,11 @@
                 <label class="radio-card"><span>Luxury coach <em style="opacity:.6;font-style:normal;">(15+ pax)</em></span><input type="radio" name="vehicle" value="luxurycoach"></label>
               </div>
             </div>
+            <div class="cz-block">
+              <h4>Preferred travel month</h4>
+              <input class="month-input" type="month" id="travelMonth" aria-describedby="seasonHint">
+              <p id="seasonHint" class="field-hint">Your live estimate adjusts for seasonal demand.</p>
+            </div>
           </div>
           <div class="panel-nav"><button class="btn btn-outline" data-prev="excursions">← Back</button><button class="btn btn-coral" data-next="enquire">Next: Send it to us →</button></div>
         </div>
@@ -278,7 +283,10 @@
           <div class="trip-row"><span>Travellers</span><span id="sumTrav">2</span></div>
           <div class="trip-row"><span>Style</span><span id="sumTier">4-star comfort</span></div>
           <div class="trip-row"><span>Vehicle</span><span id="sumVehicle">Van</span></div>
+          <div class="trip-row"><span>Accommodation</span><span id="sumAccommodation">$0</span></div>
+          <div class="trip-row"><span>Experiences</span><span id="sumActivities">$0</span></div>
           <div class="trip-row"><span>Transport (by route)</span><span id="sumTransport">$0</span></div>
+          <div class="trip-row"><span>Season</span><span id="sumSeason">Shoulder season × 1</span></div>
           <div class="trip-total"><span>Est. from</span><b id="sumPrice">$0</b></div>
           <div class="trip-note">Ballpark estimate only — your consultant confirms final pricing.</div>
         </div>

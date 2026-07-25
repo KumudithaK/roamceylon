@@ -51,6 +51,10 @@ document.getElementById('vehicleGroup').addEventListener('change', e=>{
   document.querySelectorAll('#vehicleGroup .radio-card').forEach(l=>l.classList.toggle('active', l.querySelector('input').checked));
   updateTripCard();
 });
+document.getElementById('travelMonth').addEventListener('change', e=>{
+  state.travelMonth = e.target.value;
+  updateTripCard();
+});
 
 /* ---------------- TRIP CARD ---------------- */
 const ISLAND_PATH = "M198.4,270.3 L190.6,314.7 L175.7,335.1 L145.2,356.3 L121.7,364.6 L103.0,374.8 L88.9,376.7 L73.2,371.1 L53.7,346.2 L47.4,316.5 L39.6,282.3 L36.4,262.0 L34.1,224.0 L27.8,176.9 L38.0,145.4 L47.4,117.7 L45.8,104.7 L55.2,90.9 L59.9,76.1 L56.0,61.2 L63.0,47.4 L73.2,38.1 L67.0,24.2 L63.0,17.8 L78.7,24.2 L94.3,42.7 L86.5,52.0 L106.1,61.2 L120.2,79.7 L133.5,102.9 L145.2,126.0 L157.0,149.1 L164.8,176.9 L172.6,190.7 L184.3,213.9 L190.6,237.0 L198.4,270.3 Z";
@@ -92,20 +96,24 @@ function updateTripCard(){
   document.getElementById('sumTier').textContent = TIER_LABEL[state.tier];
   document.getElementById('sumVehicle').textContent = VEHICLE_LABEL[state.vehicle];
 
-  const rate = TIER_RATE[state.tier];
+  const rate = PRICING.tiers[state.tier].nightlyPerGuest;
   const activityCount = state.experiences.size + state.excursions.size + state.otherExperiences.length + state.otherExcursions.length;
   const accommodationCost = state.nights * rate * state.travelers;
-  const activityCost = activityCount * 46 * state.travelers;
+  const activityCost = activityCount * PRICING.activityPerGuest * state.travelers;
 
-  const vRate = VEHICLE_RATE[state.vehicle];
+  const vehicle = VEHICLES.find(item => item.id === state.vehicle) || VEHICLES[0];
   const selectedDests = DESTINATIONS.filter(d=>state.destinations.has(d.id));
   const colomboRef = DESTINATIONS.find(d=>d.id==='colombo');
-  const totalTourKm = selectedDests.reduce((sum,d)=>sum + haversineKm(colomboRef.lat,colomboRef.lon,d.lat,d.lon)*1.3, 0);
-  const transportCost = (vRate.day * Math.max(state.nights, selectedDests.length)) + (vRate.perKm * totalTourKm);
+  const totalTourKm = selectedDests.reduce((sum,d)=>sum + haversineKm(colomboRef.lat,colomboRef.lon,d.lat,d.lon)*PRICING.routeDistanceFactor, 0);
+  const transportCost = (vehicle.dayRate * Math.max(state.nights, selectedDests.length)) + (vehicle.perKm * totalTourKm);
 
-  const base = accommodationCost + activityCost + transportCost;
+  const season = getSeason(state.travelMonth);
+  const base = (accommodationCost + activityCost + transportCost) * season.multiplier;
   document.getElementById('sumTransport').textContent = '$' + Math.round(transportCost).toLocaleString();
-  document.getElementById('sumPrice').textContent = '$' + Math.round(base*0.92).toLocaleString();
+  document.getElementById('sumAccommodation').textContent = '$' + Math.round(accommodationCost).toLocaleString();
+  document.getElementById('sumActivities').textContent = '$' + Math.round(activityCost).toLocaleString();
+  document.getElementById('sumSeason').textContent = `${season.label} × ${season.multiplier}`;
+  document.getElementById('sumPrice').textContent = '$' + Math.round(base*PRICING.estimateFactor).toLocaleString();
 
   // map pins
   const pinsG = document.getElementById('tripPins');
