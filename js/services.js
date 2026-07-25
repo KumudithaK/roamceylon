@@ -12,6 +12,16 @@ class JsonRepository {
   }
 }
 
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g, character => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#039;'
+  })[character]);
+}
+
 class ThemeService {
   constructor(repository = JsonRepository){this.repository = repository;this.items = [];}
   async load(){
@@ -46,6 +56,18 @@ class DestinationService {
   getAll(){return this.items;}
 }
 
+class ExperienceService {
+  constructor(repository = JsonRepository){this.repository = repository;this.items = [];}
+  async load(){
+    this.items = (await this.repository.load('data/experiences.json')).map(experience => ({
+      ...experience,
+      desc:experience.shortDescription
+    }));
+    return this.items;
+  }
+  getAll(){return this.items;}
+}
+
 class BuilderState {
   constructor(){
     this.themes = new Set();
@@ -65,7 +87,17 @@ class BuilderState {
 }
 
 class JourneyEngine {
-  constructor(destinationService){this.destinationService = destinationService;}
+  static priorityOrder = new Map([
+    ['Must Do', 0],
+    ['Popular', 1],
+    ['Hidden Gem', 2],
+    ['Seasonal', 3]
+  ]);
+
+  constructor(destinationService, experienceService){
+    this.destinationService = destinationService;
+    this.experienceService = experienceService;
+  }
 
   getAvailableDestinations(selectedThemes){
     const selected = new Set(selectedThemes);
@@ -79,5 +111,18 @@ class JourneyEngine {
     const selected = new Set(selectedIds);
     if(!selected.size) return [];
     return items.filter(item => (item[relationKey] || []).some(id => selected.has(id)));
+  }
+
+  getAvailableExperiences(selectedDestinations){
+    const matches = this.filterBySelections(
+      this.experienceService.getAll(),
+      selectedDestinations,
+      'destinationIds'
+    );
+    return [...new Map(matches.map(experience => [experience.id, experience])).values()]
+      .sort((a,b) => {
+        const priority = JourneyEngine.priorityOrder.get(a.priority) - JourneyEngine.priorityOrder.get(b.priority);
+        return priority || a.name.localeCompare(b.name);
+      });
   }
 }

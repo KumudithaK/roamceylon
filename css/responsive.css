@@ -35,3 +35,13 @@
   .admin-login { grid-template-columns: 1fr; }
   .guide-options { grid-template-columns: 1fr; }
 }
+@media (max-width: 720px){
+  .experience-grid{grid-template-columns:1fr;}
+  .experience-card:hover{transform:translateY(-3px);}
+}
+
+@media (max-width: 420px){
+  .experience-content{padding:16px;}
+  .experience-meta{gap:5px;}
+  .experience-title{font-size:1.02rem;}
+}

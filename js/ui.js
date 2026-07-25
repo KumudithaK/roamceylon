@@ -1,4 +1,9 @@
 /* ---------------- WIKI IMAGE LOADER ---------------- */
+const experienceRenderer = new ExperienceRenderer(
+  document.getElementById('grid-experiences'),
+  destinationService
+);
+
 const wikiImageCache = {};
 async function fetchWikiImage(title){
   if(wikiImageCache[title] !== undefined) return wikiImageCache[title];
@@ -86,7 +91,10 @@ function renderAllGrids(){
   const availableIds = new Set(availableDestinations.map(destination => destination.id));
   [...state.destinations].forEach(id => {if(!availableIds.has(id)) state.destinations.delete(id);});
   renderGrid('grid-destinations', availableDestinations, state.destinations, 'destinations');
-  renderGrid('grid-experiences', EXPERIENCES, state.experiences, 'experiences');
+  const availableExperiences = journeyEngine.getAvailableExperiences(state.destinations);
+  const availableExperienceIds = new Set(availableExperiences.map(experience => experience.id));
+  [...state.experiences].forEach(id => {if(!availableExperienceIds.has(id)) state.experiences.delete(id);});
+  experienceRenderer.render(availableExperiences, state.experiences, state.destinations.size > 0);
 }
 
 function marketplaceCard(item, type){

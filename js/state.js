@@ -8,13 +8,14 @@ let PRICING = {};
 let TIER_LABEL = {};
 const themeService = new ThemeService();
 const destinationService = new DestinationService();
-const journeyEngine = new JourneyEngine(destinationService);
+const experienceService = new ExperienceService();
+const journeyEngine = new JourneyEngine(destinationService, experienceService);
 
 async function loadTravelData(){
   const [themes, destinations, experiences, hotels, vehicles, guides, pricing] = await Promise.all([
     themeService.load(),
     destinationService.load(),
-    JsonRepository.load('data/experiences.json'),
+    experienceService.load(),
     JsonRepository.load('data/hotels.json'),
     JsonRepository.load('data/vehicles.json'),
     JsonRepository.load('data/guides.json'),
