@@ -1,0 +1,5 @@
+[
+  {"id":"amal","name":"Amal Perera","speciality":"Culture & archaeology","languages":["English","Sinhala"],"experience":14,"description":"National guide lecturer specialising in the Cultural Triangle and living heritage."},
+  {"id":"nishadi","name":"Nishadi Fernando","speciality":"Wildlife & conservation","languages":["English","Sinhala"],"experience":9,"description":"Naturalist and photographer with deep expertise in birds, elephants and leopards."},
+  {"id":"rizwan","name":"Rizwan Ahamed","speciality":"Food & local life","languages":["English","Tamil","Sinhala"],"experience":11,"description":"Warm, curious host connecting guests with markets, kitchens and local makers."}
+]

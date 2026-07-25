@@ -82,6 +82,26 @@ function renderAllGrids(){
   renderGrid('grid-excursions', EXCURSIONS, state.excursions, 'excursions');
 }
 
+function marketplaceCard(item, type){
+  const meta = type === 'hotel'
+    ? `${item.location} · From $${item.from}/night`
+    : type === 'vehicle'
+      ? `${item.capacity} · From $${item.dayRate}/day`
+      : `${item.speciality} · ${item.experience} years`;
+  return `<article class="market-card">
+    <span class="market-tag">${item.category || type}</span>
+    <h3>${item.name}</h3><p class="market-meta">${meta}</p>
+    <p>${item.description}</p>
+    <a href="#builder" class="market-link">Add to journey <span aria-hidden="true">→</span></a>
+  </article>`;
+}
+
+function renderMarketplace(){
+  document.getElementById('market-hotels').innerHTML = HOTELS.map(item => marketplaceCard(item, 'hotel')).join('');
+  document.getElementById('market-vehicles').innerHTML = VEHICLES.map(item => marketplaceCard(item, 'vehicle')).join('');
+  document.getElementById('market-guides').innerHTML = GUIDES.map(item => marketplaceCard(item, 'guide')).join('');
+}
+
 document.addEventListener('click', (e) => {
   if(e.target.closest('[data-other-add]') || e.target.closest('[data-remove-other]') || e.target.closest('.other-card')) return;
   const card = e.target.closest('.pick-card');

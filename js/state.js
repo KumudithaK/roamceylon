@@ -2,17 +2,26 @@ let THEMES = [];
 let DESTINATIONS = [];
 let EXPERIENCES = [];
 let EXCURSIONS = [];
+let HOTELS = [];
+let VEHICLES = [];
+let GUIDES = [];
 
 async function loadTravelData(){
-  const [themes, destinations, experiences] = await Promise.all([
+  const [themes, destinations, experiences, hotels, vehicles, guides] = await Promise.all([
     fetch('data/themes.json').then(response => response.json()),
     fetch('data/destinations.json').then(response => response.json()),
-    fetch('data/experiences.json').then(response => response.json())
+    fetch('data/experiences.json').then(response => response.json()),
+    fetch('data/hotels.json').then(response => response.json()),
+    fetch('data/vehicles.json').then(response => response.json()),
+    fetch('data/guides.json').then(response => response.json())
   ]);
   THEMES = themes;
   DESTINATIONS = destinations;
   EXPERIENCES = experiences.filter(item => item.kind !== 'excursion');
   EXCURSIONS = experiences.filter(item => item.kind === 'excursion');
+  HOTELS = hotels;
+  VEHICLES = vehicles;
+  GUIDES = guides;
 }
 
 const TIER_LABEL = {boutique:'Boutique & guesthouses',['4star']:'4-star comfort',['5star']:'5-star hotels',luxury:'Luxury villas & suites'};

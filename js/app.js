@@ -8,6 +8,7 @@ document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 async function initApp(){
   await loadTravelData();
   renderAllGrids();
+  renderMarketplace();
   renderTabs();
   updateTripCard();
 }

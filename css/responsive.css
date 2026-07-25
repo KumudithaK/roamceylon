@@ -17,6 +17,8 @@
   .nav-links.open { display: flex; }
   .nav-links a { display: block; padding: 12px 8px; }
   .nav-cta { display: none; }
+  .market-grid { grid-template-columns: 1fr 1fr; }
+  .partner-cta { align-items: flex-start; flex-direction: column; }
 }
 
 @media (max-width: 640px) {
@@ -29,4 +31,5 @@
   .hero-stat span { font-size: .65rem; }
   .tabs { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
   .tab { white-space: nowrap; }
+  .market-grid { grid-template-columns: 1fr; }
 }
