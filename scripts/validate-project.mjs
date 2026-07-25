@@ -11,6 +11,7 @@ const services=await read('js/services.js');
 const repository=await read('js/repositories.js');
 const backend=await read('js/backend.js');
 const importer=await read('scripts/import-json-to-supabase.mjs');
+const cmsMigration=await read('supabase/migrations/202607260003_full_cms.sql');
 
 for(const table of ['profiles','themes','destinations','theme_destinations','experiences','experience_destinations','experience_themes','accommodations','vehicles','guides','guide_destinations','guide_themes','guide_experiences','partner_applications']){
   assert.match(migration,new RegExp(`create table public\\.${table}\\b`),`missing ${table} table`);
@@ -22,6 +23,12 @@ assert.match(migration,/status=''published'' and active/,'public content must be
 assert.match(migration,/partner_public_insert[\s\S]*status='pending'/,'partner inserts must be pending');
 assert.match(migration,/travel-content/,'storage bucket is missing');
 assert.match(migration,/profiles_admin_all/,'admin profile policy is missing');
+for(const field of ['needs_review','image_status','image_review_notes','needs_image_review','image_source','image_credit','image_focal_x','image_focal_y']){
+  assert.match(cmsMigration,new RegExp(`\\b${field}\\b`),`missing CMS quality field ${field}`);
+}
+for(const table of ['website_settings','homepage_content','content_import_runs']){
+  assert.match(cmsMigration,new RegExp(`create table public\\.${table}\\b`),`missing ${table}`);
+}
 assert.match(index,/type="module" src="\/js\/bootstrap\.js"/,'module bootstrap is missing');
 assert.doesNotMatch(services,/data\/(themes|destinations|experiences|accommodations|vehicles|guides)\.json/,'public content still reads JSON');
 assert.match(importer,/--confirm-import/,'import guard is missing');

@@ -6,19 +6,23 @@ let VEHICLES = [];
 let GUIDES = [];
 let PRICING = {};
 let TIER_LABEL = {};
+let SITE_SETTINGS = {};
+let HOMEPAGE_CONTENT = {};
 const themeService = new ThemeService();
 const destinationService = new DestinationService();
 const experienceService = new ExperienceService();
 const marketplaceService = new MarketplaceService();
+const siteContentService = new SiteContentService();
 const journeyEngine = new JourneyEngine(destinationService, experienceService);
 
 async function loadTravelData(){
-  const [themes, destinations, experiences, marketplace, pricing] = await Promise.all([
+  const [themes, destinations, experiences, marketplace, pricing, siteContent] = await Promise.all([
     themeService.load(),
     destinationService.load(),
     experienceService.load(),
     marketplaceService.load(),
-    JsonRepository.load('data/pricing.json')
+    JsonRepository.load('data/pricing.json'),
+    siteContentService.load()
   ]);
   THEMES = themes;
   DESTINATIONS = destinations;
@@ -28,6 +32,8 @@ async function loadTravelData(){
   GUIDES = marketplace.guides;
   PRICING = pricing;
   TIER_LABEL = Object.fromEntries(Object.entries(pricing.tiers).map(([id, tier]) => [id, tier.label]));
+  SITE_SETTINGS = siteContent.settings;
+  HOMEPAGE_CONTENT = siteContent.homepage;
 }
 
 const state = new BuilderState();

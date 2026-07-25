@@ -496,11 +496,19 @@
   .admin-workspace{padding:38px clamp(22px,4vw,56px);}
   .admin-toolbar{display:flex;align-items:center;justify-content:space-between;gap:20px;}
   .admin-toolbar h1{margin:8px 0 0;}
-  .admin-filters{display:grid;grid-template-columns:1fr 180px 190px;gap:10px;margin:26px 0;}
+  .admin-filters{display:grid;grid-template-columns:minmax(220px,1fr) repeat(3,minmax(150px,190px));gap:10px;margin:26px 0;}
   .admin-filters input,.admin-filters select,.admin-fields input,.admin-fields select,.admin-fields textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;background:#fff;font:inherit;}
   .admin-message,.admin-warning{min-height:20px;color:var(--coral);font-size:.8rem;}
+  .admin-bulk{display:flex;align-items:center;gap:12px;padding:0 0 16px;flex-wrap:wrap}.admin-bulk select{min-width:170px}
+  .admin-row-check{width:18px;height:18px;align-self:center}
+  .admin-health-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px}
+  .admin-health-card{appearance:none;border:1px solid var(--line);border-radius:18px;background:#fff;padding:24px;text-align:left;box-shadow:0 12px 35px rgba(12,63,58,.08);cursor:pointer;transition:.2s}
+  .admin-health-card:hover{transform:translateY(-3px);box-shadow:0 18px 42px rgba(12,63,58,.14)}
+  .admin-health-card strong{display:block;font-family:'Fraunces',serif;font-size:2rem;color:var(--teal-deep)}
+  .admin-health-card span{color:var(--ink-soft);font-size:.85rem;font-weight:700}
+  .admin-setup{margin-top:24px;padding:26px;border-radius:20px;background:var(--sand-hi)}
   .admin-content-list{display:grid;gap:10px;}
-  .admin-content-row{display:grid;grid-template-columns:90px minmax(0,1fr) auto;gap:15px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:14px;background:#fff;}
+  .admin-content-row{display:grid;grid-template-columns:auto 90px minmax(0,1fr) auto;gap:15px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:14px;background:#fff;}
   .admin-content-row>img{width:90px;aspect-ratio:4/3;object-fit:cover;border-radius:9px;background:var(--sand);}
   .admin-content-row h3{margin:5px 0 2px;font-size:1rem}.admin-content-row p{margin:0;font-size:.75rem;}
   .admin-row-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;}

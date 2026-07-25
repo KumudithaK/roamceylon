@@ -98,6 +98,13 @@ class MarketplaceService {
       .sort((a,b)=>b.matchScore-a.matchScore||Number(b.featured)-Number(a.featured)||a.name.localeCompare(b.name));
   }
 }
+class SiteContentService {
+  constructor(settings=new WebsiteSettingsRepository(),homepage=new HomepageRepository()){this.settingsRepository=settings;this.homepageRepository=homepage;}
+  async load(){
+    const [settings,homepage]=await Promise.all([this.settingsRepository.getPublic(),this.homepageRepository.getPublic()]);
+    return {settings,homepage};
+  }
+}
 
 class BuilderState {
   constructor(){

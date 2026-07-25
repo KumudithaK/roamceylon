@@ -208,6 +208,14 @@ Email: ${fd.get('email')} | Phone: ${fd.get('phone')||'—'} | Nationality: ${fd
       phone:fd.get('phone') || null,
       nationality:fd.get('nationality') || null,
       summary:summaryText,
+      traveller_notes:fd.get('notes')||null,
+      adults:state.travelers,
+      selected_themes:[...state.themes],
+      selected_destinations:[...state.destinations],
+      selected_experiences:[...state.experiences],
+      selected_stays:[...state.stays],
+      selected_vehicle:state.vehicle,
+      selected_guide:state.guide,
       trip_state:{themes:[...state.themes],destinations:[...state.destinations],experiences:[...state.experiences],stays:[...state.stays],nights:state.nights,travelers:state.travelers,tier:state.tier,vehicle:state.vehicle,guide:state.guide,travelMonth:state.travelMonth}
     });
   } catch(error) {

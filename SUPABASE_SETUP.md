@@ -42,9 +42,10 @@ supabase db push
 ```
 
 The canonical schema is
-`supabase/migrations/202607260001_content_marketplace.sql`. It creates the
-tables, constraints, indexes, updated-at triggers, RLS policies, and the public
-`travel-content` bucket.
+`supabase/migrations/`. The ordered migrations create the core marketplace,
+review workflow, complete CMS fields, homepage/settings records, enquiries,
+constraints, indexes, triggers, RLS policies, and the public `travel-content`
+bucket.
 
 Alternatively, paste that migration into the Supabase SQL Editor and run it
 once. Do not run the import before the migration.
@@ -60,8 +61,8 @@ There is deliberately no public staff sign-up.
 ```sql
 insert into public.profiles (id, email, full_name, role)
 values (
-  'AUTH-USER-UUID',
-  'admin@example.com',
+  '86d04378-e579-43a4-9012-18b8d0abb7a8',
+  'kumuditha.info@gmail.com',
   'Roam Ceylon Administrator',
   'admin'
 )
@@ -108,8 +109,19 @@ The importer is explicitly guarded by `--confirm-import` in the npm script and
 upserts normalized slugs, so rerunning it does not duplicate content. It
 rebuilds theme/destination and destination/experience relationships. Suspect or
 reused experience images remain blank and those records remain drafts for
-manual correction. The importer removes the generated guide-description phrase
-and does not infer seasonal priority or other metadata.
+manual correction. Legacy stay, vehicle and guide records are imported only as
+unverified draft samples and can never be published until replaced with real
+partner data. The importer removes generated copy, limits card descriptions to
+160 characters, does not infer seasonal priority, and records quality flags.
+Its latest report is written to `reports/latest-import-report.json` and stored
+in the admin-only `content_import_runs` table.
+
+After pulling new migrations, always preview and apply them before importing:
+
+```sh
+npx supabase db push --dry-run
+npx supabase db push
+```
 
 After a successful import, unset the service-role key from the shell. Never add
 it to `.env.local`, source control, frontend code, or a client-side deployment.
@@ -146,4 +158,3 @@ npm run preview
 
 Set the same two `VITE_` variables in the production hosting environment before
 building. Keep the service-role key out of that environment.
-

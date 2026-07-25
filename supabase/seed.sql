@@ -1,0 +1,5 @@
+-- Production content is imported safely with:
+-- npm run import:data
+--
+-- The guarded importer upserts stable slugs, rebuilds relationships, records an
+-- import report, and prevents uncertain marketplace samples from being published.

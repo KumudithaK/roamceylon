@@ -20,10 +20,11 @@ export class BaseRepository {
     const rows=await this.execute(requireClient().from(this.table).select(this.select).eq('status','published').eq('active',true).order(this.orderField,{ascending:true}));
     return rows.map(this.mapper);
   }
-  async listAdmin({search='',status='',sort='updated_at',ascending=false}={}){
+  async listAdmin({search='',status='',sort='updated_at',ascending=false,filters={}}={}){
     let query=requireClient().from(this.table).select(this.select).order(sort,{ascending});
     if(search)query=query.ilike(this.nameField,`%${search}%`);
     if(status)query=query.eq('status',status);
+    Object.entries(filters).forEach(([field,value])=>{if(value!=='')query=query.eq(field,value);});
     return this.execute(query);
   }
   async find(id){return (await this.execute(requireClient().from(this.table).select(this.select).eq('id',id).single()));}
@@ -109,5 +110,16 @@ export class PartnerApplicationRepository extends BaseRepository {
   constructor(){super({table:'partner_applications',nameField:'business_name',imageField:null});}
   async submit(record){return this.create({...record,status:'pending'});}
 }
+export class WebsiteSettingsRepository extends BaseRepository {
+  constructor(){super({table:'website_settings',nameField:'website_name',imageField:'logo_url'});}
+  async getPublic(){return this.execute(requireClient().from(this.table).select('*').eq('id',true).single());}
+}
+export class HomepageRepository extends BaseRepository {
+  constructor(){super({table:'homepage_content',nameField:'hero_title',imageField:'hero_background_image_url'});}
+  async getPublic(){return this.execute(requireClient().from(this.table).select('*').eq('id',true).eq('status','published').eq('active',true).single());}
+}
+export class EnquiryRepository extends BaseRepository {
+  constructor(){super({table:'enquiries',nameField:'name',imageField:null});}
+}
 
-Object.assign(window,{BaseRepository,ThemeRepository,DestinationRepository,ExperienceRepository,AccommodationRepository,VehicleRepository,GuideRepository,PartnerApplicationRepository});
+Object.assign(window,{BaseRepository,ThemeRepository,DestinationRepository,ExperienceRepository,AccommodationRepository,VehicleRepository,GuideRepository,PartnerApplicationRepository,WebsiteSettingsRepository,HomepageRepository,EnquiryRepository});

@@ -22,7 +22,13 @@
       <div class="admin-filters">
         <input id="adminSearch" type="search" placeholder="Search content…" aria-label="Search content">
         <select id="adminStatusFilter"><option value="">All statuses</option><option>draft</option><option>published</option><option>archived</option></select>
+        <select id="adminHealthFilter"><option value="">All content health</option><option value="needs_review">Needs review</option><option value="needs_image_review">Needs image review</option></select>
         <select id="adminSort"><option value="updated_at">Recently updated</option><option value="created_at">Recently created</option><option value="name">Name</option><option value="display_order">Display order</option></select>
+      </div>
+      <div class="admin-bulk" id="adminBulk">
+        <label><input id="adminSelectAll" type="checkbox"> Select all</label>
+        <select id="adminBulkAction"><option value="">Bulk action…</option><option value="publish">Publish</option><option value="unpublish">Unpublish</option><option value="archive">Archive</option><option value="activate">Activate</option><option value="deactivate">Deactivate</option><option value="review">Mark for review</option></select>
+        <button class="btn btn-outline" id="adminApplyBulk" type="button">Apply</button>
       </div>
       <p id="adminMessage" class="admin-message" aria-live="polite"></p>
       <div id="adminList" class="admin-content-list"></div>

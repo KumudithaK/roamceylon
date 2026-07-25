@@ -4,3 +4,4 @@ js/config.js
 !.env.example
 node_modules/
 dist/
+reports/latest-import-report.json
