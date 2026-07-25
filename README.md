@@ -1,7 +1,7 @@
 # Roam Ceylon
 
-A static, interactive trip-planning experience for tailor-made journeys around
-Sri Lanka.
+A Supabase-powered, interactive trip-planning experience for tailor-made
+journeys around Sri Lanka.
 
 ## Project structure
 
@@ -10,23 +10,26 @@ Sri Lanka.
 - `css/responsive.css` — responsive navigation and layout refinements
 - `css/animations.css` — motion and reduced-motion behavior
 - `js/state.js` — shared trip state and configuration
-- `js/services.js` — cached JSON repositories, travel services, builder state,
-  and the reusable journey filtering engine
+- `js/repositories.js` — Supabase data access and UI-safe record mapping
+- `js/services.js` — travel services and the reusable journey filtering engine
 - `js/ui.js` — reusable rendering and media helpers
 - `js/builder.js` — journey-builder interactions and pricing summary
 - `js/app.js` — application bootstrap and site-wide behavior
-- `data/` — travel and marketplace content
+- `data/` — source data retained for the protected one-time import
+- `supabase/migrations/` — version-controlled database, RLS, and Storage setup
+- `admin/` — protected content studio and email/password login
 - `assets/` — local logo, hero, image, and icon assets
 
 ## Run locally
 
-Serve the repository root with any static web server, for example:
+Configure Supabase using [SUPABASE_SETUP.md](SUPABASE_SETUP.md), then:
 
 ```sh
-python3 -m http.server 8000
+npm install
+npm run dev
 ```
 
-Then visit `http://localhost:8000`.
+Vite prints the local URL. Run `npm test` and `npm run build` before release.
 
 ## Journey architecture
 
@@ -34,20 +37,7 @@ The builder follows this sequence:
 
 `Themes → Destinations → Experiences → Accommodation → Transportation → Guide → Summary`
 
-Theme and destination relationships are defined only in JSON. `JourneyEngine`
-computes the alphabetical union of destinations for any selected themes and
-removes duplicates in memory. `JsonRepository` caches each data request so the
-same engine can later filter experiences, hotels, vehicles, and guides without
-changing the architecture.
-
-## Optional Supabase backend
-
-The public site works without a backend and keeps its email enquiry fallback.
-To enable persistence and the admin foundation:
-
-1. Apply `supabase/schema.sql` to a Supabase project.
-2. Copy `js/config.example.js` to the ignored `js/config.js` and set the project
-   URL and anon key.
-3. Load `js/config.js` before `js/backend.js` in `index.html` and
-   `admin/index.html` during deployment.
-4. Restrict authenticated admin access further with staff roles before launch.
+Relationships are stored in normalized join tables. `JourneyEngine` still
+computes duplicate-free unions in memory, while repository classes keep
+Supabase response shapes out of the UI. Public queries return only published,
+active content.

@@ -50,7 +50,7 @@ class PartnerRegistrationCTA {
   };
   static render(type){
     const [title,text,action] = this.content[type];
-    return `<aside class="planner-partner"><div><span class="market-tag">Partner with us</span><h4>${title}</h4><p>${text}</p></div><a class="btn btn-outline" href="mailto:partners@roamceylon.com?subject=${encodeURIComponent(action)}">${action}</a></aside>`;
+    return `<aside class="planner-partner"><div><span class="market-tag">Partner with us</span><h4>${title}</h4><p>${text}</p></div><button type="button" class="btn btn-outline" data-partner-open="${type}">${action}</button></aside>`;
   }
 }
 
@@ -104,5 +104,38 @@ class MarketplaceRenderer {
       <div class="planner-meta">${MarketplaceCard.details(item,type).map(detail=>`<span>${escapeHtml(detail)}</span>`).join('')}</div></div>`;
     dialog.showModal();
     dialog.querySelector('.market-dialog-close').addEventListener('click',()=>dialog.close(),{once:true});
+  }
+  showPartnerForm(type){
+    const applicationType={stay:'accommodation',transport:'vehicle',guides:'guide'}[type];
+    let dialog=document.getElementById('partnerDialog');
+    if(!dialog){dialog=document.createElement('dialog');dialog.id='partnerDialog';dialog.className='market-dialog partner-dialog';document.body.append(dialog);}
+    dialog.innerHTML=`<button type="button" class="market-dialog-close" aria-label="Close">×</button><div>
+      <span class="market-tag">Partner application</span><h3>${PartnerRegistrationCTA.content[type][2]}</h3>
+      <p>Tell us about your business. Applications are reviewed privately and never become listings automatically.</p>
+      <form id="partnerApplicationForm" class="form-grid">
+        <input type="hidden" name="application_type" value="${applicationType}">
+        <div class="field full"><label>Business name</label><input name="business_name"></div>
+        <div class="field"><label>Your name*</label><input name="applicant_name" required></div>
+        <div class="field"><label>Email*</label><input name="email" type="email" required></div>
+        <div class="field"><label>Phone</label><input name="phone" type="tel"></div>
+        <div class="field full"><label>Tell us about your offering</label><textarea name="message" rows="4"></textarea></div>
+        <div class="field full"><button class="btn btn-coral" type="submit">Submit application</button></div>
+      </form><p class="admin-message" id="partnerFormMessage" aria-live="polite"></p>
+    </div>`;
+    dialog.showModal();
+    dialog.querySelector('.market-dialog-close').addEventListener('click',()=>dialog.close(),{once:true});
+    dialog.querySelector('form').addEventListener('submit',async event=>{
+      event.preventDefault();
+      const formData=new FormData(event.currentTarget),message=dialog.querySelector('#partnerFormMessage');
+      message.textContent='Submitting…';
+      try{
+        await RoamBackend.submitPartnerApplication({
+          application_type:formData.get('application_type'),business_name:formData.get('business_name')||null,
+          applicant_name:formData.get('applicant_name'),email:formData.get('email'),phone:formData.get('phone')||null,
+          destination_ids:[...state.destinations],application_data:{message:formData.get('message')||'',selected_themes:[...state.themes],selected_experiences:[...state.experiences]}
+        });
+        event.currentTarget.reset();message.textContent='Thank you. Our partnerships team will review your application.';
+      }catch(error){message.textContent=error.message;}
+    });
   }
 }

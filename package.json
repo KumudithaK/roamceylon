@@ -1,0 +1,30 @@
+{
+  "name": "roamceylon",
+  "version": "1.0.0",
+  "description": "A static, interactive trip-planning experience for tailor-made journeys around Sri Lanka.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "import:data": "node scripts/import-json-to-supabase.mjs --confirm-import",
+    "test": "node scripts/validate-project.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KumudithaK/roamceylon.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/KumudithaK/roamceylon/issues"
+  },
+  "homepage": "https://github.com/KumudithaK/roamceylon#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.8"
+  },
+  "devDependencies": {
+    "vite": "^8.1.5"
+  }
+}

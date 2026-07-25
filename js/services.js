@@ -23,9 +23,9 @@ function escapeHtml(value){
 }
 
 class ThemeService {
-  constructor(repository = JsonRepository){this.repository = repository;this.items = [];}
+  constructor(repository = new ThemeRepository()){this.repository = repository;this.items = [];}
   async load(){
-    this.items = (await this.repository.load('data/themes.json')).map(theme => ({
+    this.items = (await this.repository.listPublished()).map(theme => ({
       ...theme, tag:'Travel theme', desc:theme.description
     }));
     return this.items;
@@ -34,9 +34,9 @@ class ThemeService {
 }
 
 class DestinationService {
-  constructor(repository = JsonRepository){this.repository = repository;this.items = [];}
+  constructor(repository = new DestinationRepository()){this.repository = repository;this.items = [];}
   async load(){
-    const items = await this.repository.load('data/destinations.json');
+    const items = await this.repository.listPublished();
     this.items = items.map(destination => {
       const {lat, lon} = destination.coordinates;
       return {
@@ -56,9 +56,9 @@ class DestinationService {
 }
 
 class ExperienceService {
-  constructor(repository = JsonRepository){this.repository = repository;this.items = [];}
+  constructor(repository = new ExperienceRepository()){this.repository = repository;this.items = [];}
   async load(){
-    this.items = (await this.repository.load('data/experiences.json')).map(experience => ({
+    this.items = (await this.repository.listPublished()).map(experience => ({
       ...experience,
       desc:experience.shortDescription
     }));
@@ -68,12 +68,12 @@ class ExperienceService {
 }
 
 class MarketplaceService {
-  constructor(repository = JsonRepository){this.repository = repository;this.accommodations=[];this.vehicles=[];this.guides=[];}
+  constructor({accommodations=new AccommodationRepository(),vehicles=new VehicleRepository(),guides=new GuideRepository()}={}){this.repositories={accommodations,vehicles,guides};this.accommodations=[];this.vehicles=[];this.guides=[];}
   async load(){
     [this.accommodations,this.vehicles,this.guides] = await Promise.all([
-      this.repository.load('data/accommodations.json'),
-      this.repository.load('data/vehicles.json'),
-      this.repository.load('data/guides.json')
+      this.repositories.accommodations.listPublished(),
+      this.repositories.vehicles.listPublished(),
+      this.repositories.guides.listPublished()
     ]);
     return {accommodations:this.accommodations,vehicles:this.vehicles,guides:this.guides};
   }

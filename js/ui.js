@@ -98,6 +98,8 @@ document.addEventListener('click', e=>{
 document.addEventListener('click',event=>{
   const tab=event.target.closest('[data-market-tab]');
   if(tab){marketplaceTabs.select(tab.dataset.marketTab);return;}
+  const partner=event.target.closest('[data-partner-open]');
+  if(partner){marketplaceRenderer.showPartnerForm(partner.dataset.partnerOpen);return;}
   const add=event.target.closest('[data-market-add]');
   const detail=event.target.closest('[data-market-detail]');
   if(detail){marketplaceRenderer.showDetails(detail.dataset.marketDetail,detail.dataset.id);return;}
