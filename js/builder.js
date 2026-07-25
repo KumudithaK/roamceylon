@@ -1,10 +1,15 @@
 /* ---------------- TABS / STEPS ---------------- */
 const tabsEl = document.getElementById('tabs');
 function renderTabs(){
+  const counts = {
+    themes:state.themes.size + state.otherThemes.length,
+    destinations:state.destinations.size + state.otherDestinations.length,
+    experiences:state.experiences.size + state.otherExperiences.length
+  };
   tabsEl.innerHTML = STEPS.map(s => `
     <button type="button" class="tab ${s===currentStep?'active':''}" data-step="${s}">
       ${STEP_LABELS[s]}
-      ${s!=='customize'&&s!=='enquire' ? `<span class="tcount">${state[s].size + state[OTHER_KEY[s]].length}</span>` : ''}
+      ${counts[s] !== undefined ? `<span class="tcount">${counts[s]}</span>` : ''}
     </button>
   `).join('');
 }
@@ -24,7 +29,7 @@ tabsEl.addEventListener('click', e=>{
 document.querySelectorAll('[data-next]').forEach(b=>b.addEventListener('click', ()=>goStep(b.dataset.next)));
 document.querySelectorAll('[data-prev]').forEach(b=>b.addEventListener('click', ()=>goStep(b.dataset.prev)));
 
-/* ---------------- CUSTOMIZE CONTROLS ---------------- */
+/* ---------------- JOURNEY CONTROLS ---------------- */
 const nightsRange = document.getElementById('nightsRange');
 const nightsVal = document.getElementById('nightsVal');
 nightsRange.addEventListener('input', ()=>{
@@ -60,17 +65,17 @@ document.getElementById('travelMonth').addEventListener('change', e=>{
 const ISLAND_PATH = "M198.4,270.3 L190.6,314.7 L175.7,335.1 L145.2,356.3 L121.7,364.6 L103.0,374.8 L88.9,376.7 L73.2,371.1 L53.7,346.2 L47.4,316.5 L39.6,282.3 L36.4,262.0 L34.1,224.0 L27.8,176.9 L38.0,145.4 L47.4,117.7 L45.8,104.7 L55.2,90.9 L59.9,76.1 L56.0,61.2 L63.0,47.4 L73.2,38.1 L67.0,24.2 L63.0,17.8 L78.7,24.2 L94.3,42.7 L86.5,52.0 L106.1,61.2 L120.2,79.7 L133.5,102.9 L145.2,126.0 L157.0,149.1 L164.8,176.9 L172.6,190.7 L184.3,213.9 L190.6,237.0 L198.4,270.3 Z";
 
 function chip(label, type, id){
-  return `<span class="chip">${label}<button type="button" data-remove="${type}" data-id="${id}">✕</button></span>`;
+  return `<span class="chip">✓ ${label}<button type="button" data-remove="${type}" data-id="${id}">✕</button></span>`;
 }
 
 function otherChip(val, type, idx){
-  return `<span class="chip">${val}<button type="button" data-remove-other="${type}" data-idx="${idx}">✕</button></span>`;
+  return `<span class="chip">✓ ${val}<button type="button" data-remove-other="${type}" data-idx="${idx}">✕</button></span>`;
 }
 
 function updateTripCard(){
   renderTabs();
-  const otherCount = state.otherThemes.length + state.otherDestinations.length + state.otherExperiences.length + state.otherExcursions.length;
-  const total = state.themes.size + state.destinations.size + state.experiences.size + state.excursions.size + otherCount;
+  const otherCount = state.otherThemes.length + state.otherDestinations.length + state.otherExperiences.length;
+  const total = state.themes.size + state.destinations.size + state.experiences.size + otherCount;
   document.getElementById('tripEmpty').style.display = total ? 'none' : 'block';
   document.getElementById('tripBody').style.display = total ? 'block' : 'none';
 
@@ -86,10 +91,10 @@ function updateTripCard(){
     [...state.experiences].map(id=>chip(EXPERIENCES.find(d=>d.id===id).name,'experiences',id)).join('') +
     state.otherExperiences.map((v,i)=>otherChip(v,'experiences',i)).join('') ||
     '<span style="opacity:.5;font-size:.78rem">None yet</span>';
-  document.getElementById('chipsExc').innerHTML =
-    [...state.excursions].map(id=>chip(EXCURSIONS.find(d=>d.id===id).name,'excursions',id)).join('') +
-    state.otherExcursions.map((v,i)=>otherChip(v,'excursions',i)).join('') ||
-    '<span style="opacity:.5;font-size:.78rem">None yet</span>';
+  const selectedGuide = GUIDES.find(guide => guide.id === state.guide);
+  document.getElementById('chipsGuide').innerHTML = selectedGuide
+    ? `<span class="chip">✓ ${selectedGuide.name}</span>`
+    : '<span style="opacity:.5;font-size:.78rem">Optional</span>';
 
   document.getElementById('sumNights').textContent = state.nights;
   document.getElementById('sumTrav').textContent = state.travelers;
@@ -97,7 +102,7 @@ function updateTripCard(){
   document.getElementById('sumVehicle').textContent = VEHICLE_LABEL[state.vehicle];
 
   const rate = PRICING.tiers[state.tier].nightlyPerGuest;
-  const activityCount = state.experiences.size + state.excursions.size + state.otherExperiences.length + state.otherExcursions.length;
+  const activityCount = state.experiences.size + state.otherExperiences.length;
   const accommodationCost = state.nights * rate * state.travelers;
   const activityCost = activityCount * PRICING.activityPerGuest * state.travelers;
 
@@ -157,12 +162,10 @@ document.getElementById('enquireForm').addEventListener('submit', async function
   const name = fd.get('name') || 'there';
   const destNames = [...[...state.destinations].map(id=>DESTINATIONS.find(d=>d.id===id).name), ...state.otherDestinations].join(', ') || 'no destinations yet';
   const expNames = [...[...state.experiences].map(id=>EXPERIENCES.find(d=>d.id===id).name), ...state.otherExperiences].join(', ') || 'none selected';
-  const excNames = [...[...state.excursions].map(id=>EXCURSIONS.find(d=>d.id===id).name), ...state.otherExcursions].join(', ') || 'none selected';
 
   const summaryText = `Trip request for ${name}
 Destinations: ${destNames}
 Experiences: ${expNames}
-Excursions: ${excNames}
 Nights: ${state.nights} | Travellers: ${state.travelers} | Style: ${TIER_LABEL[state.tier]} | Pace: ${state.pace} | Vehicle: ${VEHICLE_LABEL[state.vehicle]}
 Preferred month: ${fd.get('dates')||'flexible'}
 Notes: ${fd.get('notes')||'—'}
@@ -170,8 +173,7 @@ Email: ${fd.get('email')} | Phone: ${fd.get('phone')||'—'} | Nationality: ${fd
 
   const totalDest = state.destinations.size + state.otherDestinations.length;
   const totalExp = state.experiences.size + state.otherExperiences.length;
-  const totalExc = state.excursions.size + state.otherExcursions.length;
-  document.getElementById('confirmSummary').textContent = `Thanks, ${name}! We've noted ${totalDest} destination(s), ${totalExp} experience(s) and ${totalExc} excursion(s) for ${state.nights} nights. A consultant will email ${fd.get('email')} shortly.`;
+  document.getElementById('confirmSummary').textContent = `Thanks, ${name}! We've noted ${totalDest} destination(s) and ${totalExp} experience(s) for ${state.nights} nights. A consultant will email ${fd.get('email')} shortly.`;
 
   const mailto = `mailto:hello@roamceylon.com?subject=${encodeURIComponent('New tailor-made trip request — '+name)}&body=${encodeURIComponent(summaryText)}`;
   document.getElementById('mailtoBtn').href = mailto;
@@ -192,7 +194,7 @@ Email: ${fd.get('email')} | Phone: ${fd.get('phone')||'—'} | Nationality: ${fd
       phone:fd.get('phone') || null,
       nationality:fd.get('nationality') || null,
       summary:summaryText,
-      trip_state:{themes:[...state.themes],destinations:[...state.destinations],experiences:[...state.experiences],excursions:[...state.excursions],nights:state.nights,travelers:state.travelers,tier:state.tier,vehicle:state.vehicle,travelMonth:state.travelMonth}
+      trip_state:{themes:[...state.themes],destinations:[...state.destinations],experiences:[...state.experiences],nights:state.nights,travelers:state.travelers,tier:state.tier,vehicle:state.vehicle,guide:state.guide,travelMonth:state.travelMonth}
     });
   } catch(error) {
     console.warn('Enquiry persistence unavailable; email fallback remains active.');

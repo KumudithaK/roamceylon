@@ -9,6 +9,7 @@ async function initApp(){
   await loadTravelData();
   renderAllGrids();
   renderMarketplace();
+  renderGuideOptions();
   renderTabs();
   updateTripCard();
 }

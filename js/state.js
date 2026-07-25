@@ -1,27 +1,28 @@
 let THEMES = [];
 let DESTINATIONS = [];
 let EXPERIENCES = [];
-let EXCURSIONS = [];
 let HOTELS = [];
 let VEHICLES = [];
 let GUIDES = [];
 let PRICING = {};
 let TIER_LABEL = {};
+const themeService = new ThemeService();
+const destinationService = new DestinationService();
+const journeyEngine = new JourneyEngine(destinationService);
 
 async function loadTravelData(){
   const [themes, destinations, experiences, hotels, vehicles, guides, pricing] = await Promise.all([
-    fetch('data/themes.json').then(response => response.json()),
-    fetch('data/destinations.json').then(response => response.json()),
-    fetch('data/experiences.json').then(response => response.json()),
-    fetch('data/hotels.json').then(response => response.json()),
-    fetch('data/vehicles.json').then(response => response.json()),
-    fetch('data/guides.json').then(response => response.json()),
-    fetch('data/pricing.json').then(response => response.json())
+    themeService.load(),
+    destinationService.load(),
+    JsonRepository.load('data/experiences.json'),
+    JsonRepository.load('data/hotels.json'),
+    JsonRepository.load('data/vehicles.json'),
+    JsonRepository.load('data/guides.json'),
+    JsonRepository.load('data/pricing.json')
   ]);
   THEMES = themes;
   DESTINATIONS = destinations;
-  EXPERIENCES = experiences.filter(item => item.kind !== 'excursion');
-  EXCURSIONS = experiences.filter(item => item.kind === 'excursion');
+  EXPERIENCES = experiences;
   HOTELS = hotels;
   VEHICLES = vehicles;
   GUIDES = guides;
@@ -29,23 +30,8 @@ async function loadTravelData(){
   TIER_LABEL = Object.fromEntries(Object.entries(pricing.tiers).map(([id, tier]) => [id, tier.label]));
 }
 
-const state = {
-  themes: new Set(),
-  destinations: new Set(),
-  experiences: new Set(),
-  excursions: new Set(),
-  otherThemes: [],
-  otherDestinations: [],
-  otherExperiences: [],
-  otherExcursions: [],
-  nights: 14,
-  travelers: 2,
-  tier: '4star',
-  pace: 'balanced',
-  vehicle: 'van',
-  travelMonth: '',
-};
-const OTHER_KEY = {themes:'otherThemes', destinations:'otherDestinations', experiences:'otherExperiences', excursions:'otherExcursions'};
+const state = new BuilderState();
+const OTHER_KEY = {themes:'otherThemes', destinations:'otherDestinations', experiences:'otherExperiences'};
 const VEHICLE_LABEL = {car:'Private car (1–3 pax)', van:'Van (4–7 pax)', suv:'SUV / 4x4', minicoach:'Mini-coach (8–14 pax)', luxurycoach:'Luxury coach (15+ pax)'};
 function getSeason(monthValue){
   const month = Number((monthValue || '').split('-')[1]) || new Date().getMonth() + 1;
@@ -59,5 +45,5 @@ function haversineKm(lat1,lon1,lat2,lon2){
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-const STEPS = ['themes','destinations','experiences','excursions','customize','enquire'];
-const STEP_LABELS = {themes:'1. Theme',destinations:'2. Destinations',experiences:'3. Experiences',excursions:'4. Excursions',customize:'5. Customize',enquire:'6. Send it'};
+const STEPS = ['themes','destinations','experiences','accommodation','transportation','guides','summary'];
+const STEP_LABELS = {themes:'1. Themes',destinations:'2. Destinations',experiences:'3. Experiences',accommodation:'4. Accommodation',transportation:'5. Transportation',guides:'6. Guide',summary:'7. Summary'};

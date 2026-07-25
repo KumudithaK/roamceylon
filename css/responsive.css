@@ -33,4 +33,5 @@
   .tab { white-space: nowrap; }
   .market-grid { grid-template-columns: 1fr; }
   .admin-login { grid-template-columns: 1fr; }
+  .guide-options { grid-template-columns: 1fr; }
 }

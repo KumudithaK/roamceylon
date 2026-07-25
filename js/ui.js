@@ -43,6 +43,10 @@ function iconSvg(id){ return `<svg><use href="#${id}"/></svg>`; }
 
 function renderGrid(containerId, items, stateSet, type){
   const el = document.getElementById(containerId);
+  if(type === 'destinations' && !state.themes.size){
+    el.innerHTML = '<div class="destination-empty">Select one or more travel themes to discover matching destinations.</div>';
+    return;
+  }
   const otherArr = state[OTHER_KEY[type]];
   const otherTags = otherArr.map((val,i) => `
     <div class="pick-card selected flat-card">
@@ -60,8 +64,9 @@ function renderGrid(containerId, items, stateSet, type){
       </div>
     </div>`;
   el.innerHTML = items.map(it => `
-    <button type="button" class="pick-card ${stateSet.has(it.id)?'selected':''}" data-type="${type}" data-id="${it.id}">
-      <div class="pick-photo" ${it.wiki?`data-wiki="${it.wiki}"`:''}>
+    <button type="button" class="pick-card filter-enter ${stateSet.has(it.id)?'selected':''}" data-type="${type}" data-id="${it.id}">
+      <div class="pick-photo" ${!it.heroImage&&it.wiki?`data-wiki="${it.wiki}"`:''}>
+        ${it.heroImage?`<img src="${it.heroImage}" alt="" loading="lazy" class="loaded">`:''}
         <div class="pick-badge">${iconSvg(it.icon)}</div>
         <div class="check-dot">${iconSvg('i-check')}</div>
         <span class="tag">${it.tag}</span>
@@ -77,9 +82,11 @@ function renderGrid(containerId, items, stateSet, type){
 
 function renderAllGrids(){
   renderGrid('grid-themes', THEMES, state.themes, 'themes');
-  renderGrid('grid-destinations', DESTINATIONS, state.destinations, 'destinations');
+  const availableDestinations = journeyEngine.getAvailableDestinations(state.themes);
+  const availableIds = new Set(availableDestinations.map(destination => destination.id));
+  [...state.destinations].forEach(id => {if(!availableIds.has(id)) state.destinations.delete(id);});
+  renderGrid('grid-destinations', availableDestinations, state.destinations, 'destinations');
   renderGrid('grid-experiences', EXPERIENCES, state.experiences, 'experiences');
-  renderGrid('grid-excursions', EXCURSIONS, state.excursions, 'excursions');
 }
 
 function marketplaceCard(item, type){
@@ -102,6 +109,17 @@ function renderMarketplace(){
   document.getElementById('market-guides').innerHTML = GUIDES.map(item => marketplaceCard(item, 'guide')).join('');
 }
 
+function renderGuideOptions(){
+  const options = [{id:null,name:'No guide selected',speciality:'Optional',description:'Continue with private transport and local hosts as arranged.'}, ...GUIDES];
+  document.getElementById('guideOptions').innerHTML = options.map(guide => `
+    <button type="button" class="guide-card ${state.guide===guide.id?'selected':''}" data-guide-id="${guide.id || ''}">
+      <span class="market-tag">${guide.speciality}</span>
+      <h3>${guide.name}</h3>
+      <p>${guide.description}</p>
+      <span class="check-dot">${iconSvg('i-check')}</span>
+    </button>`).join('');
+}
+
 document.addEventListener('click', (e) => {
   if(e.target.closest('[data-other-add]') || e.target.closest('[data-remove-other]') || e.target.closest('.other-card')) return;
   const card = e.target.closest('.pick-card');
@@ -110,6 +128,14 @@ document.addEventListener('click', (e) => {
   const set = state[type];
   if(set.has(id)) set.delete(id); else set.add(id);
   renderAllGrids();
+  updateTripCard();
+});
+
+document.addEventListener('click', event => {
+  const guide = event.target.closest('[data-guide-id]');
+  if(!guide) return;
+  state.guide = guide.dataset.guideId || null;
+  renderGuideOptions();
   updateTripCard();
 });
 

@@ -241,6 +241,13 @@
   .pick-card.selected .check-dot{background:var(--coral);border-color:var(--coral);}
   .check-dot svg{width:12px;height:12px;stroke:#fff;stroke-width:3;fill:none;opacity:0;}
   .pick-card.selected .check-dot svg{opacity:1;}
+  .destination-empty{grid-column:1/-1;padding:38px;border:1.5px dashed var(--line);border-radius:var(--radius);background:rgba(255,255,255,.45);text-align:center;color:var(--ink-soft);font-weight:700;}
+  .guide-options{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  .guide-card{position:relative;text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:22px;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;}
+  .guide-card:hover{transform:translateY(-3px);border-color:var(--teal-glow);box-shadow:var(--shadow);}
+  .guide-card.selected{border-color:var(--coral);box-shadow:0 0 0 2px rgba(232,93,69,.12);}
+  .guide-card h3{font-size:1.08rem;margin:12px 0 6px;}
+  .guide-card p{font-size:.84rem;margin:0;padding-right:24px;}
   .other-card{background:var(--sand-hi);}
   .other-card .pick-body{padding:16px;}
   .flat-card{flex-direction:row;align-items:center;padding:14px 16px;}
@@ -248,7 +255,7 @@
 
   .panel-nav{display:flex;justify-content:space-between;margin-top:32px;gap:14px;}
 
-  /* customize step */
+  /* journey controls */
   .cz-grid{display:grid;grid-template-columns:1fr 1fr;gap:26px;}
   @media (max-width:640px){.cz-grid{grid-template-columns:1fr;}}
   .cz-block{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:22px;}

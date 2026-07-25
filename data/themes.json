@@ -1,6 +1,9 @@
 [
-  {"id":"signature","name":"Signature Ceylon","tag":"First journey","icon":"i-compass","wiki":"Sigiriya","desc":"Ancient cities, tea country, wildlife and the south coast in one considered journey."},
-  {"id":"wild","name":"Wild Ceylon","tag":"Nature","icon":"i-elephant","wiki":"Sri Lankan elephant|Yala National Park","desc":"Private safaris, rainforest walks and quiet stays close to Sri Lanka's wild heart."},
-  {"id":"coastal","name":"Coastal Ceylon","tag":"Ocean","icon":"i-wave","wiki":"Mirissa|Galle Fort","desc":"Slow days between hidden coves, heritage forts, surf breaks and oceanfront villas."},
-  {"id":"wellness","name":"Wellness & Slow Travel","tag":"Restore","icon":"i-lotus","wiki":"Ayurveda|Tea production in Sri Lanka","desc":"Ayurveda, thoughtful food, tea-country air and stays designed for genuine rest."}
+  {"id":"adventure","name":"Thrill & Adventure","icon":"i-mountain","description":"Rapids, surf breaks, highland trails and active journeys for curious explorers.","destinations":["kitulgala","belihuloya","arugambay","kalpitiya","hikkaduwa","dambulla","balapitiya"]},
+  {"id":"tropical","name":"Tropical Paradise","icon":"i-wave","description":"Palm-fringed bays, warm seas and unhurried coastal escapes.","destinations":["hikkaduwa","galle","mirissa","arugambay","pasikudah","trinco","nilaveli","mountlavinia","bentota"]},
+  {"id":"wildlife","name":"Wild Encounters","icon":"i-elephant","description":"Leopards, elephants, birds and biodiverse landscapes with specialist naturalists.","destinations":["yala","minneriya","udawalawe","wilpattu"]},
+  {"id":"heritage","name":"Timeless Heritage","icon":"i-stupa","description":"Ancient kingdoms, sacred monuments and UNESCO-listed living history.","destinations":["kandy","sigiriya","anuradhapura","polonnaruwa","dambulla","galle"]},
+  {"id":"culture","name":"Vibrant Culture","icon":"i-drum","description":"Food, festivals, craft and the island's multi-ethnic living traditions.","destinations":["kandy","colombo","galle","jaffna","kataragama"]},
+  {"id":"nature","name":"Breathtaking Nature","icon":"i-leaf","description":"Tea gardens, waterfalls, mountain air and scenic highland walks.","destinations":["nuwaraeliya","ella","dambulla"]},
+  {"id":"wellness","name":"Holistic Wellness","icon":"i-lotus","description":"Ayurveda, yoga and restorative stays rooted in Sri Lankan healing traditions.","destinations":["tangalle","kalutara","kandy","weligama","ahungalla","sigiriya"]}
 ]

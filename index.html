@@ -112,7 +112,7 @@
       <h2>Three steps to a trip that's actually yours</h2>
     </div>
     <div class="how-steps">
-      <div class="how-step reveal"><div class="num">1</div><h3>Pick freely</h3><p>Choose destinations, excursions and experiences below — no packages to squeeze into, just what genuinely interests you.</p></div>
+      <div class="how-step reveal"><div class="num">1</div><h3>Pick freely</h3><p>Choose travel themes, matching destinations and experiences below — no packages to squeeze into, just what genuinely interests you.</p></div>
       <div class="how-step reveal"><div class="num">2</div><h3>Watch it take shape</h3><p>Your trip card fills in live: route, nights, pace and a fair price range, updating with every choice.</p></div>
       <div class="how-step reveal"><div class="num">3</div><h3>Talk to a real planner</h3><p>Send it through and a Sri Lanka–based consultant refines it with you into a confirmed, guided itinerary.</p></div>
     </div>
@@ -160,24 +160,14 @@
             <p>The signature moments — the things you'll actually tell people about afterwards.</p>
           </div>
           <div class="card-grid" id="grid-experiences"></div>
-          <div class="panel-nav"><button class="btn btn-outline" data-prev="destinations">← Back</button><button class="btn btn-coral" data-next="excursions">Next: Excursions →</button></div>
+          <div class="panel-nav"><button class="btn btn-outline" data-prev="destinations">← Back</button><button class="btn btn-coral" data-next="accommodation">Next: Accommodation →</button></div>
         </div>
 
-        <!-- STEP 3: EXCURSIONS -->
-        <div class="panel" data-panel="excursions">
+        <!-- STEP 4: ACCOMMODATION -->
+        <div class="panel" data-panel="accommodation">
           <div class="panel-intro">
-            <h3>Any day trips or detours?</h3>
-            <p>Shorter add-ons that slot neatly around your main stops.</p>
-          </div>
-          <div class="card-grid" id="grid-excursions"></div>
-          <div class="panel-nav"><button class="btn btn-outline" data-prev="experiences">← Back</button><button class="btn btn-coral" data-next="customize">Next: Customize →</button></div>
-        </div>
-
-        <!-- STEP 4: CUSTOMIZE -->
-        <div class="panel" data-panel="customize">
-          <div class="panel-intro">
-            <h3>A few final touches</h3>
-            <p>This is what turns a list of places into a paced, comfortable holiday.</p>
+            <h3>Shape your stay</h3>
+            <p>Choose the pace, length and accommodation style that feels right.</p>
           </div>
           <div class="cz-grid">
             <div class="cz-block">
@@ -210,6 +200,17 @@
                 <label class="radio-card"><span>Action-packed — see it all</span><input type="radio" name="pace" value="active"></label>
               </div>
             </div>
+          </div>
+          <div class="panel-nav"><button class="btn btn-outline" data-prev="experiences">← Back</button><button class="btn btn-coral" data-next="transportation">Next: Transportation →</button></div>
+        </div>
+
+        <!-- STEP 5: TRANSPORTATION -->
+        <div class="panel" data-panel="transportation">
+          <div class="panel-intro">
+            <h3>Travel in private comfort</h3>
+            <p>Select your preferred vehicle and travel month for an accurate estimate.</p>
+          </div>
+          <div class="cz-grid">
             <div class="cz-block">
               <h4>Vehicle type</h4>
               <div class="radio-cards" id="vehicleGroup">
@@ -226,13 +227,23 @@
               <p id="seasonHint" class="field-hint">Your live estimate adjusts for seasonal demand.</p>
             </div>
           </div>
-          <div class="panel-nav"><button class="btn btn-outline" data-prev="excursions">← Back</button><button class="btn btn-coral" data-next="enquire">Next: Send it to us →</button></div>
+          <div class="panel-nav"><button class="btn btn-outline" data-prev="accommodation">← Back</button><button class="btn btn-coral" data-next="guides">Next: Tour guide →</button></div>
         </div>
 
-        <!-- STEP 5: ENQUIRE -->
-        <div class="panel" data-panel="enquire">
+        <!-- STEP 6: TOUR GUIDE -->
+        <div class="panel" data-panel="guides">
           <div class="panel-intro">
-            <h3>Send us your trip</h3>
+            <h3>Would you like a specialist guide?</h3>
+            <p>This is optional. Choose a local expert or continue without one.</p>
+          </div>
+          <div class="guide-options" id="guideOptions"></div>
+          <div class="panel-nav"><button class="btn btn-outline" data-prev="transportation">← Back</button><button class="btn btn-coral" data-next="summary">Review trip →</button></div>
+        </div>
+
+        <!-- STEP 7: TRIP SUMMARY -->
+        <div class="panel" data-panel="summary">
+          <div class="panel-intro">
+            <h3>Review and send your trip</h3>
             <p>A consultant will reply — usually within a day — with a refined itinerary and confirmed pricing.</p>
           </div>
           <form id="enquireForm">
@@ -248,7 +259,7 @@
               <div class="field full"><label>Anything else we should know?</label><textarea name="notes" rows="3" placeholder="Dietary needs, mobility considerations, special occasions..."></textarea></div>
             </div>
             <div class="panel-nav">
-              <button type="button" class="btn btn-outline" data-prev="customize">← Back</button>
+              <button type="button" class="btn btn-outline" data-prev="guides">← Back</button>
               <button type="submit" class="btn btn-coral">Send my trip request →</button>
             </div>
           </form>
@@ -277,7 +288,7 @@
           <div class="trip-section"><div class="lbl">Theme</div><div class="chip-list" id="chipsTheme"></div></div>
           <div class="trip-section"><div class="lbl">Destinations</div><div class="chip-list" id="chipsDest"></div></div>
           <div class="trip-section"><div class="lbl">Experiences</div><div class="chip-list" id="chipsExp"></div></div>
-          <div class="trip-section"><div class="lbl">Excursions</div><div class="chip-list" id="chipsExc"></div></div>
+          <div class="trip-section"><div class="lbl">Tour guide</div><div class="chip-list" id="chipsGuide"><span style="opacity:.5;font-size:.78rem">Optional</span></div></div>
           <div class="trip-divider"></div>
           <div class="trip-row"><span>Nights</span><span id="sumNights">14</span></div>
           <div class="trip-row"><span>Travellers</span><span id="sumTrav">2</span></div>
@@ -383,6 +394,7 @@
 </footer>
 
 <script src="js/backend.js"></script>
+<script src="js/services.js"></script>
 <script src="js/state.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/builder.js"></script>

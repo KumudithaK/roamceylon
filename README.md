@@ -10,6 +10,8 @@ Sri Lanka.
 - `css/responsive.css` — responsive navigation and layout refinements
 - `css/animations.css` — motion and reduced-motion behavior
 - `js/state.js` — shared trip state and configuration
+- `js/services.js` — cached JSON repositories, travel services, builder state,
+  and the reusable journey filtering engine
 - `js/ui.js` — reusable rendering and media helpers
 - `js/builder.js` — journey-builder interactions and pricing summary
 - `js/app.js` — application bootstrap and site-wide behavior
@@ -25,6 +27,18 @@ python3 -m http.server 8000
 ```
 
 Then visit `http://localhost:8000`.
+
+## Journey architecture
+
+The builder follows this sequence:
+
+`Themes → Destinations → Experiences → Accommodation → Transportation → Guide → Summary`
+
+Theme and destination relationships are defined only in JSON. `JourneyEngine`
+computes the alphabetical union of destinations for any selected themes and
+removes duplicates in memory. `JsonRepository` caches each data request so the
+same engine can later filter experiences, hotels, vehicles, and guides without
+changing the architecture.
 
 ## Optional Supabase backend
 

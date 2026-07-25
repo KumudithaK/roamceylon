@@ -133,8 +133,7 @@
     "tag": "Half day",
     "icon": "i-lotus",
     "wiki": "Polonnaruwa",
-    "desc": "Cycle between 12th-century temples and reservoirs.",
-    "kind": "excursion"
+    "desc": "Cycle between 12th-century temples and reservoirs."
   },
   {
     "id": "rafting",
@@ -142,8 +141,7 @@
     "tag": "Half day",
     "icon": "i-kayak",
     "wiki": "Whitewater rafting|Kitulgala",
-    "desc": "Grade 2–3 rapids on the river made famous by \"Bridge on the River Kwai\".",
-    "kind": "excursion"
+    "desc": "Grade 2–3 rapids on the river made famous by \"Bridge on the River Kwai\"."
   },
   {
     "id": "lagoon",
@@ -151,8 +149,7 @@
     "tag": "Half day",
     "icon": "i-fish",
     "wiki": "Negombo",
-    "desc": "Go out with local fishermen on a traditional oruwa outrigger boat.",
-    "kind": "excursion"
+    "desc": "Go out with local fishermen on a traditional oruwa outrigger boat."
   },
   {
     "id": "bawa",
@@ -160,8 +157,7 @@
     "tag": "Full day",
     "icon": "i-compass",
     "wiki": "Lunuganga|Geoffrey Bawa",
-    "desc": "The tropical-modern houses and gardens of Sri Lanka's most famous architect.",
-    "kind": "excursion"
+    "desc": "The tropical-modern houses and gardens of Sri Lanka's most famous architect."
   },
   {
     "id": "cycling",
@@ -169,8 +165,7 @@
     "tag": "Half day",
     "icon": "i-bike",
     "wiki": "Cycling|Paddy field",
-    "desc": "Paddy fields, village temples and roadside tea stalls, at a gentle pace.",
-    "kind": "excursion"
+    "desc": "Paddy fields, village temples and roadside tea stalls, at a gentle pace."
   },
   {
     "id": "sinharaja",
@@ -178,8 +173,7 @@
     "tag": "Full day",
     "icon": "i-leaf",
     "wiki": "Sinharaja Forest Reserve",
-    "desc": "A UNESCO rainforest reserve thick with endemic flora and fauna.",
-    "kind": "excursion"
+    "desc": "A UNESCO rainforest reserve thick with endemic flora and fauna."
   },
   {
     "id": "udawalawe",
@@ -187,8 +181,7 @@
     "tag": "Half day",
     "icon": "i-elephant",
     "wiki": "Udawalawe National Park",
-    "desc": "Reliable elephant herds in open grassland, plus an elephant transit home.",
-    "kind": "excursion"
+    "desc": "Reliable elephant herds in open grassland, plus an elephant transit home."
   },
   {
     "id": "ballooning2",
@@ -196,8 +189,7 @@
     "tag": "Half day",
     "icon": "i-mountain",
     "wiki": "Nuwara Eliya",
-    "desc": "Explore Nuwara Eliya's colonial racecourse, golf club and post office.",
-    "kind": "excursion"
+    "desc": "Explore Nuwara Eliya's colonial racecourse, golf club and post office."
   },
   {
     "id": "yoga",
@@ -205,8 +197,7 @@
     "tag": "Morning",
     "icon": "i-lotus",
     "wiki": "Yoga|Meditation",
-    "desc": "A quiet session overlooking rice paddies or the ocean, your choice.",
-    "kind": "excursion"
+    "desc": "A quiet session overlooking rice paddies or the ocean, your choice."
   },
   {
     "id": "spice",
@@ -214,7 +205,6 @@
     "tag": "Half day",
     "icon": "i-leaf",
     "wiki": "Cinnamon|Black pepper",
-    "desc": "See cinnamon, pepper and cardamom growing, with an Ayurvedic tea tasting.",
-    "kind": "excursion"
+    "desc": "See cinnamon, pepper and cardamom growing, with an Ayurvedic tea tasting."
   }
 ]
