@@ -4,11 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roam Ceylon — Build Your Sri Lanka</title>
+<meta name="description" content="Design a private, tailor-made Sri Lanka journey with local experts, handpicked stays, guides and transport.">
+<meta name="theme-color" content="#0C3F3A">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/animations.css">
+<link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to content</a>
 
 <!-- ICON SPRITE -->
 <svg width="0" height="0" style="position:absolute">
@@ -39,10 +44,11 @@
 <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-8-4.5-8-11a5 5 0 0 1 8-4 5 5 0 0 1 8 4c0 6.5-8 11-8 11z"/></symbol>
 </svg>
 
-<header class="site">
-  <nav class="nav">
-    <div class="logo"><img src="assets/images/roam-ceylon-logo.png" alt="Roam Ceylon" style="height:64px;width:auto;display:block;"></div>
-    <ul class="nav-links">
+<header class="site" id="siteHeader">
+  <nav class="nav" aria-label="Primary navigation">
+    <a class="logo" href="#main-content" aria-label="Roam Ceylon home"><img src="assets/logo/roam-ceylon-elephant.png" alt="" width="1536" height="1024"></a>
+    <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span><span class="sr-only">Toggle navigation</span></button>
+    <ul class="nav-links" id="navLinks">
       <li><a href="#how">How it works</a></li>
       <li><a href="#builder">Build a trip</a></li>
       <li><a href="#why">Why us</a></li>
@@ -56,13 +62,14 @@
 </header>
 
 <!-- HERO -->
+<main id="main-content">
 <section class="hero">
   <video class="hero-video" id="heroVideo" autoplay muted loop playsinline
     onerror="this.style.display='none'">
     <source src="https://www.sltda.gov.lk/videos/new-banner-video.mp4" type="video/mp4">
   </video>
   <div class="hero-logo-flash" id="heroLogoFlash">
-    <img src="assets/images/roam-ceylon-logo.png" alt="Roam Ceylon">
+    <img src="assets/logo/roam-ceylon-elephant.png" alt="Roam Ceylon" width="1536" height="1024">
   </div>
   <div class="wrap hero-grid">
     <div>
@@ -309,12 +316,13 @@
     <a href="#builder" class="btn btn-coral">Start building your trip</a>
   </div>
 </section>
+</main>
 
 <footer>
   <div class="wrap">
     <div class="foot-grid">
       <div>
-        <div class="logo" style="margin-bottom:14px;background:rgba(246,239,223,.92);border-radius:12px;padding:8px 14px;display:inline-flex;width:fit-content;"><img src="assets/images/roam-ceylon-logo.png" alt="Roam Ceylon" style="height:72px;width:auto;display:block;"></div>
+        <div class="logo footer-logo"><img src="assets/logo/roam-ceylon-elephant.png" alt="Roam Ceylon" width="1536" height="1024"></div>
         <p style="color:rgba(246,239,223,.65);font-size:.88rem;max-width:280px;">Private, tailor-made journeys across Sri Lanka — planned by a local team who'd rather build you one good trip than sell you ten packages.</p>
       </div>
       <div>
@@ -338,6 +346,9 @@
 </footer>
 
 <script src="data/trip-data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/builder.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

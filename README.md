@@ -6,10 +6,15 @@ Sri Lanka.
 ## Project structure
 
 - `index.html` — page structure and accessible content
-- `css/styles.css` — responsive layout and visual design
-- `js/app.js` — trip-builder interactions and enquiry flow
-- `data/trip-data.js` — destinations, experiences, pricing, and configuration
-- `assets/images/` — local brand imagery
+- `css/style.css` — design system and component styling
+- `css/responsive.css` — responsive navigation and layout refinements
+- `css/animations.css` — motion and reduced-motion behavior
+- `js/state.js` — shared trip state and configuration
+- `js/ui.js` — reusable rendering and media helpers
+- `js/builder.js` — journey-builder interactions and pricing summary
+- `js/app.js` — application bootstrap and site-wide behavior
+- `data/` — travel and marketplace content
+- `assets/` — local logo, hero, image, and icon assets
 
 ## Run locally
 

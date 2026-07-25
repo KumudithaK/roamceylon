@@ -36,6 +36,9 @@
   p{margin:0 0 1em;color:var(--ink-soft);}
   a{color:inherit;}
   img,svg{display:block;max-width:100%;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+  .skip-link{position:fixed;left:18px;top:-80px;z-index:100;background:var(--gold);color:var(--teal-deep);padding:10px 16px;border-radius:8px;font-weight:800;text-decoration:none;}
+  .skip-link:focus{top:18px;}
   .wrap{max-width:1180px;margin:0 auto;padding:0 28px;}
   .eyebrow{
     font-family:'Manrope',sans-serif;
@@ -77,10 +80,14 @@
     padding:10px 28px;max-width:1180px;margin:0 auto;
   }
   .logo{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-weight:600;font-size:1.25rem;color:var(--teal-deep);}
+  .nav .logo img{width:138px;height:72px;object-fit:contain;}
+  .nav-toggle{display:none;border:0;background:transparent;padding:8px;}
+  .nav-toggle>span:not(.sr-only){display:block;width:24px;height:2px;background:var(--teal-deep);margin:5px;border-radius:2px;}
   .logo .dot{width:9px;height:9px;border-radius:50%;background:var(--coral);}
   .nav-links{display:flex;gap:30px;font-weight:600;font-size:.92rem;list-style:none;margin:0;padding:0;}
   .nav-links a{text-decoration:none;color:var(--ink);opacity:.75;transition:opacity .15s;}
   .nav-links a:hover{opacity:1;}
+  .site.scrolled{box-shadow:0 10px 30px -24px rgba(12,63,58,.75);background:rgba(251,247,238,.96);}
   .nav-cta{display:flex;gap:14px;align-items:center;}
   .nav-phone{font-weight:700;font-size:.88rem;display:flex;align-items:center;gap:6px;color:var(--teal-mid);}
   @media (max-width:860px){.nav-links{display:none;} .nav-phone span{display:none;}}
@@ -343,6 +350,8 @@
   footer ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;font-size:.88rem;}
   footer a{text-decoration:none;color:inherit;opacity:.85;}
   footer a:hover{opacity:1;color:var(--gold-hi);}
+  .footer-logo{margin-bottom:14px;background:rgba(246,239,223,.92);border-radius:12px;padding:8px 14px;display:inline-flex;width:fit-content;}
+  .footer-logo img{height:72px;width:108px;object-fit:contain;}
   .foot-bottom{border-top:1px solid rgba(246,239,223,.12);padding-top:20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:.8rem;}
 
   .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease;}
