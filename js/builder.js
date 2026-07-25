@@ -42,19 +42,9 @@ const travVal = document.getElementById('travVal');
 document.getElementById('travMinus').addEventListener('click', ()=>{ state.travelers=Math.max(1,state.travelers-1); travVal.textContent=state.travelers; updateTripCard(); });
 document.getElementById('travPlus').addEventListener('click', ()=>{ state.travelers=Math.min(12,state.travelers+1); travVal.textContent=state.travelers; updateTripCard(); });
 
-document.getElementById('tierGroup').addEventListener('change', e=>{
-  state.tier = e.target.value;
-  document.querySelectorAll('#tierGroup .radio-card').forEach(l=>l.classList.toggle('active', l.querySelector('input').checked));
-  updateTripCard();
-});
 document.getElementById('paceGroup').addEventListener('change', e=>{
   state.pace = e.target.value;
   document.querySelectorAll('#paceGroup .radio-card').forEach(l=>l.classList.toggle('active', l.querySelector('input').checked));
-});
-document.getElementById('vehicleGroup').addEventListener('change', e=>{
-  state.vehicle = e.target.value;
-  document.querySelectorAll('#vehicleGroup .radio-card').forEach(l=>l.classList.toggle('active', l.querySelector('input').checked));
-  updateTripCard();
 });
 document.getElementById('travelMonth').addEventListener('change', e=>{
   state.travelMonth = e.target.value;
@@ -77,7 +67,7 @@ function otherChip(val, type, idx){
 function updateTripCard(){
   renderTabs();
   const otherCount = state.otherThemes.length + state.otherDestinations.length + state.otherExperiences.length;
-  const total = state.themes.size + state.destinations.size + state.experiences.size + otherCount;
+  const total = state.themes.size + state.destinations.size + state.experiences.size + state.stays.size + Number(Boolean(state.vehicle)) + Number(Boolean(state.guide)) + otherCount;
   document.getElementById('tripEmpty').style.display = total ? 'none' : 'block';
   document.getElementById('tripBody').style.display = total ? 'block' : 'none';
 
@@ -93,22 +83,28 @@ function updateTripCard(){
     [...state.experiences].map(id=>chip(EXPERIENCES.find(d=>d.id===id).name,'experiences',id)).join('') +
     state.otherExperiences.map((v,i)=>otherChip(v,'experiences',i)).join('') ||
     '<span style="opacity:.5;font-size:.78rem">None yet</span>';
+  document.getElementById('chipsStay').innerHTML =
+    [...state.stays].map(id=>chip(ACCOMMODATIONS.find(item=>item.id===id).name,'stays',id)).join('') ||
+    '<span style="opacity:.5;font-size:.78rem">None yet</span>';
+  const selectedVehicle = VEHICLES.find(vehicle=>vehicle.id===state.vehicle);
+  document.getElementById('chipsVehicle').innerHTML = selectedVehicle
+    ? `<span class="chip">✓ <span class="chip-label">${escapeHtml(selectedVehicle.name)}</span><button type="button" data-remove-market="vehicle">✕</button></span>`
+    : '<span style="opacity:.5;font-size:.78rem">None yet</span>';
   const selectedGuide = GUIDES.find(guide => guide.id === state.guide);
   document.getElementById('chipsGuide').innerHTML = selectedGuide
-    ? `<span class="chip">✓ ${selectedGuide.name}</span>`
+    ? `<span class="chip">✓ <span class="chip-label">${escapeHtml(selectedGuide.name)}</span><button type="button" data-remove-market="guide">✕</button></span>`
     : '<span style="opacity:.5;font-size:.78rem">Optional</span>';
 
   document.getElementById('sumNights').textContent = state.nights;
   document.getElementById('sumTrav').textContent = state.travelers;
-  document.getElementById('sumTier').textContent = TIER_LABEL[state.tier];
-  document.getElementById('sumVehicle').textContent = VEHICLE_LABEL[state.vehicle];
+  document.getElementById('sumVehicle').textContent = selectedVehicle?.name || 'Not selected';
 
   const rate = PRICING.tiers[state.tier].nightlyPerGuest;
   const activityCount = state.experiences.size + state.otherExperiences.length;
   const accommodationCost = state.nights * rate * state.travelers;
   const activityCost = activityCount * PRICING.activityPerGuest * state.travelers;
 
-  const vehicle = VEHICLES.find(item => item.id === state.vehicle) || VEHICLES[0];
+  const vehicle = selectedVehicle || {dayRate:0,perKm:0};
   const selectedDests = DESTINATIONS.filter(d=>state.destinations.has(d.id));
   const colomboRef = DESTINATIONS.find(d=>d.id==='colombo');
   const totalTourKm = selectedDests.reduce((sum,d)=>sum + haversineKm(colomboRef.lat,colomboRef.lon,d.lat,d.lon)*PRICING.routeDistanceFactor, 0);
@@ -149,6 +145,16 @@ document.addEventListener('click', e=>{
   updateTripCard();
 });
 
+document.addEventListener('click',e=>{
+  const remove=e.target.closest('[data-remove-market]');
+  if(!remove)return;
+  if(remove.dataset.removeMarket==='vehicle')state.vehicle=null;
+  if(remove.dataset.removeMarket==='guide')state.guide=null;
+  marketplaceRenderer.render();
+  renderMarketplace();
+  updateTripCard();
+});
+
 document.addEventListener('click', e=>{
   const rm = e.target.closest('[data-remove]');
   if(!rm) return;
@@ -164,11 +170,17 @@ document.getElementById('enquireForm').addEventListener('submit', async function
   const name = fd.get('name') || 'there';
   const destNames = [...[...state.destinations].map(id=>DESTINATIONS.find(d=>d.id===id).name), ...state.otherDestinations].join(', ') || 'no destinations yet';
   const expNames = [...[...state.experiences].map(id=>EXPERIENCES.find(d=>d.id===id).name), ...state.otherExperiences].join(', ') || 'none selected';
+  const stayNames = [...state.stays].map(id=>ACCOMMODATIONS.find(item=>item.id===id)?.name).filter(Boolean).join(', ') || 'none selected';
+  const vehicleName = VEHICLES.find(item=>item.id===state.vehicle)?.name || 'none selected';
+  const guideName = GUIDES.find(item=>item.id===state.guide)?.name || 'none selected';
 
   const summaryText = `Trip request for ${name}
 Destinations: ${destNames}
 Experiences: ${expNames}
-Nights: ${state.nights} | Travellers: ${state.travelers} | Style: ${TIER_LABEL[state.tier]} | Pace: ${state.pace} | Vehicle: ${VEHICLE_LABEL[state.vehicle]}
+Stay: ${stayNames}
+Getting Around: ${vehicleName}
+Local Guide: ${guideName}
+Nights: ${state.nights} | Travellers: ${state.travelers} | Pace: ${state.pace}
 Preferred month: ${fd.get('dates')||'flexible'}
 Notes: ${fd.get('notes')||'—'}
 Email: ${fd.get('email')} | Phone: ${fd.get('phone')||'—'} | Nationality: ${fd.get('nationality')||'—'}`;
@@ -196,7 +208,7 @@ Email: ${fd.get('email')} | Phone: ${fd.get('phone')||'—'} | Nationality: ${fd
       phone:fd.get('phone') || null,
       nationality:fd.get('nationality') || null,
       summary:summaryText,
-      trip_state:{themes:[...state.themes],destinations:[...state.destinations],experiences:[...state.experiences],nights:state.nights,travelers:state.travelers,tier:state.tier,vehicle:state.vehicle,guide:state.guide,travelMonth:state.travelMonth}
+      trip_state:{themes:[...state.themes],destinations:[...state.destinations],experiences:[...state.experiences],stays:[...state.stays],nights:state.nights,travelers:state.travelers,tier:state.tier,vehicle:state.vehicle,guide:state.guide,travelMonth:state.travelMonth}
     });
   } catch(error) {
     console.warn('Enquiry persistence unavailable; email fallback remains active.');

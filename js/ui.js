@@ -1,49 +1,10 @@
-/* ---------------- WIKI IMAGE LOADER ---------------- */
 const experienceRenderer = new ExperienceRenderer(
   document.getElementById('grid-experiences'),
   destinationService
 );
+const marketplaceRenderer = new MarketplaceRenderer(marketplaceService);
+const marketplaceTabs = new MarketplaceTabs(document.getElementById('marketplaceTabs'));
 
-const wikiImageCache = {};
-async function fetchWikiImage(title){
-  if(wikiImageCache[title] !== undefined) return wikiImageCache[title];
-  try{
-    const url = `https://en.wikipedia.org/w/api.php?origin=*&action=query&redirects=1&prop=pageimages&piprop=original&format=json&titles=${encodeURIComponent(title)}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    const pages = data.query && data.query.pages;
-    const page = pages ? Object.values(pages)[0] : null;
-    const src = page && page.original ? page.original.source : null;
-    wikiImageCache[title] = src;
-    return src;
-  }catch(err){
-    wikiImageCache[title] = null;
-    return null;
-  }
-}
-async function fetchWikiImageAny(titleList){
-  const titles = titleList.split('|');
-  for(const t of titles){
-    const src = await fetchWikiImage(t.trim());
-    if(src) return src;
-  }
-  return null;
-}
-function loadWikiImages(scope){
-  scope.querySelectorAll('[data-wiki]').forEach(async (el)=>{
-    if(el.dataset.loaded) return;
-    el.dataset.loaded = '1';
-    const src = await fetchWikiImageAny(el.dataset.wiki);
-    if(src){
-      const img = new Image();
-      img.src = src;
-      img.alt = el.dataset.wiki.split('|')[0];
-      img.loading = 'lazy';
-      img.onload = ()=>img.classList.add('loaded');
-      el.prepend(img);
-    }
-  });
-}
 function iconSvg(id){ return `<svg><use href="#${id}"/></svg>`; }
 
 function renderGrid(containerId, items, stateSet, type){
@@ -70,8 +31,8 @@ function renderGrid(containerId, items, stateSet, type){
     </div>`;
   el.innerHTML = items.map(it => `
     <button type="button" class="pick-card filter-enter ${stateSet.has(it.id)?'selected':''}" data-type="${type}" data-id="${it.id}">
-      <div class="pick-photo" ${!it.heroImage&&it.wiki?`data-wiki="${it.wiki}"`:''}>
-        ${it.heroImage?`<img src="${it.heroImage}" alt="" loading="lazy" class="loaded">`:''}
+      <div class="pick-photo">
+        ${it.heroImage?`<img src="${it.heroImage}" alt="${escapeHtml(it.name)}" loading="lazy" decoding="async" class="loaded">`:''}
         <div class="pick-badge">${iconSvg(it.icon)}</div>
         <div class="check-dot">${iconSvg('i-check')}</div>
         <span class="tag">${it.tag}</span>
@@ -82,7 +43,6 @@ function renderGrid(containerId, items, stateSet, type){
       </div>
     </button>
   `).join('') + otherTags + otherInput;
-  loadWikiImages(el);
 }
 
 function renderAllGrids(){
@@ -95,37 +55,14 @@ function renderAllGrids(){
   const availableExperienceIds = new Set(availableExperiences.map(experience => experience.id));
   [...state.experiences].forEach(id => {if(!availableExperienceIds.has(id)) state.experiences.delete(id);});
   experienceRenderer.render(availableExperiences, state.experiences, state.destinations.size > 0);
-}
-
-function marketplaceCard(item, type){
-  const meta = type === 'hotel'
-    ? `${item.location} · From $${item.from}/night`
-    : type === 'vehicle'
-      ? `${item.capacity} · From $${item.dayRate}/day`
-      : `${item.speciality} · ${item.experience} years`;
-  return `<article class="market-card">
-    <span class="market-tag">${item.category || type}</span>
-    <h3>${item.name}</h3><p class="market-meta">${meta}</p>
-    <p>${item.description}</p>
-    <a href="#builder" class="market-link">Add to journey <span aria-hidden="true">→</span></a>
-  </article>`;
+  [...state.stays].forEach(id=>{if(!marketplaceService.getAccommodations(state.destinations).some(item=>item.id===id)) state.stays.delete(id);});
+  marketplaceRenderer.render();
 }
 
 function renderMarketplace(){
-  document.getElementById('market-hotels').innerHTML = HOTELS.map(item => marketplaceCard(item, 'hotel')).join('');
-  document.getElementById('market-vehicles').innerHTML = VEHICLES.map(item => marketplaceCard(item, 'vehicle')).join('');
-  document.getElementById('market-guides').innerHTML = GUIDES.map(item => marketplaceCard(item, 'guide')).join('');
-}
-
-function renderGuideOptions(){
-  const options = [{id:null,name:'No guide selected',speciality:'Optional',description:'Continue with private transport and local hosts as arranged.'}, ...GUIDES];
-  document.getElementById('guideOptions').innerHTML = options.map(guide => `
-    <button type="button" class="guide-card ${state.guide===guide.id?'selected':''}" data-guide-id="${guide.id || ''}">
-      <span class="market-tag">${guide.speciality}</span>
-      <h3>${guide.name}</h3>
-      <p>${guide.description}</p>
-      <span class="check-dot">${iconSvg('i-check')}</span>
-    </button>`).join('');
+  document.getElementById('market-hotels').innerHTML = ACCOMMODATIONS.slice(0,3).map(item=>MarketplaceCard.render(item,'stay',state.stays.has(item.id))).join('');
+  document.getElementById('market-vehicles').innerHTML = VEHICLES.slice(0,3).map(item=>MarketplaceCard.render(item,'transport',state.vehicle===item.id)).join('');
+  document.getElementById('market-guides').innerHTML = GUIDES.slice(0,3).map(item=>MarketplaceCard.render(item,'guides',state.guide===item.id)).join('');
 }
 
 document.addEventListener('click', (e) => {
@@ -136,14 +73,6 @@ document.addEventListener('click', (e) => {
   const set = state[type];
   if(set.has(id)) set.delete(id); else set.add(id);
   renderAllGrids();
-  updateTripCard();
-});
-
-document.addEventListener('click', event => {
-  const guide = event.target.closest('[data-guide-id]');
-  if(!guide) return;
-  state.guide = guide.dataset.guideId || null;
-  renderGuideOptions();
   updateTripCard();
 });
 
@@ -164,6 +93,26 @@ document.addEventListener('click', e=>{
     renderAllGrids();
     updateTripCard();
   }
+});
+
+document.addEventListener('click',event=>{
+  const tab=event.target.closest('[data-market-tab]');
+  if(tab){marketplaceTabs.select(tab.dataset.marketTab);return;}
+  const add=event.target.closest('[data-market-add]');
+  const detail=event.target.closest('[data-market-detail]');
+  if(detail){marketplaceRenderer.showDetails(detail.dataset.marketDetail,detail.dataset.id);return;}
+  if(!add)return;
+  const {marketAdd:type,id}=add.dataset;
+  if(type==='stay'){
+    if(state.stays.has(id))state.stays.delete(id);else state.stays.add(id);
+  }else if(type==='transport'){
+    state.vehicle=state.vehicle===id?null:id;
+  }else{
+    state.guide=state.guide===id?null:id;
+  }
+  marketplaceRenderer.render();
+  renderMarketplace();
+  updateTripCard();
 });
 document.addEventListener('keydown', e=>{
   if(e.target.matches('[data-other-input]') && e.key==='Enter'){

@@ -19,6 +19,12 @@ class ExperienceRenderer {
       const destinationNames = experience.destinationIds.map(id => destinations.get(id)).filter(Boolean);
       const destinationLabel = escapeHtml(destinationNames.join(' · '));
       const name = escapeHtml(experience.name);
+      const metadata = [
+        experience.duration && ['⏱','Duration',experience.duration],
+        experience.difficulty && ['★','Difficulty',experience.difficulty],
+        experience.bestSeason && ['📅','Best season',experience.bestSeason],
+        ['◇','Experience style',experience.category]
+      ].filter(Boolean).slice(0,3);
       return `
         <button type="button"
           class="experience-card pick-card filter-enter ${selectedIds.has(experience.id)?'selected':''}"
@@ -41,11 +47,7 @@ class ExperienceRenderer {
           <span class="experience-content">
             <span class="experience-title">${name}</span>
             <span class="experience-description">${escapeHtml(experience.shortDescription)}</span>
-            <span class="experience-meta" aria-label="Experience details">
-              <span title="Duration"><b aria-hidden="true">⏱</b>${escapeHtml(experience.duration)}</span>
-              <span title="Best season"><b aria-hidden="true">📅</b>${escapeHtml(experience.bestSeason)}</span>
-              <span title="Difficulty"><b aria-hidden="true">★</b>${escapeHtml(experience.difficulty)}</span>
-            </span>
+            <span class="experience-meta" aria-label="Experience details">${metadata.map(([icon,label,value])=>`<span title="${label}"><b aria-hidden="true">${icon}</b>${escapeHtml(value)}</span>`).join('')}</span>
           </span>
         </button>`;
     }).join('');

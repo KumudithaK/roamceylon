@@ -9,7 +9,7 @@ async function initApp(){
   await loadTravelData();
   renderAllGrids();
   renderMarketplace();
-  renderGuideOptions();
+  marketplaceTabs.select(state.marketplaceTab);
   renderTabs();
   updateTripCard();
 }

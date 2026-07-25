@@ -38,6 +38,9 @@
 @media (max-width: 720px){
   .experience-grid{grid-template-columns:1fr;}
   .experience-card:hover{transform:translateY(-3px);}
+  .journey-basics,.planner-grid{grid-template-columns:1fr;}
+  .marketplace-tabs{grid-template-columns:1fr;}
+  .planner-partner{align-items:flex-start;flex-direction:column;}
 }
 
 @media (max-width: 420px){

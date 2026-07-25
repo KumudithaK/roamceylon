@@ -160,16 +160,17 @@
             <p>The signature moments — the things you'll actually tell people about afterwards.</p>
           </div>
           <div class="experience-grid" id="grid-experiences"></div>
-          <div class="panel-nav"><button class="btn btn-outline" data-prev="destinations">← Back</button><button class="btn btn-coral" data-next="accommodation">Next: Accommodation →</button></div>
+          <div class="panel-nav"><button class="btn btn-outline" data-prev="destinations">← Back</button><button class="btn btn-coral" data-next="planner">Plan your journey →</button></div>
         </div>
 
-        <!-- STEP 4: ACCOMMODATION -->
-        <div class="panel" data-panel="accommodation">
+        <!-- STEP 4: PLAN YOUR JOURNEY -->
+        <div class="panel" data-panel="planner">
           <div class="panel-intro">
-            <h3>Shape your stay</h3>
-            <p>Choose the pace, length and accommodation style that feels right.</p>
+            <div class="eyebrow">Complete your holiday</div>
+            <h3>Plan Your Journey</h3>
+            <p>Your itinerary is taking shape. Now choose where you'll stay, how you'll get around, and whether you'd like a local guide.</p>
           </div>
-          <div class="cz-grid">
+          <div class="journey-basics">
             <div class="cz-block">
               <h4>How many nights?</h4>
               <input type="range" id="nightsRange" min="5" max="28" value="14">
@@ -184,41 +185,11 @@
               </div>
             </div>
             <div class="cz-block">
-              <h4>Accommodation style</h4>
-              <div class="radio-cards" id="tierGroup">
-                <label class="radio-card"><span>Boutique &amp; guesthouses</span><input type="radio" name="tier" value="boutique"></label>
-                <label class="radio-card"><span>4-star comfort</span><input type="radio" name="tier" value="4star" checked></label>
-                <label class="radio-card"><span>5-star hotels</span><input type="radio" name="tier" value="5star"></label>
-                <label class="radio-card"><span>Luxury villas &amp; suites</span><input type="radio" name="tier" value="luxury"></label>
-              </div>
-            </div>
-            <div class="cz-block">
               <h4>Pace</h4>
               <div class="radio-cards" id="paceGroup">
                 <label class="radio-card"><span>Relaxed — long stays, few transfers</span><input type="radio" name="pace" value="relaxed"></label>
                 <label class="radio-card"><span>Balanced</span><input type="radio" name="pace" value="balanced" checked></label>
                 <label class="radio-card"><span>Action-packed — see it all</span><input type="radio" name="pace" value="active"></label>
-              </div>
-            </div>
-          </div>
-          <div class="panel-nav"><button class="btn btn-outline" data-prev="experiences">← Back</button><button class="btn btn-coral" data-next="transportation">Next: Transportation →</button></div>
-        </div>
-
-        <!-- STEP 5: TRANSPORTATION -->
-        <div class="panel" data-panel="transportation">
-          <div class="panel-intro">
-            <h3>Travel in private comfort</h3>
-            <p>Select your preferred vehicle and travel month for an accurate estimate.</p>
-          </div>
-          <div class="cz-grid">
-            <div class="cz-block">
-              <h4>Vehicle type</h4>
-              <div class="radio-cards" id="vehicleGroup">
-                <label class="radio-card"><span>Private car <em style="opacity:.6;font-style:normal;">(1–3 pax)</em></span><input type="radio" name="vehicle" value="car"></label>
-                <label class="radio-card active"><span>Van <em style="opacity:.6;font-style:normal;">(4–7 pax)</em></span><input type="radio" name="vehicle" value="van" checked></label>
-                <label class="radio-card"><span>SUV / 4x4</span><input type="radio" name="vehicle" value="suv"></label>
-                <label class="radio-card"><span>Mini-coach <em style="opacity:.6;font-style:normal;">(8–14 pax)</em></span><input type="radio" name="vehicle" value="minicoach"></label>
-                <label class="radio-card"><span>Luxury coach <em style="opacity:.6;font-style:normal;">(15+ pax)</em></span><input type="radio" name="vehicle" value="luxurycoach"></label>
               </div>
             </div>
             <div class="cz-block">
@@ -227,17 +198,16 @@
               <p id="seasonHint" class="field-hint">Your live estimate adjusts for seasonal demand.</p>
             </div>
           </div>
-          <div class="panel-nav"><button class="btn btn-outline" data-prev="accommodation">← Back</button><button class="btn btn-coral" data-next="guides">Next: Tour guide →</button></div>
-        </div>
 
-        <!-- STEP 6: TOUR GUIDE -->
-        <div class="panel" data-panel="guides">
-          <div class="panel-intro">
-            <h3>Would you like a specialist guide?</h3>
-            <p>This is optional. Choose a local expert or continue without one.</p>
+          <div class="marketplace-tabs" id="marketplaceTabs" role="tablist" aria-label="Plan your journey">
+            <button type="button" class="marketplace-tab active" role="tab" aria-selected="true" data-market-tab="stay">🏨 <span>Stay</span></button>
+            <button type="button" class="marketplace-tab" role="tab" aria-selected="false" data-market-tab="transport">🚗 <span>Getting Around</span></button>
+            <button type="button" class="marketplace-tab" role="tab" aria-selected="false" data-market-tab="guides">🧑‍💼 <span>Local Guides</span></button>
           </div>
-          <div class="guide-options" id="guideOptions"></div>
-          <div class="panel-nav"><button class="btn btn-outline" data-prev="transportation">← Back</button><button class="btn btn-coral" data-next="summary">Review trip →</button></div>
+          <div class="marketplace-panel active" data-market-panel="stay"><div id="plannerStay"></div></div>
+          <div class="marketplace-panel" data-market-panel="transport"><div id="plannerTransport"></div></div>
+          <div class="marketplace-panel" data-market-panel="guides"><div id="plannerGuides"></div></div>
+          <div class="panel-nav"><button class="btn btn-outline" data-prev="experiences">← Experiences</button><button class="btn btn-coral" data-next="summary">Review trip →</button></div>
         </div>
 
         <!-- STEP 7: TRIP SUMMARY -->
@@ -259,7 +229,7 @@
               <div class="field full"><label>Anything else we should know?</label><textarea name="notes" rows="3" placeholder="Dietary needs, mobility considerations, special occasions..."></textarea></div>
             </div>
             <div class="panel-nav">
-              <button type="button" class="btn btn-outline" data-prev="guides">← Back</button>
+              <button type="button" class="btn btn-outline" data-prev="planner">← Plan Your Journey</button>
               <button type="submit" class="btn btn-coral">Send my trip request →</button>
             </div>
           </form>
@@ -285,16 +255,17 @@
         </svg>
         <div id="tripEmpty" class="trip-empty">Pick a destination to start your route</div>
         <div id="tripBody" style="display:none;">
-          <div class="trip-section"><div class="lbl">Theme</div><div class="chip-list" id="chipsTheme"></div></div>
+          <div class="trip-section"><div class="lbl">Travel Themes</div><div class="chip-list" id="chipsTheme"></div></div>
           <div class="trip-section"><div class="lbl">Destinations</div><div class="chip-list" id="chipsDest"></div></div>
           <div class="trip-section"><div class="lbl">Experiences</div><div class="chip-list" id="chipsExp"></div></div>
-          <div class="trip-section"><div class="lbl">Tour guide</div><div class="chip-list" id="chipsGuide"><span style="opacity:.5;font-size:.78rem">Optional</span></div></div>
+          <div class="trip-section"><div class="lbl">Stay</div><div class="chip-list" id="chipsStay"><span style="opacity:.5;font-size:.78rem">None yet</span></div></div>
+          <div class="trip-section"><div class="lbl">Getting Around</div><div class="chip-list" id="chipsVehicle"><span style="opacity:.5;font-size:.78rem">None yet</span></div></div>
+          <div class="trip-section"><div class="lbl">Local Guide</div><div class="chip-list" id="chipsGuide"><span style="opacity:.5;font-size:.78rem">Optional</span></div></div>
           <div class="trip-divider"></div>
           <div class="trip-row"><span>Nights</span><span id="sumNights">14</span></div>
           <div class="trip-row"><span>Travellers</span><span id="sumTrav">2</span></div>
-          <div class="trip-row"><span>Style</span><span id="sumTier">4-star comfort</span></div>
           <div class="trip-row"><span>Vehicle</span><span id="sumVehicle">Van</span></div>
-          <div class="trip-row"><span>Accommodation</span><span id="sumAccommodation">$0</span></div>
+          <div class="trip-row"><span>Stay estimate</span><span id="sumAccommodation">$0</span></div>
           <div class="trip-row"><span>Experiences</span><span id="sumActivities">$0</span></div>
           <div class="trip-row"><span>Transport (by route)</span><span id="sumTransport">$0</span></div>
           <div class="trip-row"><span>Season</span><span id="sumSeason">Shoulder season × 1</span></div>
@@ -397,6 +368,7 @@
   <script src="js/services.js"></script>
   <script src="js/state.js"></script>
   <script src="js/experience-renderer.js"></script>
+  <script src="js/marketplace.js"></script>
   <script src="js/ui.js"></script>
 <script src="js/builder.js"></script>
 <script src="js/app.js"></script>

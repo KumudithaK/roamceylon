@@ -26,7 +26,7 @@ class ThemeService {
   constructor(repository = JsonRepository){this.repository = repository;this.items = [];}
   async load(){
     this.items = (await this.repository.load('data/themes.json')).map(theme => ({
-      ...theme, tag:'Travel theme', desc:theme.description, wiki:theme.name
+      ...theme, tag:'Travel theme', desc:theme.description
     }));
     return this.items;
   }
@@ -43,7 +43,6 @@ class DestinationService {
         ...destination,
         tag:destination.province,
         desc:destination.shortDescription,
-        wiki:destination.name,
         icon:'i-map',
         lat,
         lon,
@@ -68,6 +67,38 @@ class ExperienceService {
   getAll(){return this.items;}
 }
 
+class MarketplaceService {
+  constructor(repository = JsonRepository){this.repository = repository;this.accommodations=[];this.vehicles=[];this.guides=[];}
+  async load(){
+    [this.accommodations,this.vehicles,this.guides] = await Promise.all([
+      this.repository.load('data/accommodations.json'),
+      this.repository.load('data/vehicles.json'),
+      this.repository.load('data/guides.json')
+    ]);
+    return {accommodations:this.accommodations,vehicles:this.vehicles,guides:this.guides};
+  }
+  getAccommodations(selectedDestinations){
+    const selected = new Set(selectedDestinations);
+    if(!selected.size) return [];
+    return this.accommodations.filter(item => item.destinationIds.some(id => selected.has(id)))
+      .sort((a,b) => a.style.localeCompare(b.style) || Number(b.featured)-Number(a.featured) || a.name.localeCompare(b.name));
+  }
+  getVehicles(){return [...this.vehicles].sort((a,b)=>Number(b.featured)-Number(a.featured)||a.dayRate-b.dayRate);}
+  getGuides({destinations,themes,experiences}){
+    const selectedDestinations = new Set(destinations);
+    const selectedThemes = new Set(themes);
+    const selectedCategories = new Set(experiences.map(item => item.category));
+    return this.guides.map(guide => ({
+      ...guide,
+      matchScore:
+        guide.destinationIds.filter(id=>selectedDestinations.has(id)).length * 3 +
+        guide.themeIds.filter(id=>selectedThemes.has(id)).length * 2 +
+        guide.experienceCategoryIds.filter(id=>selectedCategories.has(id)).length
+    })).filter(guide => guide.matchScore > 0)
+      .sort((a,b)=>b.matchScore-a.matchScore||Number(b.featured)-Number(a.featured)||a.name.localeCompare(b.name));
+  }
+}
+
 class BuilderState {
   constructor(){
     this.themes = new Set();
@@ -76,12 +107,14 @@ class BuilderState {
     this.otherThemes = [];
     this.otherDestinations = [];
     this.otherExperiences = [];
+    this.stays = new Set();
     this.nights = 14;
     this.travelers = 2;
     this.tier = '4star';
     this.pace = 'balanced';
-    this.vehicle = 'van';
+    this.vehicle = null;
     this.guide = null;
+    this.marketplaceTab = 'stay';
     this.travelMonth = '';
   }
 }
