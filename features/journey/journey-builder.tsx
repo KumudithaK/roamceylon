@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";import Link from "next/link";import {AnimatePresence,motion} from "motion/react";import {Check,ChevronLeft,ChevronRight,MapPin,Sparkles} from "lucide-react";import {useMemo,useState} from "react";
 import {Button} from "@/components/ui/button";import {cn} from "@/lib/utils";import type {JourneyBootstrap} from "@/lib/journey/journey-service";import {availableDestinations,availableExperiences,availableStays} from "@/lib/journey/journey-selectors";import {JourneyProvider,useJourney} from "./journey-store";import {SriLankaMap} from "@/components/map/sri-lanka-map";
+import {useHydrated} from "@/lib/hooks/use-hydrated";
 const steps=["Theme","Destination","Experience","Plan"] as const;
 type Card={id:string;name:string;hero_image_url:string|null;short_description:string|null;category?:string|null};
 
@@ -19,4 +20,8 @@ function Builder({data}:{data:JourneyBootstrap}){
 }
 function Empty({text}:{text:string}){return <div className="rounded-2xl border border-dashed border-stone/30 p-8 text-sm text-stone">{text}</div>}
 function Summary({data}:{data:JourneyBootstrap}){const {state}=useJourney();return <aside className="h-fit rounded-3xl bg-forest p-7 text-ivory lg:sticky lg:top-28"><div className="mb-6 flex items-center gap-3"><Sparkles className="text-gold-light"/><h2 className="font-serif text-2xl">Your journey</h2></div>{[[state.selectedThemeIds,data.themes,"Themes"],[state.selectedDestinationIds,data.destinations,"Destinations"],[state.selectedExperienceIds,data.experiences,"Experiences"]].map(([ids,items,label])=><div className="border-t border-ivory/10 py-5" key={label as string}><p className="mb-3 text-[.65rem] font-bold uppercase tracking-widest text-gold-light">{label as string}</p><div className="flex flex-wrap gap-2">{(ids as string[]).length?(ids as string[]).map(id=><span key={id} className="rounded-full bg-ivory/10 px-3 py-1 text-xs">{(items as Card[]).find(x=>x.id===id)?.name}</span>):<span className="text-sm text-ivory/40">Nothing selected yet</span>}</div></div>)}<div className="mt-4 flex items-center gap-2 text-xs text-ivory/55"><MapPin className="size-4"/>Selections persist after refresh.</div></aside>}
-export function JourneyBuilder({data}:{data:JourneyBootstrap}){return <JourneyProvider data={data}><Builder data={data}/></JourneyProvider>}
+export function JourneyBuilder({data}:{data:JourneyBootstrap}){
+  const hydrated=useHydrated();
+  if(!hydrated)return <div className="shell grid gap-8 py-12 lg:grid-cols-[1fr_340px]" aria-label="Loading saved journey"><div className="h-[38rem] animate-pulse rounded-3xl bg-sand-light"/><div className="h-80 animate-pulse rounded-3xl bg-forest/90"/></div>;
+  return <JourneyProvider data={data}><Builder data={data}/></JourneyProvider>;
+}
