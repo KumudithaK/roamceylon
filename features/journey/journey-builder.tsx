@@ -46,7 +46,7 @@ function Summary({data}:{data:JourneyBootstrap}){
   const route=getRouteEstimate(data.destinations,state.selectedDestinationIds);
   const durationDays=getDurationDays(state.travelDates.start,state.travelDates.end,Math.max(1,route.estimatedTravelDays));
   const travellers=state.travellerCounts.adults+state.travellerCounts.children;
-  const price=calculateTripPrice({experiences:selectedExperiences,stays:selectedStays,vehicle,guide,travellers,durationDays});
+  const price=calculateTripPrice({settings:data.pricing,experiences:selectedExperiences,stays:selectedStays,vehicle,guide,travellers,durationDays,distanceKm:route.estimatedDistance,destinationCount:state.selectedDestinationIds.length,startDate:state.travelDates.start});
   const exportPdf=async()=>{
     const {PDFDocument,StandardFonts,rgb}=await import("pdf-lib");
     const pdf=await PDFDocument.create();
@@ -65,7 +65,8 @@ function Summary({data}:{data:JourneyBootstrap}){
       `Dates: ${state.travelDates.start||"Not set"} to ${state.travelDates.end||"Not set"}`,
       `Travellers: ${state.travellerCounts.adults} adults, ${state.travellerCounts.children} children`,
       `Estimated route: ${route.estimatedDistance} km / ${route.estimatedTravelDays} travel days`,
-      `Known estimated cost: USD ${price.knownTotal.toFixed(2)}${price.complete?"":" + items requiring a quote"}`
+      `Season: ${price.seasonLabel} x ${price.seasonMultiplier}`,
+      `Known estimated cost: ${price.currency} ${price.knownTotal.toFixed(2)}${price.complete?"":" + items requiring a quote"}`
     ];
     page.drawText(lines[0],{x:45,y:790,size:20,font:bold,color:rgb(.07,.24,.2)});
     let y=750;
