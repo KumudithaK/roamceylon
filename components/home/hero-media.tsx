@@ -1,13 +1,18 @@
 "use client";
 
 import Image from "next/image";
+import {useSyncExternalStore} from "react";
 import {useReducedMotion} from "motion/react";
 import type {HeroMedia as HeroMediaType} from "@/lib/types";
 
+const subscribe=()=>()=>{};
+const useHydrated=()=>useSyncExternalStore(subscribe,()=>true,()=>false);
+
 export function HeroMedia({media}:{media:HeroMediaType}){
+  const hydrated=useHydrated();
   const reduced=useReducedMotion();
-  const showYoutubePreview=!reduced&&Boolean(media.developmentYoutubePreviewId);
-  const showUploadedVideo=!showYoutubePreview&&!reduced&&media.enabled&&Boolean(media.desktopVideoUrl);
+  const showYoutubePreview=hydrated&&!reduced&&Boolean(media.developmentYoutubePreviewId);
+  const showUploadedVideo=hydrated&&!showYoutubePreview&&!reduced&&media.enabled&&Boolean(media.desktopVideoUrl);
   const youtubeUrl=media.developmentYoutubePreviewId
     ?`https://www.youtube-nocookie.com/embed/${media.developmentYoutubePreviewId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${media.developmentYoutubePreviewId}&playsinline=1&rel=0&disablekb=1`
     :null;
