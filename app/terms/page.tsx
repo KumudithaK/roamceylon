@@ -1,0 +1,2 @@
+import {EditorialPage} from "@/components/site/editorial-page";
+export default function Page(){return <EditorialPage eyebrow="Legal" title="Terms." intro="Clear principles for using the Roam Ceylon platform and planning services."><p>Journey ideas and estimates are informational until confirmed in writing. Availability, final pricing and partner terms are confirmed with your named journey designer.</p><p>Published marketplace information is reviewed regularly, but travellers should rely on the final written itinerary and booking terms.</p></EditorialPage>}

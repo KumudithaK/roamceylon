@@ -1,0 +1,3 @@
+import type {Metadata} from "next";import {listContent} from "@/lib/data";import {ListingPage} from "@/components/site/listing-page";
+export const metadata:Metadata={title:"Local Guides",description:"Meet local specialists who bring Sri Lanka's places and stories to life."};
+export default async function Page(){const items=await listContent("guides");return <ListingPage eyebrow="Travel deeper" title="The right person changes everything." copy="Local specialists who bring context, warmth and a deeper sense of place to your journey." basePath="/guides" items={items.map(x=>({id:x.id,slug:x.slug,name:x.name,image:x.profile_image_url,alt:x.image_alt,eyebrow:x.languages.join(" · "),description:x.short_bio}))}/>}

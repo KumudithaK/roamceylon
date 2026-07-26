@@ -1,0 +1,3 @@
+import type {Metadata} from "next";import {listContent} from "@/lib/data";import {ListingPage} from "@/components/site/listing-page";
+export const metadata:Metadata={title:"Stays",description:"Explore reviewed stays for a beautifully paced Sri Lankan journey."};
+export default async function Page(){const items=await listContent("accommodations");return <ListingPage eyebrow="Stay beautifully" title="More than somewhere to sleep." copy="Distinctive places selected for location, atmosphere and a meaningful sense of Sri Lanka." basePath="/hotels" items={items.map(x=>({id:x.id,slug:x.slug,name:x.name,image:x.hero_image_url,alt:x.image_alt,eyebrow:x.property_type,description:x.short_description}))}/>}

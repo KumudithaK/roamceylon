@@ -1,43 +1,39 @@
-# Roam Ceylon
+# Roam Ceylon V2
 
-A Supabase-powered, interactive trip-planning experience for tailor-made
-journeys around Sri Lanka.
+Sri Lanka's premium intelligent travel platform and marketplace.
 
-## Project structure
+## Platform
 
-- `index.html` — page structure and accessible content
-- `css/style.css` — design system and component styling
-- `css/responsive.css` — responsive navigation and layout refinements
-- `css/animations.css` — motion and reduced-motion behavior
-- `js/state.js` — shared trip state and configuration
-- `js/repositories.js` — Supabase data access and UI-safe record mapping
-- `js/services.js` — travel services and the reusable journey filtering engine
-- `js/ui.js` — reusable rendering and media helpers
-- `js/builder.js` — journey-builder interactions and pricing summary
-- `js/app.js` — application bootstrap and site-wide behavior
-- `data/` — source data retained for the protected one-time import
-- `supabase/migrations/` — version-controlled database, RLS, and Storage setup
-- `admin/` — protected content studio and email/password login
-- `assets/` — local logo, hero, image, and icon assets
+- Next.js App Router, React and strict TypeScript
+- Tailwind CSS design tokens with shadcn-style components
+- Motion and Animate UI-inspired accessible motion primitives
+- Supabase PostgreSQL, Auth and Storage
+- React Hook Form and Zod
+- Lucide icons and Embla galleries
+- `next/image`, `next/font`, dynamic metadata and structured route architecture
 
-## Run locally
-
-Configure Supabase using [SUPABASE_SETUP.md](SUPABASE_SETUP.md), then:
+## Run
 
 ```sh
+cp .env.example .env.local
 npm install
 npm run dev
 ```
 
-Vite prints the local URL. Run `npm test` and `npm run build` before release.
+Set `NEXT_PUBLIC_SUPABASE_URL` and
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local`.
 
-## Journey architecture
+## Routes
 
-The builder follows this sequence:
+Public discovery, destination, experience, journey builder, marketplace,
+editorial and legal content each have dedicated App Router routes. The
+Supabase-backed content studio is available under `/admin`.
 
-`Themes → Destinations → Experiences → Accommodation → Transportation → Guide → Summary`
+## Content
 
-Relationships are stored in normalized join tables. `JourneyEngine` still
-computes duplicate-free unions in memory, while repository classes keep
-Supabase response shapes out of the UI. Public queries return only published,
-active content.
+Supabase is the primary source of truth. The files in `data/` remain only as a
+development fallback and guarded migration source. Database migrations and
+setup instructions are in `supabase/` and `SUPABASE_SETUP.md`.
+
+The validated V1 prototype is retained under `legacy-v1/` for historical
+reference; it is not part of the V2 runtime.

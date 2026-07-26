@@ -1,0 +1,3 @@
+import type {Metadata} from "next";import {listContent} from "@/lib/data";import {ListingPage} from "@/components/site/listing-page";
+export const metadata:Metadata={title:"Getting Around",description:"Private transport options for seamless journeys around Sri Lanka."};
+export default async function Page(){const items=await listContent("vehicles");return <ListingPage eyebrow="Getting around" title="The road is part of the journey." copy="Comfortable, considered transport options for airport arrivals, island routes and private touring." basePath="/transport" items={items.map(x=>({id:x.id,slug:x.slug,name:x.listing_title,image:x.hero_image_url,alt:x.image_alt,eyebrow:x.vehicle_type,description:x.short_description}))}/>}

@@ -1,0 +1,2 @@
+import {listContent} from "@/lib/data";import {ListingPage} from "@/components/site/listing-page";
+export default async function Page(){const items=await listContent("themes");return <ListingPage eyebrow="Discover your Sri Lanka" title="Begin with what moves you." copy="Explore the island through wildlife, heritage, coast, culture, nature, wellness and adventure." basePath="/journey-builder" items={items.map(x=>({id:x.id,slug:x.slug,name:x.name,image:x.hero_image_url,alt:x.image_alt,eyebrow:"Travel theme",description:x.short_description}))}/>}

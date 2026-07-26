@@ -6,9 +6,9 @@ import path from 'node:path';
 if(!process.argv.includes('--confirm-import')){
   throw new Error('Import aborted. Run with --confirm-import after reviewing the target project.');
 }
-const supabaseUrl=process.env.VITE_SUPABASE_URL||process.env.SUPABASE_URL;
+const supabaseUrl=process.env.NEXT_PUBLIC_SUPABASE_URL||process.env.SUPABASE_URL;
 const serviceRoleKey=process.env.SUPABASE_SERVICE_ROLE_KEY;
-if(!supabaseUrl||!serviceRoleKey)throw new Error('SUPABASE_URL/VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
+if(!supabaseUrl||!serviceRoleKey)throw new Error('SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.');
 if(typeof window!=='undefined')throw new Error('This import may only run in a trusted server environment.');
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');

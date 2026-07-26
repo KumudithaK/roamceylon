@@ -14,13 +14,13 @@ https://fstpfqlgypvktjwdeagu.supabase.co
 Copy `.env.example` to `.env.local` and set:
 
 ```sh
-VITE_SUPABASE_URL=https://fstpfqlgypvktjwdeagu.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-project-publishable-key
+NEXT_PUBLIC_SUPABASE_URL=https://fstpfqlgypvktjwdeagu.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-project-publishable-key
 ```
 
 Find the publishable key in **Supabase Dashboard → Project Settings → API**.
 Only the URL and publishable key belong in the browser. Never put a database
-password or service-role key in a `VITE_` variable.
+password or service-role key in a `NEXT_PUBLIC_` variable.
 
 Install dependencies and run the app:
 
@@ -156,5 +156,5 @@ npm run build
 npm run preview
 ```
 
-Set the same two `VITE_` variables in the production hosting environment before
+Set the same two `NEXT_PUBLIC_` variables in the production hosting environment before
 building. Keep the service-role key out of that environment.
