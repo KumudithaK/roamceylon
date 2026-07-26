@@ -23,12 +23,12 @@ export async function listContent(kind:"experiences"):Promise<Experience[]>;
 export async function listContent(kind:"accommodations"):Promise<Stay[]>;
 export async function listContent(kind:"vehicles"):Promise<Vehicle[]>;
 export async function listContent(kind:"guides"):Promise<Guide[]>;
-export async function listContent(kind:ContentKind){
+export async function listContent(kind:ContentKind):Promise<Array<Theme|Destination|Experience|Stay|Vehicle|Guide>>{
   const supabase=createPublicClient();
   if(supabase){
     const order=kind==="vehicles"?"listing_title":"name";
     const {data,error}=await supabase.from(kind).select("*").eq("status","published").eq("active",true).order(order);
-    if(!error&&data?.length)return data;
+    if(!error&&data?.length)return data as unknown as Array<Theme|Destination|Experience|Stay|Vehicle|Guide>;
   }
   return fallback[kind];
 }
@@ -36,25 +36,4 @@ export async function listContent(kind:ContentKind){
 export async function getBySlug(kind:ContentKind,slug:string){
   const records=await listContent(kind as never) as unknown as Array<{slug:string}>;
   return records.find(item=>item.slug===slug)||null;
-}
-
-export async function getJourneyData(){
-  const supabase=createPublicClient();
-  if(supabase){
-    const [{data:themes},{data:destinations},{data:experiences}]=await Promise.all([
-      supabase.from("themes").select("*,theme_destinations(destination:destinations(slug))").eq("status","published").eq("active",true).order("display_order"),
-      supabase.from("destinations").select("*,theme_destinations(theme:themes(slug))").eq("status","published").eq("active",true).order("display_order"),
-      supabase.from("experiences").select("*,experience_destinations(destination:destinations(slug)),experience_themes(theme:themes(slug))").eq("status","published").eq("active",true).order("display_order")
-    ]);
-    if(themes?.length&&destinations?.length&&experiences?.length)return {
-      themes:themes.map(x=>({...x,destinationIds:(x.theme_destinations||[]).map((r:{destination:{slug:string}|null})=>r.destination?.slug).filter(Boolean)})),
-      destinations:destinations.map(x=>({...x,themeIds:(x.theme_destinations||[]).map((r:{theme:{slug:string}|null})=>r.theme?.slug).filter(Boolean)})),
-      experiences:experiences.map(x=>({...x,destinationIds:(x.experience_destinations||[]).map((r:{destination:{slug:string}|null})=>r.destination?.slug).filter(Boolean),themeIds:(x.experience_themes||[]).map((r:{theme:{slug:string}|null})=>r.theme?.slug).filter(Boolean)}))
-    };
-  }
-  return {
-    themes:fallback.themes.map((x,i)=>({...x,destinationIds:themesJson[i].destinations})),
-    destinations:fallback.destinations.map((x,i)=>({...x,themeIds:destinationsJson[i].themeIds})),
-    experiences:fallback.experiences.map((x,i)=>({...x,destinationIds:experiencesJson[i].destinationIds,themeIds:experiencesJson[i].themeIds}))
-  };
 }
