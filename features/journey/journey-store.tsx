@@ -19,6 +19,9 @@ type Action=
   |{type:"toggle";field:"selectedThemeIds"|"selectedDestinationIds"|"selectedExperienceIds";id:string}
   |{type:"stay";destinationId:string;stayId:string}
   |{type:"vehicle"|"guide";id:string|null}
+  |{type:"dates";start:string;end:string}
+  |{type:"travellers";adults:number;children:number}
+  |{type:"budget";value:string}
   |{type:"hydrate";state:JourneyState};
 
 const initial:JourneyState={selectedThemeIds:[],selectedDestinationIds:[],selectedExperienceIds:[],selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"",end:""},travellerCounts:{adults:2,children:0},budgetPreference:"flexible"};
@@ -45,6 +48,9 @@ function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):Journey
   if(action.type==="stay")return {...state,selectedStayIdsByDestination:{...state.selectedStayIdsByDestination,[action.destinationId]:action.stayId}};
   if(action.type==="vehicle")return {...state,selectedVehicleId:action.id};
   if(action.type==="guide")return {...state,selectedGuideId:action.id};
+  if(action.type==="dates")return {...state,travelDates:{start:action.start,end:action.end}};
+  if(action.type==="travellers")return {...state,travellerCounts:{adults:Math.max(1,action.adults),children:Math.max(0,action.children)}};
+  if(action.type==="budget")return {...state,budgetPreference:action.value};
   return state;
 }
 

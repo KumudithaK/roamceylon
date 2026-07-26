@@ -1,9 +1,9 @@
 export type Theme={id:string;slug:string;name:string;short_description:string|null;hero_image_url:string|null;image_alt:string|null;icon:string|null};
 export type Destination={id:string;slug:string;name:string;province:string|null;region:string|null;short_description:string|null;full_description:string|null;hero_image_url:string|null;image_alt:string|null;gallery:string[];latitude:number|null;longitude:number|null;coming_soon:boolean};
-export type Experience={id:string;slug:string;name:string;category:string|null;short_description:string|null;full_description:string|null;hero_image_url:string|null;image_alt:string|null;gallery:string[];duration:string|null;difficulty:string|null;family_friendly:boolean;priority:string|null;featured:boolean};
-export type Stay={id:string;slug:string;name:string;property_type:string|null;short_description:string|null;hero_image_url:string|null;image_alt:string|null;price_range:string|null;amenities:string[];featured:boolean};
-export type Vehicle={id:string;slug:string;listing_title:string;vehicle_type:string|null;short_description:string|null;hero_image_url:string|null;image_alt:string|null;passenger_capacity:number|null;driver_included:boolean;featured:boolean};
-export type Guide={id:string;slug:string;name:string;short_bio:string|null;profile_image_url:string|null;image_alt:string|null;languages:string[];years_experience:number|null;specialities:string[];featured:boolean};
+export type Experience={id:string;slug:string;name:string;category:string|null;short_description:string|null;full_description:string|null;hero_image_url:string|null;image_alt:string|null;gallery:string[];duration:string|null;difficulty:string|null;family_friendly:boolean;priority:string|null;featured:boolean;price_per_person_usd:number|null};
+export type Stay={id:string;slug:string;name:string;property_type:string|null;short_description:string|null;hero_image_url:string|null;image_alt:string|null;price_range:string|null;nightly_rate_usd:number|null;amenities:string[];featured:boolean};
+export type Vehicle={id:string;slug:string;listing_title:string;vehicle_type:string|null;short_description:string|null;hero_image_url:string|null;image_alt:string|null;passenger_capacity:number|null;driver_included:boolean;featured:boolean;daily_rate_usd:number|null};
+export type Guide={id:string;slug:string;name:string;short_bio:string|null;profile_image_url:string|null;image_alt:string|null;languages:string[];years_experience:number|null;specialities:string[];featured:boolean;daily_rate_usd:number|null};
 export type ContentKind="themes"|"destinations"|"experiences"|"accommodations"|"vehicles"|"guides";
 export type JourneyTheme=Theme&{destinationIds:string[]};
 export type JourneyDestination=Destination&{themeIds:string[]};
