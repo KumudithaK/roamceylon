@@ -1,14 +1,12 @@
 import "server-only";
 import {createPublicClient} from "@/lib/supabase/server";
 import {asStrings,ensure,RepositoryError} from "./base";
-import type {Destination,HeroMedia,JourneyDestination,JourneyExperience,JourneyGuide,JourneyPricingSettings,JourneyStay,JourneyTheme,JourneyVehicle,PricingSeason,PricingTier,Theme} from "@/lib/types";
+import type {Destination,HeroMedia,JourneyDestination,JourneyExperience,JourneyGuide,JourneyStay,JourneyTheme,JourneyVehicle,Theme} from "@/lib/types";
 import type {Database} from "@/lib/database.types";
 
 const client=()=>{const value=createPublicClient();if(!value)throw new RepositoryError("Supabase connection","CONFIG","Public Supabase environment variables are not configured.");return value};
 const unique=(ids:string[])=>[...new Set(ids)];
 const optionalPrice=(value:unknown)=>typeof value==="number"&&Number.isFinite(value)?value:null;
-const pricingTiers=(value:unknown):Record<string,PricingTier>=>typeof value==="object"&&value!==null?Object.fromEntries(Object.entries(value).filter((entry):entry is [string,{label:string;nightlyPerGuest:number}]=>typeof entry[1]==="object"&&entry[1]!==null&&"label" in entry[1]&&typeof entry[1].label==="string"&&"nightlyPerGuest" in entry[1]&&typeof entry[1].nightlyPerGuest==="number")):{};
-const pricingSeasons=(value:unknown):Record<string,PricingSeason>=>typeof value==="object"&&value!==null?Object.fromEntries(Object.entries(value).filter((entry):entry is [string,{months:number[];label:string;multiplier:number}]=>typeof entry[1]==="object"&&entry[1]!==null&&"months" in entry[1]&&Array.isArray(entry[1].months)&&entry[1].months.every((month:unknown)=>typeof month==="number")&&"label" in entry[1]&&typeof entry[1].label==="string"&&"multiplier" in entry[1]&&typeof entry[1].multiplier==="number")):{};
 
 export class ThemeRepository{
   async getPublished():Promise<Theme[]>{return ensure("Read published themes",await client().from("themes").select("*").eq("status","published").eq("active",true).order("display_order").order("name"))}
@@ -35,12 +33,5 @@ export class HomepageRepository{
     const row=ensure<Database["public"]["Tables"]["homepage_content"]["Row"]>("Read homepage hero",await client().from("homepage_content").select("*").eq("id",true).eq("status","published").eq("active",true).single());
     if(!row)throw new RepositoryError("Read homepage hero","NOT_FOUND","No published homepage record exists.");
     return {title:row.hero_title||"Discover Sri Lanka. Your Way.",subtitle:row.hero_subtitle||"Create a personalised journey through timeless heritage, tropical coastlines, wild landscapes and authentic local experiences.",posterUrl:row.hero_video_poster_url||row.hero_background_image_url,desktopVideoUrl:row.hero_video_url,mobileVideoUrl:row.hero_video_mobile_url,alt:row.hero_video_alt||"Sri Lankan landscape",overlayStrength:Number(row.hero_video_overlay_strength??.58),enabled:row.hero_video_enabled,autoplay:row.hero_video_autoplay,loop:row.hero_video_loop,muted:true};
-  }
-}
-export class PricingRepository{
-  async get():Promise<JourneyPricingSettings>{
-    const row=ensure<Database["public"]["Tables"]["journey_pricing_settings"]["Row"]>("Read journey pricing settings",await client().from("journey_pricing_settings").select("*").eq("id",true).single());
-    if(!row)throw new RepositoryError("Read journey pricing settings","NOT_FOUND","Journey pricing settings are not configured.");
-    return {currency:row.currency,accommodationTiers:pricingTiers(row.accommodation_tiers),activityPerGuestUsd:Number(row.activity_per_guest_usd),routeDistanceFactor:Number(row.route_distance_factor),estimateFactor:Number(row.estimate_factor),guideDefaultDailyRateUsd:optionalPrice(row.guide_default_daily_rate_usd),seasons:pricingSeasons(row.seasons)};
   }
 }

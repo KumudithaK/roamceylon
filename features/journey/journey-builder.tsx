@@ -9,7 +9,7 @@ import {Button} from "@/components/ui/button";
 import {cn} from "@/lib/utils";
 import type {JourneyBootstrap} from "@/lib/journey/journey-service";
 import {availableDestinations,availableExperiences,availableStays} from "@/lib/journey/journey-selectors";
-import {calculateTripPrice,getDurationDays} from "@/lib/journey/pricing";
+import {usePackageQuote} from "@/lib/pricing/use-package-quote";
 import {JourneyProvider,useJourney} from "./journey-store";
 import {SriLankaMap} from "@/components/map/sri-lanka-map";
 import {getRouteEstimate} from "@/lib/journey/route";
@@ -39,20 +39,23 @@ function Empty({text}:{text:string}){return <div className="rounded-2xl border b
 
 function Summary({data}:{data:JourneyBootstrap}){
   const {state}=useJourney();
-  const selectedExperiences=data.experiences.filter(item=>state.selectedExperienceIds.includes(item.id));
   const selectedStays=data.stays.filter(item=>Object.values(state.selectedStayIdsByDestination).includes(item.id));
   const vehicle=data.vehicles.find(item=>item.id===state.selectedVehicleId)||null;
   const guide=data.guides.find(item=>item.id===state.selectedGuideId)||null;
   const route=getRouteEstimate(data.destinations,state.selectedDestinationIds);
-  const durationDays=getDurationDays(state.travelDates.start,state.travelDates.end,Math.max(1,route.estimatedTravelDays));
+  const quoteRequest={selectedDestinationIds:state.selectedDestinationIds,selectedExperienceIds:state.selectedExperienceIds,selectedStayIds:selectedStays.map(item=>item.id),selectedVehicleId:state.selectedVehicleId,selectedGuideId:state.selectedGuideId,travelDates:state.travelDates,travellerCounts:state.travellerCounts};
+  const {quote,loading,error}=usePackageQuote(quoteRequest);
   const travellers=state.travellerCounts.adults+state.travellerCounts.children;
-  const price=calculateTripPrice({settings:data.pricing,experiences:selectedExperiences,stays:selectedStays,vehicle,guide,travellers,durationDays,distanceKm:route.estimatedDistance,destinationCount:state.selectedDestinationIds.length,startDate:state.travelDates.start});
   const exportPdf=async()=>{
     const {PDFDocument,StandardFonts,rgb}=await import("pdf-lib");
     const pdf=await PDFDocument.create();
     const page=pdf.addPage([595,842]);
     const regular=await pdf.embedFont(StandardFonts.Helvetica);
     const bold=await pdf.embedFont(StandardFonts.HelveticaBold);
+    const logoBytes=await fetch("/assets/logo/roam-ceylon-elephant.png").then(response=>response.arrayBuffer());
+    const logo=await pdf.embedPng(logoBytes);
+    const logoSize=logo.scale(.14);
+    page.drawImage(logo,{x:45,y:742,width:logoSize.width,height:logoSize.height});
     const names=(ids:string[],items:Card[])=>ids.map(id=>items.find(item=>item.id===id)?.name).filter(Boolean).join(", ")||"None";
     const lines=[
       "Roam Ceylon - Journey Summary",
@@ -65,32 +68,23 @@ function Summary({data}:{data:JourneyBootstrap}){
       `Dates: ${state.travelDates.start||"Not set"} to ${state.travelDates.end||"Not set"}`,
       `Travellers: ${state.travellerCounts.adults} adults, ${state.travellerCounts.children} children`,
       `Estimated route: ${route.estimatedDistance} km / ${route.estimatedTravelDays} travel days`,
-      `Season: ${price.seasonLabel} x ${price.seasonMultiplier}`,
-      `Known estimated cost: ${price.currency} ${price.knownTotal.toFixed(2)}${price.complete?"":" + items requiring a quote"}`
+      quote?.status==="ready"?`Total package price: ${quote.currency} ${quote.totalPackagePrice?.toFixed(2)}`:"Package price: Personal quotation required"
     ];
-    page.drawText(lines[0],{x:45,y:790,size:20,font:bold,color:rgb(.07,.24,.2)});
-    let y=750;
+    page.drawText(lines[0],{x:180,y:790,size:20,font:bold,color:rgb(.07,.24,.2)});
+    let y=720;
     for(const line of lines.slice(1)){
-      const words=line.replace(/[^\x20-\x7E]/g," ").split(/\s+/);
-      let row="";
-      for(const word of words){
-        const candidate=row?`${row} ${word}`:word;
-        if(regular.widthOfTextAtSize(candidate,11)>500){page.drawText(row,{x:45,y,size:11,font:regular});y-=18;row=word}else row=candidate;
-      }
+      const words=line.replace(/[^\x20-\x7E]/g," ").split(/\s+/);let row="";
+      for(const word of words){const candidate=row?`${row} ${word}`:word;if(regular.widthOfTextAtSize(candidate,11)>500){page.drawText(row,{x:45,y,size:11,font:regular});y-=18;row=word}else row=candidate}
       if(row){page.drawText(row,{x:45,y,size:11,font:regular});y-=24}
     }
-    const bytes=await pdf.save();
-    const blob=new Blob([new Uint8Array(bytes)],{type:"application/pdf"});
-    const url=URL.createObjectURL(blob);
-    const link=document.createElement("a");
-    link.href=url;link.download="roam-ceylon-journey.pdf";link.click();
-    URL.revokeObjectURL(url);
+    const bytes=await pdf.save();const blob=new Blob([new Uint8Array(bytes)],{type:"application/pdf"});const url=URL.createObjectURL(blob);const link=document.createElement("a");link.href=url;link.download="roam-ceylon-journey.pdf";link.click();URL.revokeObjectURL(url);
   };
-  return <aside className="h-fit rounded-3xl bg-forest p-7 text-ivory lg:sticky lg:top-28"><div className="mb-6 flex items-center gap-3"><Sparkles className="text-gold-light"/><h2 className="font-serif text-2xl">Your journey</h2></div>{[[state.selectedThemeIds,data.themes,"Themes"],[state.selectedDestinationIds,data.destinations,"Destinations"],[state.selectedExperienceIds,data.experiences,"Experiences"]].map(([ids,items,label])=><div className="border-t border-ivory/10 py-5" key={label as string}><p className="mb-3 text-[.65rem] font-bold uppercase tracking-widest text-gold-light">{label as string}</p><div className="flex flex-wrap gap-2">{(ids as string[]).length?(ids as string[]).map(id=><span key={id} className="rounded-full bg-ivory/10 px-3 py-1 text-xs">{(items as Card[]).find(item=>item.id===id)?.name}</span>):<span className="text-sm text-ivory/40">Nothing selected yet</span>}</div></div>)}<div className="border-t border-ivory/10 py-5"><p className="mb-3 text-[.65rem] font-bold uppercase tracking-widest text-gold-light">Plan</p><div className="grid gap-2 text-sm text-ivory/70">{selectedStays.map(item=><span key={item.id}>{item.name}</span>)}{vehicle&&<span>{vehicle.listing_title}</span>}{guide&&<span>{guide.name}</span>}{!selectedStays.length&&!vehicle&&!guide&&<span className="text-ivory/40">Nothing selected yet</span>}</div></div><div className="border-t border-ivory/10 py-5"><div className="flex justify-between text-sm"><span>{durationDays} days · {travellers} travellers</span><span>{route.estimatedDistance} km</span></div><div className="mt-3 grid gap-2">{price.lines.map(line=><div key={line.label} className="flex justify-between text-xs text-ivory/60"><span>{line.label}</span><span>{line.amount===null?"Quote required":`$${line.amount.toFixed(2)}`}</span></div>)}</div><div className="mt-4 flex items-end justify-between"><span className="text-xs text-ivory/50">{price.complete?"Estimated total":"Known subtotal"}</span><strong className="font-serif text-2xl">${price.knownTotal.toFixed(2)}</strong></div></div><Button onClick={exportPdf} disabled={!state.selectedDestinationIds.length} variant="outline" className="w-full border-ivory/20 text-ivory hover:bg-ivory/10"><Download/>Export PDF</Button><div className="mt-4 flex items-center gap-2 text-xs text-ivory/55"><MapPin className="size-4"/>Selections persist after refresh.</div></aside>;
+  const ready=quote?.status==="ready";
+  return <aside className="h-fit rounded-3xl bg-forest p-7 text-ivory lg:sticky lg:top-28"><div className="mb-6 flex items-center gap-3"><Sparkles className="text-gold-light"/><h2 className="font-serif text-2xl">Your journey</h2></div>{[[state.selectedThemeIds,data.themes,"Themes"],[state.selectedDestinationIds,data.destinations,"Destinations"],[state.selectedExperienceIds,data.experiences,"Experiences"]].map(([ids,items,label])=><div className="border-t border-ivory/10 py-5" key={label as string}><p className="mb-3 text-[.65rem] font-bold uppercase tracking-widest text-gold-light">{label as string}</p><div className="flex flex-wrap gap-2">{(ids as string[]).length?(ids as string[]).map(id=><span key={id} className="rounded-full bg-ivory/10 px-3 py-1 text-xs">{(items as Card[]).find(item=>item.id===id)?.name}</span>):<span className="text-sm text-ivory/40">Nothing selected yet</span>}</div></div>)}<div className="border-t border-ivory/10 py-5"><p className="mb-3 text-[.65rem] font-bold uppercase tracking-widest text-gold-light">Plan</p><div className="grid gap-2 text-sm text-ivory/70">{selectedStays.map(item=><span key={item.id}>{item.name}</span>)}{vehicle&&<span>{vehicle.listing_title}</span>}{guide&&<span>{guide.name}</span>}{!selectedStays.length&&!vehicle&&!guide&&<span className="text-ivory/40">Nothing selected yet</span>}</div></div><div className="border-t border-ivory/10 py-5"><div className="flex justify-between text-sm"><span>{travellers} travellers</span><span>{route.estimatedDistance} km</span></div>{loading?<p className="mt-4 text-sm text-ivory/50">Calculating your package…</p>:ready?<div className="mt-4 grid gap-3"><div className="flex items-end justify-between"><span className="text-xs text-ivory/50">Total Package Price</span><strong className="font-serif text-2xl">{quote.currency} {quote.totalPackagePrice?.toFixed(2)}</strong></div><div className="flex justify-between text-xs text-ivory/60"><span>Price Per Person</span><span>{quote.currency} {quote.pricePerPerson?.toFixed(2)}</span></div><div className="flex justify-between text-xs text-ivory/60"><span>Estimated Daily Cost</span><span>{quote.currency} {quote.estimatedDailyCost?.toFixed(2)}</span></div></div>:state.selectedDestinationIds.length?<p className="mt-4 text-sm text-ivory/60">{error||"A personal quotation is required for this journey."}</p>:<p className="mt-4 text-sm text-ivory/40">Select destinations to calculate your package.</p>}</div><Button onClick={exportPdf} disabled={!state.selectedDestinationIds.length} variant="outline" className="w-full border-ivory/20 text-ivory hover:bg-ivory/10"><Download/>Export PDF</Button><div className="mt-4 flex items-center gap-2 text-xs text-ivory/55"><MapPin className="size-4"/>Selections persist after refresh.</div></aside>;
 }
 
 export function JourneyBuilder({data}:{data:JourneyBootstrap}){
   const hydrated=useHydrated();
-  if(!hydrated)return <div className="shell grid gap-8 py-12 lg:grid-cols-[1fr_340px]" aria-label="Loading saved journey"><div className="h-[38rem] animate-pulse rounded-3xl bg-sand-light"/><div className="h-80 animate-pulse rounded-3xl bg-forest/90"/></div>;
+  if(!hydrated)return <div className="shell grid gap-8 py-12 lg:grid-cols-[1fr_340px]" aria-label="Loading saved journey"><div className="grid h-[38rem] animate-pulse place-items-center rounded-3xl bg-sand-light"><Image src="/assets/logo/roam-ceylon-elephant.png" alt="Loading Roam Ceylon" width={220} height={125} priority className="h-auto w-[220px] rounded-2xl bg-white p-3"/></div><div className="h-80 animate-pulse rounded-3xl bg-forest/90"/></div>;
   return <JourneyProvider data={data}><Builder data={data}/></JourneyProvider>;
 }

@@ -11,7 +11,4 @@ export type JourneyExperience=Experience&{destinationIds:string[];themeIds:strin
 export type JourneyStay=Stay&{destinationId:string};
 export type JourneyVehicle=Vehicle&{nationwide:boolean;destinationIds:string[];luggage_capacity:string|null;price_guide:string|null;per_km_rate_usd:number|null;verified:boolean};
 export type JourneyGuide=Guide&{nationwide:boolean;destinationIds:string[];themeIds:string[];experienceIds:string[];verified:boolean;relevance?:number};
-export type PricingTier={label:string;nightlyPerGuest:number};
-export type PricingSeason={months:number[];label:string;multiplier:number};
-export type JourneyPricingSettings={currency:string;accommodationTiers:Record<string,PricingTier>;activityPerGuestUsd:number;routeDistanceFactor:number;estimateFactor:number;guideDefaultDailyRateUsd:number|null;seasons:Record<string,PricingSeason>};
 export type HeroMedia={title:string;subtitle:string;posterUrl:string|null;desktopVideoUrl:string|null;mobileVideoUrl:string|null;alt:string;overlayStrength:number;enabled:boolean;autoplay:boolean;loop:boolean;muted:boolean;developmentYoutubePreviewId?:string};

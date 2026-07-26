@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {availableDestinations,availableExperiences} from "../lib/journey/journey-selectors.ts";
-import {calculateTripPrice,getDurationDays} from "../lib/journey/pricing.ts";
+import {calculatePackageQuote} from "../lib/pricing/package-engine.ts";
 import {getRouteEstimate} from "../lib/journey/route.ts";
 
 test("theme selection returns the destination union without duplicates",()=>{
@@ -34,40 +34,32 @@ test("route estimate preserves selection order and computes distance",()=>{
   assert(result.estimatedTravelDays>=1);
 });
 
-test("trip price reacts to travellers and duration",()=>{
-  const settings={currency:"USD",accommodationTiers:{boutique:{label:"Boutique",nightlyPerGuest:60}},activityPerGuestUsd:46,routeDistanceFactor:1.3,estimateFactor:.92,guideDefaultDailyRateUsd:null,seasons:{shoulder:{months:[3],label:"Shoulder",multiplier:1}}};
-  const price=calculateTripPrice({
-    settings,
-    experiences:[{price_per_person_usd:25}] as never,
-    stays:[{nightly_rate_usd:100,pricing_tier:null}] as never,
-    vehicle:{daily_rate_usd:50,per_km_rate_usd:0} as never,
-    guide:{daily_rate_usd:30} as never,
-    travellers:2,
-    durationDays:4,
-    distanceKm:0,
-    destinationCount:2,
-    startDate:"2026-03-01",
-    currentMonth:3
-  });
-  assert.equal(price.knownTotal,616.4);
-  assert.equal(price.complete,true);
-  assert.equal(getDurationDays("2026-08-01","2026-08-05"),4);
+test("DMC package price includes supplier, operational, overhead and margin costs",()=>{
+  const config={currency:"USD",roomOccupancy:2,childCostFactor:.5,driverSalaryPerDay:40,fuelPricePerLitre:2,vehicleKmPerLitre:10,tollsPerJourney:10,parkingPerDay:5,guideAccommodationPerNight:25,airportTransferEachWay:30,administrationFixed:20,administrationPercent:5,contingencyPercent:10,serviceFeeFixed:10,serviceFeePercent:5,targetProfitMarginPercent:20};
+  const selection={selectedDestinationIds:["d1"],selectedExperienceIds:["e1"],selectedStayIds:["a1"],selectedVehicleId:"v1",selectedGuideId:"g1",travelDates:{start:"2026-08-01",end:"2026-08-05"},travellerCounts:{adults:2,children:1}};
+  const supplierCosts=[
+    {id:"1",entityType:"accommodation",entityId:"a1",category:"Accommodation",unit:"per_room_night",amount:100,partnerCommissionPercent:null},
+    {id:"2",entityType:"vehicle",entityId:"v1",category:"Vehicle rental",unit:"per_vehicle_day",amount:50,partnerCommissionPercent:null},
+    {id:"3",entityType:"vehicle",entityId:"v1",category:"Vehicle distance",unit:"per_kilometre",amount:.5,partnerCommissionPercent:null},
+    {id:"4",entityType:"guide",entityId:"g1",category:"Guide fee",unit:"per_guide_day",amount:30,partnerCommissionPercent:null},
+    {id:"5",entityType:"experience",entityId:"e1",category:"Experience",unit:"per_person",amount:20,partnerCommissionPercent:null},
+    {id:"6",entityType:"destination",entityId:"d1",category:"Entrance tickets",unit:"per_person",amount:10,partnerCommissionPercent:null}
+  ];
+  const quote=calculatePackageQuote({config,supplierCosts,selection,durationDays:2,distanceKm:100});
+  assert.equal(quote.public.status,"ready");
+  assert.equal(quote.internalCost,1627.45);
+  assert.equal(quote.sellingPrice,2148.53);
+  assert.equal(quote.public.totalPackagePrice,2148.53);
+  assert.equal(quote.public.pricePerPerson,716.18);
+  assert(quote.breakdown.some(line=>line.label==="Fuel"));
+  assert(quote.breakdown.some(line=>line.label==="Roam Ceylon service fee"));
 });
 
-test("unknown Supabase prices stay quote-required instead of being invented",()=>{
-  const price=calculateTripPrice({
-    settings:null,
-    experiences:[{price_per_person_usd:null}] as never,
-    stays:[],
-    vehicle:null,
-    guide:null,
-    travellers:2,
-    durationDays:2,
-    distanceKm:0,
-    destinationCount:1,
-    startDate:"",
-    currentMonth:3
-  });
-  assert.equal(price.complete,false);
-  assert.equal(price.knownTotal,0);
+test("missing confidential inputs require a manual quote instead of inventing costs",()=>{
+  const config={currency:"USD",roomOccupancy:2,childCostFactor:1,driverSalaryPerDay:null,fuelPricePerLitre:null,vehicleKmPerLitre:null,tollsPerJourney:null,parkingPerDay:null,guideAccommodationPerNight:null,airportTransferEachWay:null,administrationFixed:null,administrationPercent:null,contingencyPercent:null,serviceFeeFixed:null,serviceFeePercent:null,targetProfitMarginPercent:null};
+  const selection={selectedDestinationIds:["d1"],selectedExperienceIds:["e1"],selectedStayIds:[],selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"",end:""},travellerCounts:{adults:2,children:0}};
+  const quote=calculatePackageQuote({config,supplierCosts:[],selection,durationDays:1,distanceKm:0});
+  assert.equal(quote.public.status,"requires_manual_quote");
+  assert.equal(quote.public.totalPackagePrice,null);
+  assert(quote.missingInputs.includes("supplierCost:experience:e1"));
 });
