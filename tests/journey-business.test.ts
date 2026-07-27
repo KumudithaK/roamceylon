@@ -35,7 +35,7 @@ test("route estimate preserves selection order and computes distance",()=>{
 });
 
 test("DMC package price includes supplier, operational, overhead and margin costs",()=>{
-  const config={currency:"USD",roomOccupancy:2,childCostFactor:.5,driverSalaryPerDay:40,fuelPricePerLitre:2,vehicleKmPerLitre:10,tollsPerJourney:10,parkingPerDay:5,guideAccommodationPerNight:25,airportTransferEachWay:30,administrationFixed:20,administrationPercent:5,contingencyPercent:10,serviceFeeFixed:10,serviceFeePercent:5,targetProfitMarginPercent:20};
+  const config={currency:"USD",roomOccupancy:2,childCostFactor:.5,routeDistanceBufferPercent:0,driverSalaryPerDay:40,fuelPricePerLitre:2,vehicleKmPerLitre:10,tollsPerJourney:10,parkingPerDay:5,guideAccommodationPerNight:25,airportTransferEachWay:30,administrationFixed:20,administrationPercent:5,contingencyPercent:10,serviceFeeFixed:10,serviceFeePercent:5,targetProfitMarginPercent:20};
   const selection={selectedDestinationIds:["d1"],selectedExperienceIds:["e1"],selectedStayIds:["a1"],selectedVehicleId:"v1",selectedGuideId:"g1",travelDates:{start:"2026-08-01",end:"2026-08-05"},travellerCounts:{adults:2,children:1}};
   const supplierCosts=[
     {id:"1",entityType:"accommodation",entityId:"a1",category:"Accommodation",unit:"per_room_night",amount:100,partnerCommissionPercent:null},
@@ -53,10 +53,14 @@ test("DMC package price includes supplier, operational, overhead and margin cost
   assert.equal(quote.public.pricePerPerson,716.18);
   assert(quote.breakdown.some(line=>line.label==="Fuel"));
   assert(quote.breakdown.some(line=>line.label==="Roam Ceylon service fee"));
+  const buffered=calculatePackageQuote({config:{...config,routeDistanceBufferPercent:30},supplierCosts,selection,durationDays:2,distanceKm:100});
+  assert(buffered.sellingPrice!>quote.sellingPrice!);
+  assert.equal(buffered.breakdown.find(line=>line.label==="Vehicle distance")?.amount,65);
+  assert.equal(buffered.breakdown.find(line=>line.label==="Fuel")?.amount,26);
 });
 
 test("missing confidential inputs require a manual quote instead of inventing costs",()=>{
-  const config={currency:"USD",roomOccupancy:2,childCostFactor:1,driverSalaryPerDay:null,fuelPricePerLitre:null,vehicleKmPerLitre:null,tollsPerJourney:null,parkingPerDay:null,guideAccommodationPerNight:null,airportTransferEachWay:null,administrationFixed:null,administrationPercent:null,contingencyPercent:null,serviceFeeFixed:null,serviceFeePercent:null,targetProfitMarginPercent:null};
+  const config={currency:"USD",roomOccupancy:2,childCostFactor:1,routeDistanceBufferPercent:0,driverSalaryPerDay:null,fuelPricePerLitre:null,vehicleKmPerLitre:null,tollsPerJourney:null,parkingPerDay:null,guideAccommodationPerNight:null,airportTransferEachWay:null,administrationFixed:null,administrationPercent:null,contingencyPercent:null,serviceFeeFixed:null,serviceFeePercent:null,targetProfitMarginPercent:null};
   const selection={selectedDestinationIds:["d1"],selectedExperienceIds:["e1"],selectedStayIds:[],selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"",end:""},travellerCounts:{adults:2,children:0}};
   const quote=calculatePackageQuote({config,supplierCosts:[],selection,durationDays:1,distanceKm:0});
   assert.equal(quote.public.status,"requires_manual_quote");

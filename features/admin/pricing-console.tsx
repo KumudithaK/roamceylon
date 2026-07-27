@@ -12,7 +12,7 @@ import type {JourneyState} from "@/features/journey/journey-store";
 type Config=Database["public"]["Tables"]["tour_pricing_config"]["Row"];
 type SupplierInsert=Database["public"]["Tables"]["tour_supplier_costs"]["Insert"];
 const configFields=[
-  ["room_occupancy","Travellers / room"],["child_cost_factor","Child cost factor"],
+  ["room_occupancy","Travellers / room"],["child_cost_factor","Child cost factor"],["route_distance_buffer_percent","Route distance allowance %"],
   ["driver_salary_per_day","Driver salary / day"],["fuel_price_per_litre","Fuel price / litre"],["vehicle_km_per_litre","Vehicle km / litre"],
   ["tolls_per_journey","Tolls / journey"],["parking_per_day","Parking / day"],["guide_accommodation_per_night","Guide accommodation / night"],
   ["airport_transfer_each_way","Airport transfer / way"],["administration_fixed","Administration fixed"],["administration_percent","Administration %"],

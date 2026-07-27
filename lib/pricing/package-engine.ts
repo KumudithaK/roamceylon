@@ -38,6 +38,7 @@ export function calculatePackageQuote(context:PackagePricingContext):AdminPackag
   const nights=Math.max(0,days-1);
   const travellerUnits=selection.travellerCounts.adults+selection.travellerCounts.children*config.childCostFactor;
   const rooms=Math.max(1,Math.ceil((selection.travellerCounts.adults+selection.travellerCounts.children)/config.roomOccupancy));
+  const pricedDistance=context.distanceKm*(1+config.routeDistanceBufferPercent/100);
   const missingInputs=requireConfig(config,Boolean(selection.selectedVehicleId),Boolean(selection.selectedGuideId));
   const requiredEntities=[
     ...selection.selectedStayIds.map(id=>`accommodation:${id}`),
@@ -48,7 +49,7 @@ export function calculatePackageQuote(context:PackagePricingContext):AdminPackag
   const costEntities=new Set(supplierCosts.map(item=>`${item.entityType}:${item.entityId}`));
   missingInputs.push(...requiredEntities.filter(key=>!costEntities.has(key)).map(key=>`supplierCost:${key}`));
 
-  const quantities={rooms,nights,days,distance:context.distanceKm,travellerUnits,stayCount:selection.selectedStayIds.length};
+  const quantities={rooms,nights,days,distance:pricedDistance,travellerUnits,stayCount:selection.selectedStayIds.length};
   const breakdown:CostBreakdownLine[]=supplierCosts.map(item=>({
     key:`supplier:${item.id}`,
     label:item.category,
@@ -58,7 +59,7 @@ export function calculatePackageQuote(context:PackagePricingContext):AdminPackag
   }));
   const operational:Array<[string,string,number|null,boolean]>=[
     ["driver-salary","Driver salary",configured(config.driverSalaryPerDay)?config.driverSalaryPerDay!*days:null,Boolean(selection.selectedVehicleId)],
-    ["fuel","Fuel",configured(config.fuelPricePerLitre)&&configured(config.vehicleKmPerLitre)?context.distanceKm/config.vehicleKmPerLitre!*config.fuelPricePerLitre!:null,Boolean(selection.selectedVehicleId)],
+    ["fuel","Fuel",configured(config.fuelPricePerLitre)&&configured(config.vehicleKmPerLitre)?pricedDistance/config.vehicleKmPerLitre!*config.fuelPricePerLitre!:null,Boolean(selection.selectedVehicleId)],
     ["tolls","Tolls",config.tollsPerJourney,Boolean(selection.selectedVehicleId)],
     ["parking","Parking",configured(config.parkingPerDay)?config.parkingPerDay!*days:null,Boolean(selection.selectedVehicleId)],
     ["guide-accommodation","Guide accommodation",configured(config.guideAccommodationPerNight)?config.guideAccommodationPerNight!*nights:null,Boolean(selection.selectedGuideId)],

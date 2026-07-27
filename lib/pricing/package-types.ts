@@ -24,6 +24,7 @@ export type DmcPricingConfig={
   currency:string;
   roomOccupancy:number;
   childCostFactor:number;
+  routeDistanceBufferPercent:number;
   driverSalaryPerDay:number|null;
   fuelPricePerLitre:number|null;
   vehicleKmPerLitre:number|null;

@@ -17,6 +17,7 @@ const mapConfig=(row:ConfigRow):DmcPricingConfig=>({
   currency:row.currency,
   roomOccupancy:row.room_occupancy,
   childCostFactor:Number(row.child_cost_factor),
+  routeDistanceBufferPercent:Number(row.route_distance_buffer_percent),
   driverSalaryPerDay:numberOrNull(row.driver_salary_per_day),
   fuelPricePerLitre:numberOrNull(row.fuel_price_per_litre),
   vehicleKmPerLitre:numberOrNull(row.vehicle_km_per_litre),
@@ -59,8 +60,8 @@ export class PackagePricingService{
     const entityIds=[...selection.selectedDestinationIds,...selection.selectedExperienceIds,...selection.selectedStayIds,...(selection.selectedVehicleId?[selection.selectedVehicleId]:[]),...(selection.selectedGuideId?[selection.selectedGuideId]:[])];
     const costsResult=entityIds.length?await database.from("tour_supplier_costs").select("*").in("entity_id",entityIds).eq("active",true):{data:[],error:null};
     if(costsResult.error)throw new PackagePricingError("DATABASE",costsResult.error.message);
-    const today=new Date().toISOString().slice(0,10);
-    const supplierCosts=(costsResult.data??[]).filter(row=>(!row.valid_from||row.valid_from<=today)&&(!row.valid_to||row.valid_to>=today)).map(mapCost);
+    const pricingDate=selection.travelDates.start||new Date().toISOString().slice(0,10);
+    const supplierCosts=(costsResult.data??[]).filter(row=>(!row.valid_from||row.valid_from<=pricingDate)&&(!row.valid_to||row.valid_to>=pricingDate)).map(mapCost);
     const destinations=(destinationsResult.data??[]).map(item=>({...item,latitude:item.latitude===null?null:Number(item.latitude),longitude:item.longitude===null?null:Number(item.longitude)}));
     const route=getRouteEstimate(destinations,selection.selectedDestinationIds);
     return calculatePackageQuote({config:mapConfig(configResult.data),supplierCosts,selection,durationDays:Math.max(1,route.estimatedTravelDays),distanceKm:route.estimatedDistance,adjustments:[]});
