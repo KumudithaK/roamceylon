@@ -39,7 +39,11 @@ export async function POST(request:Request){
   if(!form)return NextResponse.json({error:"Invalid application."},{status:400});
   let raw:unknown=null;try{raw=JSON.parse(String(form.get("payload")||"null"))}catch{}
   const parsed=schema.safeParse(raw);
-  if(!parsed.success)return NextResponse.json({error:"Please complete all required fields.",fields:parsed.error.flatten().fieldErrors},{status:400});
+  if(!parsed.success){
+    const fields=parsed.error.flatten().fieldErrors;
+    const invalid=Object.entries(fields).filter(([,messages])=>messages?.length).map(([field])=>field);
+    return NextResponse.json({error:`Please check: ${invalid.join(", ")||"the required fields"}.`,fields},{status:400});
+  }
   if(limited(ip))return NextResponse.json({error:"Too many completed applications were submitted from this connection. Please try again later."},{status:429});
   const database=createAdminClient();
   if(!database)return NextResponse.json({error:"Applications are temporarily unavailable."},{status:503});

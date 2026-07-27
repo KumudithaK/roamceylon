@@ -29,8 +29,8 @@ export function PartnerApplicationForm({initialType}:{initialType:PartnerType}){
   const [documents,setDocuments]=useState<File[]>([]);
   const [error,setError]=useState("");
   const [submitting,setSubmitting]=useState(false);
-  useEffect(()=>{try{const saved=localStorage.getItem("roam-ceylon-partner-draft");if(saved){const draft=JSON.parse(saved);queueMicrotask(()=>{setType(draft.type||initialType);setValues({...initial,...draft.values});setEntries(draft.entries||[])})}}catch{}},[initialType]);
-  useEffect(()=>{localStorage.setItem("roam-ceylon-partner-draft",JSON.stringify({type,values,entries}))},[type,values,entries]);
+  useEffect(()=>{try{const saved=localStorage.getItem("roam-ceylon-partner-draft");if(saved){const draft=JSON.parse(saved);queueMicrotask(()=>{setType(draft.type||initialType);setValues({...initial,...draft.values,honeypot:""});setEntries(draft.entries||[])})}}catch{}},[initialType]);
+  useEffect(()=>{const {honeypot,...savedValues}=values;void honeypot;localStorage.setItem("roam-ceylon-partner-draft",JSON.stringify({type,values:savedValues,entries}))},[type,values,entries]);
   const set=(key:string,value:string|boolean)=>setValues(current=>({...current,[key]:value}));
   const required=step===0?["applicantName","businessName","email","phone","preferredContactMethod"]:step===1?["address","district","province","introduction","heardFrom"]:step===2?fieldsByType[type].slice(0,type==="guide"?6:4).map(([key])=>key):[];
   const next=()=>{const missing=required.filter(key=>!values[key]);if(missing.length){setError("Please complete the required fields before continuing.");return}if(values.website&&!isUrl(String(values.website))||values.socialUrl&&!isUrl(String(values.socialUrl))){setError("Please enter complete website and social links, including https://.");return}setError("");setStep(current=>Math.min(3,current+1))};
@@ -38,11 +38,17 @@ export function PartnerApplicationForm({initialType}:{initialType:PartnerType}){
   const updateEntry=(index:number,key:string,value:string|boolean)=>setEntries(items=>items.map((item,itemIndex)=>itemIndex===index?{...item,[key]:value}:item));
   const submit=async()=>{
     if(!values.consent||!values.accurate){setError("Confirm consent and the accuracy of the submitted information.");return}
+    const finalRequired=["applicantName","businessName","email","phone","preferredContactMethod","address","district","province","introduction","heardFrom"];
+    const missing=finalRequired.filter(key=>!String(values[key]??"").trim());
+    if(missing.length){setError(`Please complete: ${missing.map(labelFor).join(", ")}.`);return}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(values.email))){setError("Please enter a valid email address.");return}
+    if(String(values.introduction).trim().length<30){setError("The short introduction must contain at least 30 characters.");return}
+    if(String(values.phone).replace(/\D/g,"").length<7){setError("Please enter a complete phone or WhatsApp number.");return}
     setSubmitting(true);setError("");
     const payload={partnerType:type,applicantName:values.applicantName,businessName:values.businessName,email:values.email,phone:`${values.countryCode} ${values.phone}`,preferredContactMethod:values.preferredContactMethod,address:values.address,district:values.district,province:values.province,website:values.website,socialUrl:values.socialUrl,introduction:values.introduction,heardFrom:values.heardFrom,consent:values.consent,accurate:values.accurate,honeypot:values.honeypot,applicationData:{...values,entries}};
     const body=new FormData();body.set("payload",JSON.stringify(payload));media.forEach(file=>body.append("media",file));documents.forEach(file=>body.append("documents",file));
     const response=await fetch("/api/partner-applications",{method:"POST",body});const result=await response.json();
-    setSubmitting(false);if(!response.ok){setError(result.error||"Application could not be submitted.");return}
+    setSubmitting(false);if(!response.ok){const invalid=result.fields?Object.keys(result.fields).filter(key=>result.fields[key]?.length):[];setError(invalid.length?`Please check: ${invalid.map(labelFor).join(", ")}.`:result.error||"Application could not be submitted.");return}
     localStorage.removeItem("roam-ceylon-partner-draft");router.push(`/partners/application-received?reference=${encodeURIComponent(result.reference)}&type=${encodeURIComponent(result.type)}`);
   };
   return <main className="bg-[#f4f3ef] py-16 md:py-24"><div className="shell max-w-5xl"><p className="eyebrow mb-4">Partner application</p><h1 className="font-serif text-4xl md:text-6xl">Tell us what you bring to the journey.</h1><p className="mt-5 max-w-2xl leading-7 text-slate/60">Your draft is saved on this device. Submission starts a manual Roam Ceylon review and never creates a public listing automatically.</p>
@@ -55,7 +61,7 @@ export function PartnerApplicationForm({initialType}:{initialType:PartnerType}){
     <div className="mt-9 flex justify-between"><Button variant="ghost" disabled={step===0||submitting} onClick={()=>setStep(current=>current-1)}><ChevronLeft/>Back</Button>{step<3?<Button onClick={next}>Continue<ChevronRight/></Button>:<Button variant="accent" disabled={submitting} onClick={()=>void submit()}>{submitting?"Submitting and uploading…":"Submit for review"}</Button>}</div></section></div></main>;
 }
 const isUrl=(value:string)=>{try{return ["http:","https:"].includes(new URL(value).protocol)}catch{return false}};
-const labelFor=(key:string)=>({name:"Room type",description:"Short description",capacity:"Maximum guests / passengers",price:"Indicative price",pricingBasis:"Pricing basis",category:"Vehicle category",model:"Make and model",year:"Year",registration:"Registration number",luggage:"Luggage capacity",airConditioning:"Air-conditioning",driverIncluded:"Driver included",rate:"Daily rate",airportRate:"Airport transfer rate",extraKmRate:"Extra kilometre rate",notes:"Notes"}[key]||key);
+const labelFor=(key:string)=>({applicantName:"full name",businessName:"business or professional name",email:"email",phone:"phone / WhatsApp",preferredContactMethod:"preferred contact method",address:"full address",district:"district",province:"province",website:"website",socialUrl:"social media page",introduction:"short introduction",heardFrom:"how you heard about Roam Ceylon",consent:"contact consent",accurate:"accuracy confirmation",honeypot:"spam check",applicationData:"application details",partnerType:"partner type",name:"Room type",description:"Short description",capacity:"Maximum guests / passengers",price:"Indicative price",pricingBasis:"Pricing basis",category:"Vehicle category",model:"Make and model",year:"Year",registration:"Registration number",luggage:"Luggage capacity",airConditioning:"Air-conditioning",driverIncluded:"Driver included",rate:"Daily rate",airportRate:"Airport transfer rate",extraKmRate:"Extra kilometre rate",notes:"Notes"}[key]||key);
 const fieldClass="rounded-xl border border-stone/25 bg-white px-4 py-3 outline-none focus:border-gold";
 function Grid({children}:{children:React.ReactNode}){return <div className="grid gap-5 md:grid-cols-2">{children}</div>}
 function Text({label,value,type="text",onChange}:{label:string;value:string|boolean;type?:string;onChange:(value:string)=>void}){return <label className="grid gap-2 text-sm font-semibold">{label}<input type={type} value={String(value)} onChange={event=>onChange(event.target.value)} className={fieldClass}/></label>}
