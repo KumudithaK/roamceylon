@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {useEffect,useState} from "react";
-import {BarChart3,BedDouble,CarFront,LayoutDashboard,LogOut,Map,Sparkles,UsersRound} from "lucide-react";
+import {BarChart3,BedDouble,CarFront,LayoutDashboard,LogOut,Map,Settings,Sparkles,UsersRound} from "lucide-react";
 import {useRouter} from "next/navigation";
 import {createClient} from "@/lib/supabase/client";
 import {Button} from "@/components/ui/button";
@@ -14,7 +14,8 @@ const nav=[
   [Sparkles,"Experiences","/admin/resources/experiences"],
   [BedDouble,"Stays","/admin/resources/stays"],
   [CarFront,"Vehicles","/admin/resources/vehicles"],
-  [UsersRound,"Local Guides","/admin/resources/guides"]
+  [UsersRound,"Local Guides","/admin/resources/guides"],
+  [Settings,"Business Settings","/admin/settings/pricing"]
 ] as const;
 type Metric={label:string;value:number};
 
