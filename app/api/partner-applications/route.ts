@@ -35,12 +35,12 @@ const safeName=(name:string)=>name.toLowerCase().replace(/[^a-z0-9._-]+/g,"-").s
 
 export async function POST(request:Request){
   const ip=request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()||"local";
-  if(limited(ip))return NextResponse.json({error:"Too many applications. Please try again later."},{status:429});
   const form=await request.formData().catch(()=>null);
   if(!form)return NextResponse.json({error:"Invalid application."},{status:400});
   let raw:unknown=null;try{raw=JSON.parse(String(form.get("payload")||"null"))}catch{}
   const parsed=schema.safeParse(raw);
   if(!parsed.success)return NextResponse.json({error:"Please complete all required fields.",fields:parsed.error.flatten().fieldErrors},{status:400});
+  if(limited(ip))return NextResponse.json({error:"Too many completed applications were submitted from this connection. Please try again later."},{status:429});
   const database=createAdminClient();
   if(!database)return NextResponse.json({error:"Applications are temporarily unavailable."},{status:503});
   const value=parsed.data;
