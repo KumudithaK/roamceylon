@@ -1,0 +1,18 @@
+"use client";
+import Link from "next/link";
+import {useEffect,useState} from "react";
+import {useRouter} from "next/navigation";
+import {Button} from "@/components/ui/button";
+import {createClient} from "@/lib/supabase/client";
+import type {Database} from "@/lib/database.types";
+type Settings=Database["public"]["Tables"]["partner_commercial_settings"]["Row"];
+export function PartnerCommercialSettings(){
+  const router=useRouter();const [settings,setSettings]=useState<Settings|null>(null);const [message,setMessage]=useState("");
+  useEffect(()=>{void (async()=>{const database=createClient();const {data:{session}}=await database.auth.getSession();if(!session){router.replace("/admin/login");return}const {data,error}=await database.from("partner_commercial_settings").select("*").eq("id",true).single();if(error)setMessage(error.message);else setSettings(data)})()},[router]);
+  const save=async()=>{if(!settings)return;const {id,updated_at,updated_by,...changes}=settings;void id;void updated_at;void updated_by;const {error}=await createClient().from("partner_commercial_settings").update(changes).eq("id",true);setMessage(error?error.message:"Partner commercial settings saved.")};
+  if(!settings)return <main className="grid min-h-screen place-items-center bg-[#f4f3ef]"><p>{message||"Loading settings…"}</p></main>;
+  const toggle=(key:keyof Settings)=><input type="checkbox" checked={Boolean(settings[key])} onChange={event=>setSettings({...settings,[key]:event.target.checked})}/>;
+  const number=(key:keyof Settings)=><input type="number" min="0" step=".01" value={Number(settings[key])} onChange={event=>setSettings({...settings,[key]:Number(event.target.value)})}/>;
+  return <main className="min-h-screen bg-[#f4f3ef] p-6 md:p-10"><div className="mx-auto max-w-4xl"><Link href="/admin/dashboard" className="text-sm font-semibold text-forest">← Admin dashboard</Link><p className="eyebrow mb-3 mt-8">Business settings</p><h1 className="font-serif text-5xl">Partner commercial settings</h1><p className="mt-4 text-slate/60">All commercial options remain hidden from applicants until explicitly enabled. Saving settings does not charge anyone.</p>{message&&<p className="mt-5 rounded-xl bg-white p-4 text-sm">{message}</p>}<section className="mt-8 grid gap-4 rounded-3xl border border-stone/15 bg-white p-7"><Setting label="Application fee" control={toggle("application_fee_enabled")} amount={number("application_fee_amount")}/><Setting label="Listing fee" control={toggle("listing_fee_enabled")} amount={number("listing_fee_amount")}/><Setting label="Commission" control={toggle("commission_enabled")} amount={number("commission_percentage")} suffix="%"/><Setting label="Featured placement" control={toggle("featured_placement_enabled")}/><label className="grid gap-2 text-sm font-semibold">Currency<input maxLength={3} value={settings.currency} onChange={event=>setSettings({...settings,currency:event.target.value.toUpperCase()})} className="rounded-xl border border-stone/25 px-4 py-3"/></label><Button onClick={()=>void save()} className="mt-3 justify-self-start">Save settings</Button></section></div></main>;
+}
+function Setting({label,control,amount,suffix}:{label:string;control:React.ReactNode;amount?:React.ReactNode;suffix?:string}){return <div className="grid gap-4 rounded-2xl bg-sand-light p-5 sm:grid-cols-[1fr_180px] sm:items-center"><label className="flex items-center gap-3 font-semibold">{control}{label} enabled</label>{amount&&<label className="grid gap-1 text-xs text-stone">Amount {suffix}<span className="[&_input]:w-full [&_input]:rounded-xl [&_input]:border [&_input]:border-stone/25 [&_input]:px-3 [&_input]:py-2">{amount}</span></label>}</div>}
