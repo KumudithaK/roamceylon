@@ -21,3 +21,4 @@ button,a{-webkit-tap-highlight-color:transparent}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
 @keyframes hero-zoom{from{transform:scale(1)}to{transform:scale(1.035)}}
 @keyframes hero-fade{to{opacity:1}}
+@keyframes route-dash{to{stroke-dashoffset:-180}}

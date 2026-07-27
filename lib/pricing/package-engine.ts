@@ -1,4 +1,4 @@
-import type {AdminPackageQuote,CostBreakdownLine,DmcPricingConfig,PackagePricingContext,PricingAdjustment,PublicPackageQuote,SupplierCostUnit} from "./package-types";
+import type {AdminPackageQuote,CostBreakdownLine,DmcPricingConfig,PackagePricingContext,PricingAdjustment,PublicPackageQuote,SupplierCostUnit,SupplierEntityType} from "./package-types";
 
 const money=(value:number)=>Math.round((value+Number.EPSILON)*100)/100;
 const configured=(value:number|null)=>typeof value==="number"&&Number.isFinite(value);
@@ -68,7 +68,8 @@ export function calculatePackageQuote(context:PackagePricingContext):AdminPackag
   breakdown.push(...operational.filter(([, , ,needed])=>needed).filter(([, ,amount])=>amount!==null).map(([key,label,amount])=>({key,label,category:"operations" as const,amount:money(amount!),internal:true})));
 
   if(missingInputs.length){
-    const publicQuote:PublicPackageQuote={status:"requires_manual_quote",currency:config.currency,totalPackagePrice:null,pricePerPerson:null,estimatedDailyCost:null};
+    const requiresRatesFor=[...new Set(missingInputs.filter(item=>item.startsWith("supplierCost:")).map(item=>item.split(":")[1] as SupplierEntityType))];
+    const publicQuote:PublicPackageQuote={status:"requires_manual_quote",currency:config.currency,totalPackagePrice:null,pricePerPerson:null,estimatedDailyCost:null,requiresRatesFor,configurationPending:missingInputs.some(item=>!item.startsWith("supplierCost:"))};
     return {public:publicQuote,internalCost:null,sellingPrice:null,grossProfit:null,profitMargin:null,breakdown,missingInputs:[...new Set(missingInputs)],durationDays:days,nights,distanceKm:context.distanceKm,travellerUnits};
   }
 
