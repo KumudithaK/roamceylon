@@ -63,6 +63,11 @@ export type PublicPackageQuote={
   totalPackagePrice:number|null;
   pricePerPerson:number|null;
   estimatedDailyCost:number|null;
+  components?:Array<{
+    category:"accommodation"|"transport"|"experiences"|"guide";
+    label:string;
+    amount:number;
+  }>;
   requiresRatesFor?:SupplierEntityType[];
   inactiveRatesFor?:SupplierEntityType[];
   configurationPending?:boolean;

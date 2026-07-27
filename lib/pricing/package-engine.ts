@@ -9,6 +9,7 @@ const duration=(start:string,end:string,fallback:number)=>{
 };
 const adjustmentAmount=(base:number,adjustment:PricingAdjustment)=>adjustment.method==="fixed"?adjustment.value:base*adjustment.value/100;
 const applyAdjustments=(base:number,adjustments:PricingAdjustment[],stage:PricingAdjustment["stage"])=>adjustments.filter(item=>item.stage===stage).reduce((total,item)=>total+adjustmentAmount(total,item),base);
+const publicLabels={accommodation:"Accommodation",transport:"Private transport",experiences:"Experiences & entry fees",guide:"Local guide"} as const;
 
 const quantityFor=(unit:SupplierCostUnit,{rooms,nights,days,distance,travellerUnits,stayCount}:{rooms:number;nights:number;days:number;distance:number;travellerUnits:number;stayCount:number})=>({
   per_room_night:rooms*nights/Math.max(1,stayCount),
@@ -90,6 +91,26 @@ export function calculatePackageQuote(context:PackagePricingContext):AdminPackag
   const profitMargin=sellingPrice?money(grossProfit/sellingPrice*100):0;
   for(const item of adjustments)breakdown.push({key:`adjustment:${item.id}`,label:item.label,category:"adjustment",amount:money(adjustmentAmount(item.stage==="internal_cost"?internalBeforeAdjustments:sellingBeforeAdjustments,item)),internal:item.stage==="internal_cost"});
   const travellers=Math.max(1,selection.travellerCounts.adults+selection.travellerCounts.children);
-  const publicQuote:PublicPackageQuote={status:"ready",currency:config.currency,totalPackagePrice:sellingPrice,pricePerPerson:money(sellingPrice/travellers),estimatedDailyCost:money(sellingPrice/days)};
+  const componentCosts={accommodation:0,transport:0,experiences:0,guide:0};
+  for(const item of supplierCosts){
+    const amount=item.amount*quantityFor(item.unit,quantities);
+    if(item.entityType==="accommodation")componentCosts.accommodation+=amount;
+    else if(item.entityType==="vehicle")componentCosts.transport+=amount;
+    else if(item.entityType==="guide")componentCosts.guide+=amount;
+    else componentCosts.experiences+=amount;
+  }
+  for(const item of breakdown.filter(line=>line.category==="operations")){
+    if(item.key==="guide-accommodation")componentCosts.guide+=item.amount;
+    else componentCosts.transport+=item.amount;
+  }
+  const componentEntries=(Object.entries(componentCosts) as Array<[keyof typeof componentCosts,number]>).filter(([,amount])=>amount>0);
+  const componentBase=componentEntries.reduce((total,[,amount])=>total+amount,0);
+  let allocated=0;
+  const components=componentEntries.map(([category,amount],index)=>{
+    const componentAmount=index===componentEntries.length-1?money(sellingPrice-allocated):money(sellingPrice*amount/componentBase);
+    allocated+=componentAmount;
+    return {category,label:publicLabels[category],amount:componentAmount};
+  });
+  const publicQuote:PublicPackageQuote={status:"ready",currency:config.currency,totalPackagePrice:sellingPrice,pricePerPerson:money(sellingPrice/travellers),estimatedDailyCost:money(sellingPrice/days),components};
   return {public:publicQuote,internalCost,sellingPrice,grossProfit,profitMargin,breakdown,missingInputs:[],durationDays:days,nights,distanceKm:context.distanceKm,travellerUnits};
 }

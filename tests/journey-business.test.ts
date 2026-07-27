@@ -52,6 +52,10 @@ test("DMC package price includes supplier, operational, overhead and margin cost
   assert.equal(quote.sellingPrice,2148.53);
   assert.equal(quote.public.totalPackagePrice,2148.53);
   assert.equal(quote.public.pricePerPerson,716.18);
+  assert.equal(quote.public.components?.reduce((total,item)=>total+item.amount,0),quote.public.totalPackagePrice);
+  assert.deepEqual(quote.public.components?.map(item=>item.label),["Accommodation","Private transport","Experiences & entry fees","Local guide"]);
+  assert(!JSON.stringify(quote.public).includes("Driver salary"));
+  assert(!JSON.stringify(quote.public).includes("Profit"));
   assert(quote.breakdown.some(line=>line.label==="Fuel"));
   assert(quote.breakdown.some(line=>line.label==="Roam Ceylon service fee"));
   const buffered=calculatePackageQuote({config:{...config,routeDistanceBufferPercent:30},supplierCosts,selection,durationDays:2,distanceKm:100});
