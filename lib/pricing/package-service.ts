@@ -6,7 +6,7 @@ import type {AdminPackageQuote,DmcPricingConfig,PackageQuoteRequest,SupplierCost
 import type {Database} from "@/lib/database.types";
 
 type ConfigRow=Database["public"]["Tables"]["tour_pricing_config"]["Row"];
-type CostRow=Database["public"]["Tables"]["tour_supplier_costs"]["Row"];
+type CostRow=Database["public"]["Tables"]["pricing_plans"]["Row"];
 
 export class PackagePricingError extends Error{
   constructor(public code:"CONFIGURATION"|"INVALID_SELECTION"|"DATABASE",message:string){super(message);this.name="PackagePricingError"}
@@ -32,7 +32,16 @@ const mapConfig=(row:ConfigRow):DmcPricingConfig=>({
   serviceFeePercent:numberOrNull(row.service_fee_percent),
   targetProfitMarginPercent:numberOrNull(row.target_profit_margin_percent)
 });
-const mapCost=(row:CostRow):SupplierCost=>({id:row.id,entityType:row.entity_type,entityId:row.entity_id,category:row.cost_category,unit:row.unit,amount:Number(row.amount),partnerCommissionPercent:numberOrNull(row.partner_commission_percent)});
+const unitFor=(row:CostRow):SupplierCost["unit"]=>{
+  if(["per_night","per_room_night","per_villa"].includes(row.charging_method))return "per_room_night";
+  if(["per_person","per_entry"].includes(row.charging_method))return "per_person";
+  if(row.charging_method==="per_km")return "per_kilometre";
+  if(row.charging_method==="per_airport_transfer")return "per_transfer";
+  if(row.entity_type==="vehicle"&&row.charging_method==="per_day")return "per_vehicle_day";
+  if(row.entity_type==="guide"&&["half_day","full_day","multi_day"].includes(row.charging_method))return "per_guide_day";
+  return "fixed";
+};
+const mapCost=(row:CostRow):SupplierCost=>({id:row.id,entityType:row.entity_type,entityId:row.entity_id,category:row.name,unit:unitFor(row),amount:Number(row.price),partnerCommissionPercent:null});
 
 export class PackagePricingService{
   async quote(selection:PackageQuoteRequest):Promise<AdminPackageQuote>{
@@ -58,10 +67,15 @@ export class PackagePricingService{
     if(invalid)throw new PackagePricingError("INVALID_SELECTION","The quote contains unavailable or unpublished selections.");
 
     const entityIds=[...selection.selectedDestinationIds,...selection.selectedExperienceIds,...selection.selectedStayIds,...(selection.selectedVehicleId?[selection.selectedVehicleId]:[]),...(selection.selectedGuideId?[selection.selectedGuideId]:[])];
-    const costsResult=entityIds.length?await database.from("tour_supplier_costs").select("*").in("entity_id",entityIds).eq("active",true):{data:[],error:null};
+    const costsResult=entityIds.length?await database.from("pricing_plans").select("*").in("entity_id",entityIds).eq("active",true).order("sort_order"):{data:[],error:null};
     if(costsResult.error)throw new PackagePricingError("DATABASE",costsResult.error.message);
-    const pricingDate=selection.travelDates.start||new Date().toISOString().slice(0,10);
-    const supplierCosts=(costsResult.data??[]).filter(row=>(!row.valid_from||row.valid_from<=pricingDate)&&(!row.valid_to||row.valid_to>=pricingDate)).map(mapCost);
+    const grouped=new Map<string,CostRow[]>();
+    for(const row of costsResult.data??[]){
+      const key=`${row.entity_type}:${row.entity_id}`;
+      grouped.set(key,[...(grouped.get(key)??[]),row]);
+    }
+    const selectedPlans=[...grouped.values()].flatMap(rows=>rows[0]?.entity_type==="destination"?rows:rows.slice(0,1));
+    const supplierCosts=selectedPlans.map(mapCost);
     const destinations=(destinationsResult.data??[]).map(item=>({...item,latitude:item.latitude===null?null:Number(item.latitude),longitude:item.longitude===null?null:Number(item.longitude)}));
     const route=getRouteEstimate(destinations,selection.selectedDestinationIds);
     return calculatePackageQuote({config:mapConfig(configResult.data),supplierCosts,selection,durationDays:Math.max(1,route.estimatedTravelDays),distanceKm:route.estimatedDistance,adjustments:[]});

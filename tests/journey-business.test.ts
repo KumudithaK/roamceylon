@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {availableDestinations,availableExperiences} from "../lib/journey/journey-selectors.ts";
 import {calculatePackageQuote} from "../lib/pricing/package-engine.ts";
+import type {SupplierCost} from "../lib/pricing/package-types.ts";
 import {getRouteEstimate} from "../lib/journey/route.ts";
 
 test("theme selection returns the destination union without duplicates",()=>{
@@ -37,7 +38,7 @@ test("route estimate preserves selection order and computes distance",()=>{
 test("DMC package price includes supplier, operational, overhead and margin costs",()=>{
   const config={currency:"USD",roomOccupancy:2,childCostFactor:.5,routeDistanceBufferPercent:0,driverSalaryPerDay:40,fuelPricePerLitre:2,vehicleKmPerLitre:10,tollsPerJourney:10,parkingPerDay:5,guideAccommodationPerNight:25,airportTransferEachWay:30,administrationFixed:20,administrationPercent:5,contingencyPercent:10,serviceFeeFixed:10,serviceFeePercent:5,targetProfitMarginPercent:20};
   const selection={selectedDestinationIds:["d1"],selectedExperienceIds:["e1"],selectedStayIds:["a1"],selectedVehicleId:"v1",selectedGuideId:"g1",travelDates:{start:"2026-08-01",end:"2026-08-05"},travellerCounts:{adults:2,children:1}};
-  const supplierCosts=[
+  const supplierCosts:SupplierCost[]=[
     {id:"1",entityType:"accommodation",entityId:"a1",category:"Accommodation",unit:"per_room_night",amount:100,partnerCommissionPercent:null},
     {id:"2",entityType:"vehicle",entityId:"v1",category:"Vehicle rental",unit:"per_vehicle_day",amount:50,partnerCommissionPercent:null},
     {id:"3",entityType:"vehicle",entityId:"v1",category:"Vehicle distance",unit:"per_kilometre",amount:.5,partnerCommissionPercent:null},
