@@ -64,6 +64,7 @@ export type PublicPackageQuote={
   pricePerPerson:number|null;
   estimatedDailyCost:number|null;
   requiresRatesFor?:SupplierEntityType[];
+  inactiveRatesFor?:SupplierEntityType[];
   configurationPending?:boolean;
 };
 

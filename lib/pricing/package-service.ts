@@ -67,10 +67,11 @@ export class PackagePricingService{
     if(invalid)throw new PackagePricingError("INVALID_SELECTION","The quote contains unavailable or unpublished selections.");
 
     const entityIds=[...selection.selectedDestinationIds,...selection.selectedExperienceIds,...selection.selectedStayIds,...(selection.selectedVehicleId?[selection.selectedVehicleId]:[]),...(selection.selectedGuideId?[selection.selectedGuideId]:[])];
-    const costsResult=entityIds.length?await database.from("pricing_plans").select("*").in("entity_id",entityIds).eq("active",true).order("sort_order"):{data:[],error:null};
+    const costsResult=entityIds.length?await database.from("pricing_plans").select("*").in("entity_id",entityIds).order("sort_order"):{data:[],error:null};
     if(costsResult.error)throw new PackagePricingError("DATABASE",costsResult.error.message);
     const grouped=new Map<string,CostRow[]>();
-    for(const row of costsResult.data??[]){
+    const allPlans=costsResult.data??[];
+    for(const row of allPlans.filter(item=>item.active)){
       const key=`${row.entity_type}:${row.entity_id}`;
       grouped.set(key,[...(grouped.get(key)??[]),row]);
     }
@@ -78,6 +79,17 @@ export class PackagePricingService{
     const supplierCosts=selectedPlans.map(mapCost);
     const destinations=(destinationsResult.data??[]).map(item=>({...item,latitude:item.latitude===null?null:Number(item.latitude),longitude:item.longitude===null?null:Number(item.longitude)}));
     const route=getRouteEstimate(destinations,selection.selectedDestinationIds);
-    return calculatePackageQuote({config:mapConfig(configResult.data),supplierCosts,selection,durationDays:Math.max(1,route.estimatedTravelDays),distanceKm:route.estimatedDistance,adjustments:[]});
+    const quote=calculatePackageQuote({config:mapConfig(configResult.data),supplierCosts,selection,durationDays:Math.max(1,route.estimatedTravelDays),distanceKm:route.estimatedDistance,adjustments:[]});
+    if(quote.public.status==="requires_manual_quote"){
+      const activeKeys=new Set(supplierCosts.map(item=>`${item.entityType}:${item.entityId}`));
+      const inactiveKeys=new Set(allPlans.filter(item=>!item.active).map(item=>`${item.entity_type}:${item.entity_id}`));
+      const selectedEntities:Array<[SupplierCost["entityType"],string]>=[];
+      for(const id of selection.selectedStayIds)selectedEntities.push(["accommodation",id]);
+      for(const id of selection.selectedExperienceIds)selectedEntities.push(["experience",id]);
+      if(selection.selectedVehicleId)selectedEntities.push(["vehicle",selection.selectedVehicleId]);
+      if(selection.selectedGuideId)selectedEntities.push(["guide",selection.selectedGuideId]);
+      quote.public.inactiveRatesFor=[...new Set(selectedEntities.filter(([type,id])=>!activeKeys.has(`${type}:${id}`)&&inactiveKeys.has(`${type}:${id}`)).map(([type])=>type))];
+    }
+    return quote;
   }
 }
