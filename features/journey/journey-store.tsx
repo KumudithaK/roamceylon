@@ -1,6 +1,6 @@
 "use client";
 
-import {createContext,useContext,useEffect,useMemo,useReducer} from "react";
+import {createContext,useContext,useMemo,useReducer} from "react";
 import type {JourneyBootstrap} from "@/lib/journey/journey-service";
 import {availableDestinations,availableExperiences} from "@/lib/journey/journey-selectors";
 
@@ -25,7 +25,6 @@ type Action=
   |{type:"hydrate";state:JourneyState};
 
 const initial:JourneyState={selectedThemeIds:[],selectedDestinationIds:[],selectedExperienceIds:[],selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"",end:""},travellerCounts:{adults:2,children:0},budgetPreference:"flexible"};
-const storageKey="roam-ceylon-journey-v2";
 
 function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):JourneyState{
   if(action.type==="hydrate")return action.state;
@@ -56,21 +55,12 @@ function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):Journey
 
 const Context=createContext<{state:JourneyState;dispatch:React.Dispatch<Action>}|null>(null);
 
-export function JourneyProvider({data,children}:{data:JourneyBootstrap;children:React.ReactNode}){
-  const loadInitial=():JourneyState=>{
-    if(typeof window==="undefined")return initial;
-    try{
-      const saved=localStorage.getItem(storageKey);
-      if(saved){
-        const parsed=JSON.parse(saved) as {version?:number;state?:JourneyState};
-        if(parsed.version===2&&parsed.state)return {...initial,...parsed.state};
-        else localStorage.removeItem(storageKey);
-      }
-    }catch{localStorage.removeItem(storageKey)}
-    return initial;
-  };
-  const [state,dispatch]=useReducer((current:JourneyState,action:Action)=>reducer(data,current,action),initial,loadInitial);
-  useEffect(()=>{localStorage.setItem(storageKey,JSON.stringify({version:2,state}))},[state]);
+export function JourneyProvider({data,initialThemeId,children}:{data:JourneyBootstrap;initialThemeId?:string|null;children:React.ReactNode}){
+  const startingState=useMemo<JourneyState>(()=>({
+    ...initial,
+    selectedThemeIds:initialThemeId&&data.themes.some(theme=>theme.id===initialThemeId)?[initialThemeId]:[]
+  }),[data.themes,initialThemeId]);
+  const [state,dispatch]=useReducer((current:JourneyState,action:Action)=>reducer(data,current,action),startingState);
   const value=useMemo(()=>({state,dispatch}),[state]);
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
