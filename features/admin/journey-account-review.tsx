@@ -3,7 +3,7 @@
 import Link from "next/link";
 import {FormEvent,useEffect,useState} from "react";
 import {useRouter} from "next/navigation";
-import {ArrowLeft,Banknote,Building2,CheckCircle2,CircleDollarSign,Plus,TrendingUp,WalletCards} from "lucide-react";
+import {ArrowLeft,Banknote,Building2,CheckCircle2,CircleDollarSign,Paperclip,PiggyBank,Plus,TrendingUp,WalletCards} from "lucide-react";
 import {AdminShell} from "./admin-shell";
 import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
@@ -12,6 +12,7 @@ import type {Database} from "@/lib/database.types";
 type Account=Database["public"]["Tables"]["journey_accounts"]["Row"];
 type Settlement=Database["public"]["Tables"]["journey_settlements"]["Row"];
 type Transaction=Database["public"]["Tables"]["accounting_transactions"]["Row"];
+type Attachment=Database["public"]["Tables"]["accounting_attachments"]["Row"];
 type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
 type Action={type:"receipt"|"refund"}|{type:"payment";settlement:Settlement}|{type:"liability"}|null;
 const payeeLabels={accommodation:"Stay",vehicle:"Fleet",guide:"Guide",experience:"Experience",destination:"Destination fee",operations:"Operations",other:"Other"} as const;
@@ -23,6 +24,8 @@ export function JourneyAccountReview({id}:{id:string}){
   const [account,setAccount]=useState<Account|null>(null);
   const [settlements,setSettlements]=useState<Settlement[]>([]);
   const [transactions,setTransactions]=useState<Transaction[]>([]);
+  const [attachments,setAttachments]=useState<Attachment[]>([]);
+  const [attachmentUrls,setAttachmentUrls]=useState<Record<string,string>>({});
   const [enquiry,setEnquiry]=useState<Enquiry|null>(null);
   const [action,setAction]=useState<Action>(null);
   const [message,setMessage]=useState("");
@@ -33,12 +36,15 @@ export function JourneyAccountReview({id}:{id:string}){
     if(!session){router.replace("/admin/login");return}
     const {data:row,error}=await database.from("journey_accounts").select("*").eq("id",id).maybeSingle();
     if(error||!row){setMessage(error?.message??"Journey account not found.");setLoading(false);return}
-    const [settlementResult,transactionResult,enquiryResult]=await Promise.all([
+    const [settlementResult,transactionResult,enquiryResult,attachmentResult]=await Promise.all([
       database.from("journey_settlements").select("*").eq("account_id",id).order("created_at"),
       database.from("accounting_transactions").select("*").eq("account_id",id).order("payment_date",{ascending:false}).order("created_at",{ascending:false}),
-      database.from("enquiries").select("*").eq("id",row.enquiry_id).maybeSingle()
+      database.from("enquiries").select("*").eq("id",row.enquiry_id).maybeSingle(),
+      database.from("accounting_attachments").select("*").eq("account_id",id).order("created_at")
     ]);
-    setAccount(row);setSettlements(settlementResult.data??[]);setTransactions(transactionResult.data??[]);setEnquiry(enquiryResult.data??null);setLoading(false);
+    const files=attachmentResult.data??[];
+    const signed=await Promise.all(files.map(async file=>[file.id,(await database.storage.from("accounting-receipts").createSignedUrl(file.storage_path,600)).data?.signedUrl??""] as const));
+    setAccount(row);setSettlements(settlementResult.data??[]);setTransactions(transactionResult.data??[]);setAttachments(files);setAttachmentUrls(Object.fromEntries(signed));setEnquiry(enquiryResult.data??null);setLoading(false);
   };
   useEffect(()=>{void (async()=>{
     const database=createClient();
@@ -46,12 +52,15 @@ export function JourneyAccountReview({id}:{id:string}){
     if(!session){router.replace("/admin/login");return}
     const {data:row,error}=await database.from("journey_accounts").select("*").eq("id",id).maybeSingle();
     if(error||!row){setMessage(error?.message??"Journey account not found.");setLoading(false);return}
-    const [settlementResult,transactionResult,enquiryResult]=await Promise.all([
+    const [settlementResult,transactionResult,enquiryResult,attachmentResult]=await Promise.all([
       database.from("journey_settlements").select("*").eq("account_id",id).order("created_at"),
       database.from("accounting_transactions").select("*").eq("account_id",id).order("payment_date",{ascending:false}).order("created_at",{ascending:false}),
-      database.from("enquiries").select("*").eq("id",row.enquiry_id).maybeSingle()
+      database.from("enquiries").select("*").eq("id",row.enquiry_id).maybeSingle(),
+      database.from("accounting_attachments").select("*").eq("account_id",id).order("created_at")
     ]);
-    setAccount(row);setSettlements(settlementResult.data??[]);setTransactions(transactionResult.data??[]);setEnquiry(enquiryResult.data??null);setLoading(false);
+    const files=attachmentResult.data??[];
+    const signed=await Promise.all(files.map(async file=>[file.id,(await database.storage.from("accounting-receipts").createSignedUrl(file.storage_path,600)).data?.signedUrl??""] as const));
+    setAccount(row);setSettlements(settlementResult.data??[]);setTransactions(transactionResult.data??[]);setAttachments(files);setAttachmentUrls(Object.fromEntries(signed));setEnquiry(enquiryResult.data??null);setLoading(false);
   })()},[id,router]);
   const request=async(path:string,payload:unknown)=>{
     const {data:{session}}=await createClient().auth.getSession();
@@ -65,17 +74,15 @@ export function JourneyAccountReview({id}:{id:string}){
     const form=new FormData(event.currentTarget);
     const type=action.type==="receipt"?"customer_receipt":action.type==="refund"?"customer_refund":"supplier_payment";
     try{
-      await request("/api/admin/accounting/transactions",{
-        accountId:account.id,
-        settlementId:action.type==="payment"?action.settlement.id:null,
-        type,
-        amount:Number(form.get("amount")),
-        paymentDate:String(form.get("date")),
-        paymentMethod:String(form.get("method")),
-        reference:String(form.get("reference")),
-        notes:String(form.get("notes"))
-      });
-      setAction(null);setMessage("Payment recorded successfully.");await load();
+      form.set("accountId",account.id);
+      form.set("settlementId",action.type==="payment"?action.settlement.id:"");
+      form.set("type",type);
+      form.set("waivedAmount",action.type==="payment"?String(form.get("waivedAmount")||"0"):"0");
+      const {data:{session}}=await createClient().auth.getSession();
+      const response=await fetch("/api/admin/accounting/transactions",{method:"POST",headers:{authorization:`Bearer ${session?.access_token??""}`},body:form});
+      const result=await response.json() as {error?:string};
+      if(!response.ok)throw new Error(result.error??"The payment could not be recorded.");
+      setAction(null);setMessage(action.type==="payment"&&Number(form.get("waivedAmount"))>0?"Supplier settlement and courtesy saving recorded.":"Payment recorded successfully.");await load();
     }catch(error){setMessage(error instanceof Error?error.message:"Payment could not be recorded.")}
   };
   const liability=async(event:FormEvent<HTMLFormElement>)=>{
@@ -97,30 +104,33 @@ export function JourneyAccountReview({id}:{id:string}){
   if(loading)return <AdminShell><div className="min-h-[70vh] animate-pulse rounded-3xl bg-white"/></AdminShell>;
   if(!account)return <AdminShell><div className="grid min-h-[60vh] place-items-center text-stone">{message}</div></AdminShell>;
   const customerBalance=Math.max(0,account.selling_price-account.amount_received);
-  const supplierDue=settlements.filter(row=>row.status!=="waived").reduce((total,row)=>total+row.amount_due,0);
-  const supplierPaid=settlements.filter(row=>row.status!=="waived").reduce((total,row)=>total+row.amount_paid,0);
-  const supplierBalance=Math.max(0,supplierDue-supplierPaid);
+  const supplierDue=settlements.reduce((total,row)=>total+row.amount_due,0);
+  const supplierPaid=settlements.reduce((total,row)=>total+row.amount_paid,0);
+  const supplierSavings=settlements.reduce((total,row)=>total+row.waived_amount,0);
+  const supplierBalance=Math.max(0,supplierDue-supplierPaid-supplierSavings);
+  const realizedProfit=account.gross_profit+supplierSavings;
   const collectionProgress=account.selling_price?Math.min(100,account.amount_received/account.selling_price*100):100;
-  const settlementProgress=supplierDue?Math.min(100,supplierPaid/supplierDue*100):100;
+  const settlementProgress=supplierDue?Math.min(100,(supplierPaid+supplierSavings)/supplierDue*100):100;
   return <AdminShell><div className="mx-auto max-w-7xl">
     <Link href="/admin/accounting" className="inline-flex items-center gap-2 text-sm font-semibold text-forest"><ArrowLeft className="size-4"/>Back to accounting</Link>
     <div className="mt-6 flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">{account.account_number}</p><h1 className="font-serif text-4xl md:text-5xl">{account.traveller_name}</h1><p className="mt-2 text-sm text-stone">{account.traveller_email} · Posted {new Date(account.posted_at).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={()=>setAction({type:"refund"})}>Record refund</Button><Button onClick={()=>setAction({type:"receipt"})}><Banknote/>Record customer receipt</Button></div></div>
     {message&&<div className="mt-6 rounded-2xl border border-gold/25 bg-gold/10 p-4 text-sm">{message}</div>}
-    <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
       <Summary icon={CircleDollarSign} label="Package selling price" value={money(account.selling_price,account.currency)} detail={`${account.profit_margin.toFixed(1)}% target margin`} tone="gold"/>
       <Summary icon={WalletCards} label="Customer balance" value={money(customerBalance,account.currency)} detail={`${Math.round(collectionProgress)}% collected`} tone="forest"/>
       <Summary icon={Building2} label="Supplier outstanding" value={money(supplierBalance,account.currency)} detail={`${Math.round(settlementProgress)}% settled`} tone="light"/>
-      <Summary icon={TrendingUp} label="Gross profit" value={money(account.gross_profit,account.currency)} detail={`${money(account.internal_cost,account.currency)} internal cost`} tone="light"/>
+      <Summary icon={PiggyBank} label="Supplier savings" value={money(supplierSavings,account.currency)} detail="Courtesy waivers secured" tone="light"/>
+      <Summary icon={TrendingUp} label="Realized gross profit" value={money(realizedProfit,account.currency)} detail={`${money(account.gross_profit,account.currency)} originally projected`} tone="light"/>
     </section>
     <section className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_.85fr]">
       <div className="rounded-3xl border border-stone/15 bg-white p-7"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="eyebrow mb-2">Accounts payable</p><h2 className="font-serif text-2xl">Supplier settlements</h2></div><button onClick={()=>setAction({type:"liability"})} className="inline-flex items-center gap-2 rounded-full bg-sand-light px-4 py-2 text-xs font-bold"><Plus className="size-4"/>Other payment</button></div><div className="mt-6 divide-y divide-stone/15">{settlements.length?settlements.map(row=>{
-        const remaining=Math.max(0,row.amount_due-row.amount_paid);
-        return <div key={row.id} className="grid gap-4 py-5 first:pt-0 last:pb-0 md:grid-cols-[1fr_140px_120px] md:items-center"><div><div className="flex flex-wrap items-center gap-2"><strong>{row.payee_name}</strong><span className="rounded-full bg-sand-light px-2 py-1 text-[.6rem] font-bold uppercase text-stone">{payeeLabels[row.payee_type]}</span></div><p className="mt-1 text-xs text-stone">{row.description||"Supplier payment"}{row.due_date?` · Due ${row.due_date}`:""}</p></div><div><span className="block text-xs text-stone">Outstanding</span><strong className={remaining?"text-slate":"text-emerald-700"}>{money(remaining,row.currency)}</strong></div>{remaining&&row.status!=="waived"?<button onClick={()=>setAction({type:"payment",settlement:row})} className="rounded-full border border-forest/20 px-4 py-2 text-xs font-bold text-forest">Record payment</button>:<span className="flex items-center gap-1 text-xs font-bold text-emerald-700"><CheckCircle2 className="size-4"/>Settled</span>}</div>
+        const remaining=Math.max(0,row.amount_due-row.amount_paid-row.waived_amount);
+        return <div key={row.id} className="grid gap-4 py-5 first:pt-0 last:pb-0 md:grid-cols-[1fr_150px_130px] md:items-center"><div><div className="flex flex-wrap items-center gap-2"><strong>{row.payee_name}</strong><span className="rounded-full bg-sand-light px-2 py-1 text-[.6rem] font-bold uppercase text-stone">{payeeLabels[row.payee_type]}</span>{row.waived_amount>0&&<span className="rounded-full bg-emerald-100 px-2 py-1 text-[.6rem] font-bold uppercase text-emerald-800">{money(row.waived_amount,row.currency)} saved</span>}</div><p className="mt-1 text-xs text-stone">{row.description||"Supplier payment"}{row.due_date?` · Due ${row.due_date}`:""}</p>{row.waiver_reason&&<p className="mt-2 text-xs italic text-emerald-800">Courtesy: {row.waiver_reason}</p>}</div><div><span className="block text-xs text-stone">Outstanding</span><strong className={remaining?"text-slate":"text-emerald-700"}>{money(remaining,row.currency)}</strong><span className="mt-1 block text-[.65rem] text-stone">{money(row.amount_paid,row.currency)} paid</span></div>{remaining?<button onClick={()=>setAction({type:"payment",settlement:row})} className="rounded-full border border-forest/20 px-4 py-2 text-xs font-bold text-forest">Settle / waive</button>:<span className="flex items-center gap-1 text-xs font-bold text-emerald-700"><CheckCircle2 className="size-4"/>Resolved</span>}</div>
       }):<p className="py-8 text-sm text-stone">No supplier or operational payments were generated.</p>}</div></div>
-      <div className="rounded-3xl bg-forest p-7 text-ivory"><p className="eyebrow mb-2 text-gold-light">Payment progress</p><h2 className="font-serif text-2xl">Journey position</h2><Progress label="Traveller payments" value={collectionProgress} amount={`${money(account.amount_received,account.currency)} received`}/><Progress label="Partner settlements" value={settlementProgress} amount={`${money(supplierPaid,account.currency)} paid`}/><div className="mt-8 grid gap-3 border-t border-white/10 pt-6 text-sm"><Row label="Selling price" value={money(account.selling_price,account.currency)}/><Row label="Internal cost" value={money(account.internal_cost,account.currency)}/><Row label="Gross profit" value={money(account.gross_profit,account.currency)}/><Row label="Cash currently held" value={money(account.amount_received-account.supplier_paid,account.currency)}/></div>{enquiry&&<Link href={`/admin/enquiries/${enquiry.id}`} className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-gold-light">Open traveller enquiry <ArrowLeft className="size-4 rotate-180"/></Link>}</div>
+      <div className="rounded-3xl bg-forest p-7 text-ivory"><p className="eyebrow mb-2 text-gold-light">Payment progress</p><h2 className="font-serif text-2xl">Journey position</h2><Progress label="Traveller payments" value={collectionProgress} amount={`${money(account.amount_received,account.currency)} received`}/><Progress label="Partner settlements" value={settlementProgress} amount={`${money(supplierPaid,account.currency)} paid · ${money(supplierSavings,account.currency)} waived`}/><div className="mt-8 grid gap-3 border-t border-white/10 pt-6 text-sm"><Row label="Selling price" value={money(account.selling_price,account.currency)}/><Row label="Original internal cost" value={money(account.internal_cost,account.currency)}/><Row label="Supplier courtesy savings" value={`+ ${money(supplierSavings,account.currency)}`}/><Row label="Realized internal cost" value={money(Math.max(0,account.internal_cost-supplierSavings),account.currency)}/><Row label="Realized gross profit" value={money(realizedProfit,account.currency)}/><Row label="Cash currently held" value={money(account.amount_received-account.supplier_paid,account.currency)}/></div>{enquiry&&<Link href={`/admin/enquiries/${enquiry.id}`} className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-gold-light">Open traveller enquiry <ArrowLeft className="size-4 rotate-180"/></Link>}</div>
     </section>
-    <section className="mt-6 rounded-3xl border border-stone/15 bg-white p-7"><div><p className="eyebrow mb-2">Audit trail</p><h2 className="font-serif text-2xl">Payment history</h2></div>{transactions.length?<div className="mt-6 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-stone/20 text-[.65rem] uppercase tracking-widest text-stone"><tr><th className="pb-3">Date</th><th className="pb-3">Entry</th><th className="pb-3">Method</th><th className="pb-3">Reference</th><th className="pb-3 text-right">Amount</th></tr></thead><tbody className="divide-y divide-stone/15">{transactions.map(row=><tr key={row.id}><td className="py-4">{row.payment_date}</td><td className="py-4 font-semibold">{row.transaction_type==="customer_receipt"?"Customer receipt":row.transaction_type==="customer_refund"?"Customer refund":"Supplier payment"}</td><td className="py-4 text-stone">{row.payment_method||"Not specified"}</td><td className="py-4 text-stone">{row.reference||"—"}</td><td className={`py-4 text-right font-bold ${row.transaction_type==="customer_refund"||row.transaction_type==="supplier_payment"?"text-red-700":"text-emerald-700"}`}>{row.transaction_type==="customer_receipt"?"+":"−"} {money(row.amount,row.currency)}</td></tr>)}</tbody></table></div>:<div className="mt-6 rounded-2xl bg-sand-light p-8 text-center text-sm text-stone">No payments recorded yet.</div>}</section>
-    {action&&<div className="fixed inset-0 z-50 grid place-items-center bg-slate/65 p-4 backdrop-blur-sm"><div className="w-full max-w-lg rounded-3xl bg-ivory p-7 shadow-2xl"><p className="eyebrow mb-2">{action.type==="liability"?"Accounts payable":"Payment entry"}</p><h2 className="font-serif text-3xl">{action.type==="receipt"?"Record customer receipt":action.type==="refund"?"Record customer refund":action.type==="payment"?`Pay ${action.settlement.payee_name}`:"Add another payment"}</h2>{action.type==="liability"?<LiabilityForm onSubmit={liability} onCancel={()=>setAction(null)} currency={account.currency}/>:<TransactionForm onSubmit={transaction} onCancel={()=>setAction(null)} currency={account.currency} maximum={action.type==="payment"?action.settlement.amount_due-action.settlement.amount_paid:action.type==="refund"?account.amount_received:customerBalance}/>}</div></div>}
+    <section className="mt-6 rounded-3xl border border-stone/15 bg-white p-7"><div><p className="eyebrow mb-2">Audit trail</p><h2 className="font-serif text-2xl">Payment history</h2></div>{transactions.length?<div className="mt-6 overflow-x-auto"><table className="w-full min-w-[820px] text-left text-sm"><thead className="border-b border-stone/20 text-[.65rem] uppercase tracking-widest text-stone"><tr><th className="pb-3">Date</th><th className="pb-3">Entry</th><th className="pb-3">Method</th><th className="pb-3">Reference</th><th className="pb-3">Receipt</th><th className="pb-3 text-right">Amount</th></tr></thead><tbody className="divide-y divide-stone/15">{transactions.map(row=>{const file=attachments.find(item=>item.transaction_id===row.id);const outgoing=row.transaction_type==="customer_refund"||row.transaction_type==="supplier_payment";return <tr key={row.id}><td className="py-4">{row.payment_date}</td><td className="py-4 font-semibold">{row.transaction_type==="customer_receipt"?"Customer receipt":row.transaction_type==="customer_refund"?"Customer refund":row.transaction_type==="supplier_waiver"?"Supplier courtesy saving":"Supplier payment"}</td><td className="py-4 text-stone">{row.payment_method||"Not specified"}</td><td className="py-4 text-stone">{row.reference||"—"}</td><td className="py-4">{file&&attachmentUrls[file.id]?<a href={attachmentUrls[file.id]} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-bold text-forest"><Paperclip className="size-3"/>View receipt</a>:<span className="text-stone">—</span>}</td><td className={`py-4 text-right font-bold ${outgoing?"text-red-700":"text-emerald-700"}`}>{outgoing?"−":"+"} {money(row.amount,row.currency)}</td></tr>})}</tbody></table></div>:<div className="mt-6 rounded-2xl bg-sand-light p-8 text-center text-sm text-stone">No payments recorded yet.</div>}</section>
+    {action&&<div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-slate/65 p-4 backdrop-blur-sm"><div className="my-6 w-full max-w-lg rounded-3xl bg-ivory p-7 shadow-2xl"><p className="eyebrow mb-2">{action.type==="liability"?"Accounts payable":"Payment entry"}</p><h2 className="font-serif text-3xl">{action.type==="receipt"?"Record customer receipt":action.type==="refund"?"Record customer refund":action.type==="payment"?`Settle ${action.settlement.payee_name}`:"Add another payment"}</h2>{action.type==="liability"?<LiabilityForm onSubmit={liability} onCancel={()=>setAction(null)} currency={account.currency}/>:<TransactionForm onSubmit={transaction} onCancel={()=>setAction(null)} currency={account.currency} supplier={action.type==="payment"} maximum={action.type==="payment"?action.settlement.amount_due-action.settlement.amount_paid-action.settlement.waived_amount:action.type==="refund"?account.amount_received:customerBalance}/>}</div></div>}
   </div></AdminShell>;
 }
 
@@ -130,5 +140,5 @@ function Summary({icon:Icon,label,value,detail,tone}:{icon:typeof Banknote;label
 }
 function Progress({label,value,amount}:{label:string;value:number;amount:string}){return <div className="mt-7"><div className="mb-2 flex justify-between text-sm"><span className="text-ivory/60">{label}</span><strong>{Math.round(value)}%</strong></div><div className="h-2.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gold" style={{width:`${value}%`}}/></div><p className="mt-2 text-xs text-ivory/40">{amount}</p></div>}
 function Row({label,value}:{label:string;value:string}){return <div className="flex justify-between gap-4"><span className="text-ivory/55">{label}</span><strong>{value}</strong></div>}
-function TransactionForm({onSubmit,onCancel,currency,maximum}:{onSubmit:(event:FormEvent<HTMLFormElement>)=>void;onCancel:()=>void;currency:string;maximum:number}){return <form onSubmit={onSubmit} className="mt-6 grid gap-4"><label className="grid gap-2 text-sm font-semibold">Amount ({currency})<input required name="amount" type="number" min=".01" max={Math.max(.01,maximum)} step=".01" defaultValue={maximum>0?maximum.toFixed(2):""} className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Payment date<input required name="date" type="date" defaultValue={today()} className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Payment method<select name="method" className="rounded-xl border border-stone/25 px-4 py-3"><option>Bank transfer</option><option>Card</option><option>Cash</option><option>Online payment</option><option>Other</option></select></label><label className="grid gap-2 text-sm font-semibold">Reference<input name="reference" placeholder="Bank reference or receipt number" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Notes<textarea name="notes" rows={3} className="rounded-xl border border-stone/25 px-4 py-3"/></label><div className="mt-2 flex justify-end gap-3"><Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button><Button type="submit">Save payment</Button></div></form>}
+function TransactionForm({onSubmit,onCancel,currency,maximum,supplier}:{onSubmit:(event:FormEvent<HTMLFormElement>)=>void;onCancel:()=>void;currency:string;maximum:number;supplier:boolean}){return <form onSubmit={onSubmit} className="mt-6 grid gap-4"><div className={supplier?"grid gap-4 sm:grid-cols-2":""}><label className="grid gap-2 text-sm font-semibold">Amount paid ({currency})<input required name="amount" type="number" min={supplier?"0":".01"} max={Math.max(.01,maximum)} step=".01" defaultValue={maximum>0?maximum.toFixed(2):""} className="rounded-xl border border-stone/25 px-4 py-3"/></label>{supplier&&<label className="grid gap-2 text-sm font-semibold">Courtesy waiver ({currency})<input name="waivedAmount" type="number" min="0" max={maximum} step=".01" defaultValue="0.00" className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3"/></label>}</div>{supplier&&<><p className="rounded-xl bg-sand-light p-3 text-xs leading-5 text-stone">Paid amount plus courtesy waiver must equal or remain below the {money(maximum,currency)} outstanding balance.</p><label className="grid gap-2 text-sm font-semibold">Waiver reason <textarea name="waiverReason" rows={2} placeholder="Example: Partner courtesy reduction from USD 100 to USD 90 per night" className="rounded-xl border border-stone/25 px-4 py-3"/></label></>}<label className="grid gap-2 text-sm font-semibold">Payment date<input required name="paymentDate" type="date" defaultValue={today()} className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Payment method<select name="paymentMethod" className="rounded-xl border border-stone/25 px-4 py-3"><option>Bank transfer</option><option>Card</option><option>Cash</option><option>Online payment</option><option>Other</option></select></label><label className="grid gap-2 text-sm font-semibold">Reference<input name="reference" placeholder="Bank reference or receipt number" className="rounded-xl border border-stone/25 px-4 py-3"/></label>{supplier&&<label className="grid gap-2 rounded-2xl border border-dashed border-stone/30 p-4 text-sm font-semibold"><span className="flex items-center gap-2"><Paperclip className="size-4 text-gold"/>Bank transfer receipt <small className="font-normal text-stone">(optional)</small></span><input name="receipt" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp" className="text-xs font-normal file:mr-3 file:rounded-full file:border-0 file:bg-forest file:px-3 file:py-2 file:text-xs file:font-bold file:text-white"/><small className="font-normal text-stone">PDF or image, maximum 10 MB. Stored privately.</small></label>}<label className="grid gap-2 text-sm font-semibold">Notes<textarea name="notes" rows={3} className="rounded-xl border border-stone/25 px-4 py-3"/></label><div className="mt-2 flex justify-end gap-3"><Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button><Button type="submit">{supplier?"Save settlement":"Save payment"}</Button></div></form>}
 function LiabilityForm({onSubmit,onCancel,currency}:{onSubmit:(event:FormEvent<HTMLFormElement>)=>void;onCancel:()=>void;currency:string}){return <form onSubmit={onSubmit} className="mt-6 grid gap-4"><label className="grid gap-2 text-sm font-semibold">Payee<input required name="payee" placeholder="Supplier or service provider" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Description<input required name="description" placeholder="What is this payment for?" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Amount ({currency})<input required name="amount" type="number" min=".01" step=".01" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Due date<input name="date" type="date" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Notes<textarea name="notes" rows={3} className="rounded-xl border border-stone/25 px-4 py-3"/></label><div className="mt-2 flex justify-end gap-3"><Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button><Button type="submit">Add payment</Button></div></form>}

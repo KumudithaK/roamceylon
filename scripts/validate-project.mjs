@@ -11,7 +11,8 @@ const required=[
   "app/admin/accounting/page.tsx","app/api/admin/accounting/post/route.ts",
   "features/journey/journey-builder.tsx","components/site/gallery-carousel.tsx",
   "supabase/migrations/202607260003_full_cms.sql",
-  "supabase/migrations/202607280003_journey_accounting.sql"
+  "supabase/migrations/202607280003_journey_accounting.sql",
+  "supabase/migrations/202607280004_supplier_waivers_and_receipts.sql"
 ];
 await Promise.all(required.map(file=>access(path.join(root,file))));
 const packageJson=JSON.parse(await read("package.json"));
@@ -35,4 +36,10 @@ assert.match(accountingMigration,/enquiry_id uuid not null unique/);
 assert.match(accountingMigration,/quote_snapshot jsonb not null/);
 assert.match(accountingMigration,/accounting_transactions_refresh/);
 assert.match(accountingMigration,/revoke insert,update,delete on public\.accounting_transactions from anon,authenticated/);
+const waiverMigration=await read("supabase/migrations/202607280004_supplier_waivers_and_receipts.sql");
+assert.match(waiverMigration,/supplier_savings numeric not null default 0/);
+assert.match(waiverMigration,/waived_amount numeric not null default 0/);
+assert.match(waiverMigration,/supplier_waiver/);
+assert.match(waiverMigration,/accounting-receipts/);
+assert.match(waiverMigration,/accounting_attachments_staff_read/);
 console.log("Roam Ceylon V2 architecture, routes, dependencies, metadata, and secret boundaries validated.");

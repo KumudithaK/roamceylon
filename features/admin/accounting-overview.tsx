@@ -64,14 +64,16 @@ export function AccountingOverview(){
   const currency=accounts[0]?.currency??"USD";
   const revenue=accounts.filter(row=>row.status!=="void").reduce((total,row)=>total+row.selling_price,0);
   const received=accounts.filter(row=>row.status!=="void").reduce((total,row)=>total+row.amount_received,0);
-  const profit=accounts.filter(row=>row.status!=="void").reduce((total,row)=>total+row.gross_profit,0);
-  const due=settlements.filter(row=>row.status!=="waived").reduce((total,row)=>total+row.amount_due,0);
-  const paid=settlements.filter(row=>row.status!=="waived").reduce((total,row)=>total+row.amount_paid,0);
-  const outstanding=Math.max(0,due-paid);
+  const projectedProfit=accounts.filter(row=>row.status!=="void").reduce((total,row)=>total+row.gross_profit,0);
+  const savings=accounts.filter(row=>row.status!=="void").reduce((total,row)=>total+row.supplier_savings,0);
+  const realizedProfit=projectedProfit+savings;
+  const due=settlements.reduce((total,row)=>total+row.amount_due,0);
+  const paid=settlements.reduce((total,row)=>total+row.amount_paid,0);
+  const outstanding=Math.max(0,due-paid-savings);
   const cashPosition=received-paid;
   const typeTotals=Object.keys(payeeLabels).map(type=>{
-    const rows=settlements.filter(row=>row.payee_type===type&&row.status!=="waived");
-    return {type:type as keyof typeof payeeLabels,due:rows.reduce((sum,row)=>sum+row.amount_due,0),paid:rows.reduce((sum,row)=>sum+row.amount_paid,0)};
+    const rows=settlements.filter(row=>row.payee_type===type);
+    return {type:type as keyof typeof payeeLabels,due:rows.reduce((sum,row)=>sum+row.amount_due,0),paid:rows.reduce((sum,row)=>sum+row.amount_paid,0),waived:rows.reduce((sum,row)=>sum+row.waived_amount,0)};
   }).filter(item=>item.due>0);
   if(loading)return <AdminShell><div className="min-h-[70vh] animate-pulse rounded-3xl bg-white"/></AdminShell>;
   return <AdminShell><div className="mx-auto max-w-[1500px]">
@@ -81,7 +83,7 @@ export function AccountingOverview(){
       <Metric icon={CircleDollarSign} label="Journey revenue" value={money(revenue,currency)} detail={`${accounts.length} journey account${accounts.length===1?"":"s"}`} tone="gold"/>
       <Metric icon={Banknote} label="Customer receipts" value={money(received,currency)} detail={`${revenue?Math.round(received/revenue*100):0}% collected`} tone="forest"/>
       <Metric icon={Building2} label="Supplier outstanding" value={money(outstanding,currency)} detail={`${settlements.filter(row=>["pending","part_paid"].includes(row.status)).length} open settlements`} tone="light"/>
-      <Metric icon={TrendingUp} label="Projected gross profit" value={money(profit,currency)} detail={`${revenue?Math.round(profit/revenue*100):0}% blended margin`} tone="light"/>
+      <Metric icon={TrendingUp} label="Realized gross profit" value={money(realizedProfit,currency)} detail={`${money(savings,currency)} supplier savings added`} tone="light"/>
       <Metric icon={WalletCards} label="Cash position" value={money(cashPosition,currency)} detail="Receipts less supplier payments" tone={cashPosition>=0?"light":"danger"}/>
     </section>
     <section className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_.75fr]">
@@ -89,7 +91,7 @@ export function AccountingOverview(){
         const balance=Math.max(0,account.selling_price-account.amount_received);
         return <Link href={`/admin/accounting/${account.id}`} key={account.id} className="grid gap-4 p-5 transition hover:bg-sand-light lg:grid-cols-[1.2fr_.8fr_.7fr_.5fr] lg:items-center"><div><strong className="font-serif text-xl">{account.traveller_name}</strong><p className="mt-1 text-xs text-stone">{account.account_number} · {account.travel_start_date||"Flexible dates"}</p></div><div><span className={`rounded-full px-3 py-1 text-[.65rem] font-bold uppercase ${statusStyles[account.status]}`}>{statusLabels[account.status]}</span></div><div><span className="block text-xs text-stone">Balance to collect</span><strong className="text-sm text-forest">{money(balance,account.currency)}</strong></div><ArrowUpRight className="size-5 text-stone"/></Link>
       })}</div>:<Empty text="No journey accounts yet. Close a fully priced enquiry, then post it to Accounting."/>}</div>
-      <div className="rounded-3xl bg-forest p-7 text-ivory"><p className="eyebrow mb-3 text-gold-light">Settlement control</p><h2 className="font-serif text-2xl">Supplier exposure</h2><div className="mt-7 grid gap-5">{typeTotals.length?typeTotals.map(item=>{const progress=item.due?Math.min(100,item.paid/item.due*100):0;return <div key={item.type}><div className="mb-2 flex justify-between gap-3 text-sm"><span className="text-ivory/65">{payeeLabels[item.type]}</span><strong>{money(item.due-item.paid,currency)}</strong></div><div className="h-2 rounded-full bg-white/10"><div className="h-full rounded-full bg-gold" style={{width:`${progress}%`}}/></div><p className="mt-1 text-[.65rem] text-ivory/40">{Math.round(progress)}% settled</p></div>}):<p className="text-sm leading-6 text-ivory/55">Supplier obligations will appear when a priced journey is posted.</p>}</div><div className="mt-8 border-t border-white/10 pt-6"><div className="flex justify-between text-sm"><span className="text-ivory/55">Total committed</span><strong>{money(due,currency)}</strong></div><div className="mt-2 flex justify-between text-sm"><span className="text-ivory/55">Already settled</span><strong>{money(paid,currency)}</strong></div></div></div>
+      <div className="rounded-3xl bg-forest p-7 text-ivory"><p className="eyebrow mb-3 text-gold-light">Settlement control</p><h2 className="font-serif text-2xl">Supplier exposure</h2><div className="mt-7 grid gap-5">{typeTotals.length?typeTotals.map(item=>{const resolved=item.paid+item.waived;const progress=item.due?Math.min(100,resolved/item.due*100):0;return <div key={item.type}><div className="mb-2 flex justify-between gap-3 text-sm"><span className="text-ivory/65">{payeeLabels[item.type]}</span><strong>{money(Math.max(0,item.due-resolved),currency)}</strong></div><div className="h-2 rounded-full bg-white/10"><div className="h-full rounded-full bg-gold" style={{width:`${progress}%`}}/></div><p className="mt-1 text-[.65rem] text-ivory/40">{Math.round(progress)}% resolved · {money(item.waived,currency)} waived</p></div>}):<p className="text-sm leading-6 text-ivory/55">Supplier obligations will appear when a priced journey is posted.</p>}</div><div className="mt-8 border-t border-white/10 pt-6"><div className="flex justify-between text-sm"><span className="text-ivory/55">Total committed</span><strong>{money(due,currency)}</strong></div><div className="mt-2 flex justify-between text-sm"><span className="text-ivory/55">Already paid</span><strong>{money(paid,currency)}</strong></div><div className="mt-2 flex justify-between text-sm text-gold-light"><span>Courtesy savings</span><strong>{money(savings,currency)}</strong></div></div></div>
     </section>
     <section className="mt-6 rounded-3xl border border-stone/15 bg-white p-7"><div className="flex items-center gap-3"><Landmark className="text-gold"/><div><p className="eyebrow mb-1">How it works</p><h2 className="font-serif text-2xl">One commercial truth per journey</h2></div></div><div className="mt-6 grid gap-4 md:grid-cols-4">{["Close a fully priced traveller enquiry.","Freeze revenue, internal cost and margin.","Track customer receipts and supplier dues.","Finish when customer and partners are settled."].map((text,index)=><div key={text} className="rounded-2xl bg-sand-light p-5"><span className="font-serif text-3xl text-gold">0{index+1}</span><p className="mt-3 text-sm leading-6 text-slate/65">{text}</p></div>)}</div></section>
   </div></AdminShell>;
