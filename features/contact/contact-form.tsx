@@ -6,20 +6,10 @@ import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
-import type {JourneyState} from "@/features/journey/journey-store";
-import type {Json} from "@/lib/database.types";
+import {clearJourneyHandoff,journeyHandoffToJson,readJourneyHandoff} from "@/lib/journey/quotation-handoff";
 
 const schema=z.object({name:z.string().min(2),email:z.email(),phone:z.string().optional(),nationality:z.string().optional(),notes:z.string().min(10)});
 type FormData=z.infer<typeof schema>;
-
-const readJourney=():JourneyState|null=>{
-  try{
-    const saved=localStorage.getItem("roam-ceylon-journey-v2");
-    if(!saved)return null;
-    const parsed=JSON.parse(saved) as {version?:number;state?:JourneyState};
-    return parsed.version===2&&parsed.state?parsed.state:null;
-  }catch{return null}
-};
 
 export function ContactForm({quotation=false}:{quotation?:boolean}){
   const [sent,setSent]=useState(false);
@@ -27,7 +17,8 @@ export function ContactForm({quotation=false}:{quotation?:boolean}){
   const {register,handleSubmit,formState:{errors,isSubmitting}}=useForm<FormData>({resolver:zodResolver(schema)});
   const submit=async(values:FormData)=>{
     setSubmitError("");
-    const journey=readJourney();
+    const handoff=readJourneyHandoff();
+    const journey=handoff?.state??null;
     const supabase=createClient();
     const {error}=await supabase.from("enquiries").insert({
       name:values.name,
@@ -37,7 +28,7 @@ export function ContactForm({quotation=false}:{quotation?:boolean}){
       summary:quotation?`Final quotation requested. ${values.notes}`:values.notes,
       traveller_notes:values.notes,
       status:"new",
-      trip_state:(journey??{}) as Json,
+      trip_state:journeyHandoffToJson(handoff),
       travel_start_date:journey?.travelDates.start||null,
       travel_end_date:journey?.travelDates.end||null,
       adults:journey?.travellerCounts.adults??1,
@@ -50,6 +41,7 @@ export function ContactForm({quotation=false}:{quotation?:boolean}){
       selected_guide:journey?.selectedGuideId||null
     });
     if(error){setSubmitError("We could not submit your enquiry. Please check your connection and try again.");return}
+    clearJourneyHandoff();
     setSent(true);
   };
   if(sent)return <div className="rounded-3xl bg-sand-light p-10"><p className="eyebrow mb-3">Received</p><h2 className="font-serif text-4xl">{quotation?"Your quotation is being prepared.":"Your journey starts here."}</h2><p className="mt-4 text-slate/60">A Roam Ceylon journey designer will review your selections and be in touch shortly.</p></div>;
