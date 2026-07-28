@@ -54,7 +54,20 @@ export function EnquiryReview({id}:{id:string}){
   const save=async(status=enquiry?.status)=>{
     if(!enquiry||!status)return;
     setSaving(true);setMessage("");
-    const {error}=await createClient().from("enquiries").update({status,internal_notes:notes}).eq("id",id);
+    const database=createClient();
+    if(status==="closed"){
+      const {error:notesError}=await database.from("enquiries").update({internal_notes:notes}).eq("id",id);
+      if(notesError){setSaving(false);setMessage(notesError.message);return}
+      const {data:{session}}=await database.auth.getSession();
+      const response=await fetch("/api/admin/accounting/post",{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${session?.access_token??""}`},body:JSON.stringify({enquiryId:id})});
+      const result=await response.json() as {error?:string};
+      setSaving(false);
+      if(!response.ok){setMessage(result.error??"The journey could not be posted to Accounting.");return}
+      setEnquiry({...enquiry,status,internal_notes:notes});
+      setMessage("Journey closed and posted to Accounting.");
+      return;
+    }
+    const {error}=await database.from("enquiries").update({status,internal_notes:notes}).eq("id",id);
     setSaving(false);
     if(error){setMessage(error.message);return}
     setEnquiry({...enquiry,status,internal_notes:notes});

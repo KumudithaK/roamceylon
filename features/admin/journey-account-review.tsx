@@ -1,0 +1,134 @@
+"use client";
+
+import Link from "next/link";
+import {FormEvent,useEffect,useState} from "react";
+import {useRouter} from "next/navigation";
+import {ArrowLeft,Banknote,Building2,CheckCircle2,CircleDollarSign,Plus,TrendingUp,WalletCards} from "lucide-react";
+import {AdminShell} from "./admin-shell";
+import {Button} from "@/components/ui/button";
+import {createClient} from "@/lib/supabase/client";
+import type {Database} from "@/lib/database.types";
+
+type Account=Database["public"]["Tables"]["journey_accounts"]["Row"];
+type Settlement=Database["public"]["Tables"]["journey_settlements"]["Row"];
+type Transaction=Database["public"]["Tables"]["accounting_transactions"]["Row"];
+type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
+type Action={type:"receipt"|"refund"}|{type:"payment";settlement:Settlement}|{type:"liability"}|null;
+const payeeLabels={accommodation:"Stay",vehicle:"Fleet",guide:"Guide",experience:"Experience",destination:"Destination fee",operations:"Operations",other:"Other"} as const;
+const money=(value:number,currency:string)=>`${currency} ${value.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+const today=()=>new Date().toISOString().slice(0,10);
+
+export function JourneyAccountReview({id}:{id:string}){
+  const router=useRouter();
+  const [account,setAccount]=useState<Account|null>(null);
+  const [settlements,setSettlements]=useState<Settlement[]>([]);
+  const [transactions,setTransactions]=useState<Transaction[]>([]);
+  const [enquiry,setEnquiry]=useState<Enquiry|null>(null);
+  const [action,setAction]=useState<Action>(null);
+  const [message,setMessage]=useState("");
+  const [loading,setLoading]=useState(true);
+  const load=async()=>{
+    const database=createClient();
+    const {data:{session}}=await database.auth.getSession();
+    if(!session){router.replace("/admin/login");return}
+    const {data:row,error}=await database.from("journey_accounts").select("*").eq("id",id).maybeSingle();
+    if(error||!row){setMessage(error?.message??"Journey account not found.");setLoading(false);return}
+    const [settlementResult,transactionResult,enquiryResult]=await Promise.all([
+      database.from("journey_settlements").select("*").eq("account_id",id).order("created_at"),
+      database.from("accounting_transactions").select("*").eq("account_id",id).order("payment_date",{ascending:false}).order("created_at",{ascending:false}),
+      database.from("enquiries").select("*").eq("id",row.enquiry_id).maybeSingle()
+    ]);
+    setAccount(row);setSettlements(settlementResult.data??[]);setTransactions(transactionResult.data??[]);setEnquiry(enquiryResult.data??null);setLoading(false);
+  };
+  useEffect(()=>{void (async()=>{
+    const database=createClient();
+    const {data:{session}}=await database.auth.getSession();
+    if(!session){router.replace("/admin/login");return}
+    const {data:row,error}=await database.from("journey_accounts").select("*").eq("id",id).maybeSingle();
+    if(error||!row){setMessage(error?.message??"Journey account not found.");setLoading(false);return}
+    const [settlementResult,transactionResult,enquiryResult]=await Promise.all([
+      database.from("journey_settlements").select("*").eq("account_id",id).order("created_at"),
+      database.from("accounting_transactions").select("*").eq("account_id",id).order("payment_date",{ascending:false}).order("created_at",{ascending:false}),
+      database.from("enquiries").select("*").eq("id",row.enquiry_id).maybeSingle()
+    ]);
+    setAccount(row);setSettlements(settlementResult.data??[]);setTransactions(transactionResult.data??[]);setEnquiry(enquiryResult.data??null);setLoading(false);
+  })()},[id,router]);
+  const request=async(path:string,payload:unknown)=>{
+    const {data:{session}}=await createClient().auth.getSession();
+    const response=await fetch(path,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${session?.access_token??""}`},body:JSON.stringify(payload)});
+    const result=await response.json() as {error?:string};
+    if(!response.ok)throw new Error(result.error??"The accounting entry could not be saved.");
+  };
+  const transaction=async(event:FormEvent<HTMLFormElement>)=>{
+    event.preventDefault();
+    if(!account||!action||action.type==="liability")return;
+    const form=new FormData(event.currentTarget);
+    const type=action.type==="receipt"?"customer_receipt":action.type==="refund"?"customer_refund":"supplier_payment";
+    try{
+      await request("/api/admin/accounting/transactions",{
+        accountId:account.id,
+        settlementId:action.type==="payment"?action.settlement.id:null,
+        type,
+        amount:Number(form.get("amount")),
+        paymentDate:String(form.get("date")),
+        paymentMethod:String(form.get("method")),
+        reference:String(form.get("reference")),
+        notes:String(form.get("notes"))
+      });
+      setAction(null);setMessage("Payment recorded successfully.");await load();
+    }catch(error){setMessage(error instanceof Error?error.message:"Payment could not be recorded.")}
+  };
+  const liability=async(event:FormEvent<HTMLFormElement>)=>{
+    event.preventDefault();
+    if(!account)return;
+    const form=new FormData(event.currentTarget);
+    try{
+      await request("/api/admin/accounting/settlements",{
+        accountId:account.id,
+        payeeName:String(form.get("payee")),
+        description:String(form.get("description")),
+        amount:Number(form.get("amount")),
+        dueDate:String(form.get("date")),
+        notes:String(form.get("notes"))
+      });
+      setAction(null);setMessage("Additional payment obligation added.");await load();
+    }catch(error){setMessage(error instanceof Error?error.message:"Payment obligation could not be added.")}
+  };
+  if(loading)return <AdminShell><div className="min-h-[70vh] animate-pulse rounded-3xl bg-white"/></AdminShell>;
+  if(!account)return <AdminShell><div className="grid min-h-[60vh] place-items-center text-stone">{message}</div></AdminShell>;
+  const customerBalance=Math.max(0,account.selling_price-account.amount_received);
+  const supplierDue=settlements.filter(row=>row.status!=="waived").reduce((total,row)=>total+row.amount_due,0);
+  const supplierPaid=settlements.filter(row=>row.status!=="waived").reduce((total,row)=>total+row.amount_paid,0);
+  const supplierBalance=Math.max(0,supplierDue-supplierPaid);
+  const collectionProgress=account.selling_price?Math.min(100,account.amount_received/account.selling_price*100):100;
+  const settlementProgress=supplierDue?Math.min(100,supplierPaid/supplierDue*100):100;
+  return <AdminShell><div className="mx-auto max-w-7xl">
+    <Link href="/admin/accounting" className="inline-flex items-center gap-2 text-sm font-semibold text-forest"><ArrowLeft className="size-4"/>Back to accounting</Link>
+    <div className="mt-6 flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">{account.account_number}</p><h1 className="font-serif text-4xl md:text-5xl">{account.traveller_name}</h1><p className="mt-2 text-sm text-stone">{account.traveller_email} · Posted {new Date(account.posted_at).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={()=>setAction({type:"refund"})}>Record refund</Button><Button onClick={()=>setAction({type:"receipt"})}><Banknote/>Record customer receipt</Button></div></div>
+    {message&&<div className="mt-6 rounded-2xl border border-gold/25 bg-gold/10 p-4 text-sm">{message}</div>}
+    <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <Summary icon={CircleDollarSign} label="Package selling price" value={money(account.selling_price,account.currency)} detail={`${account.profit_margin.toFixed(1)}% target margin`} tone="gold"/>
+      <Summary icon={WalletCards} label="Customer balance" value={money(customerBalance,account.currency)} detail={`${Math.round(collectionProgress)}% collected`} tone="forest"/>
+      <Summary icon={Building2} label="Supplier outstanding" value={money(supplierBalance,account.currency)} detail={`${Math.round(settlementProgress)}% settled`} tone="light"/>
+      <Summary icon={TrendingUp} label="Gross profit" value={money(account.gross_profit,account.currency)} detail={`${money(account.internal_cost,account.currency)} internal cost`} tone="light"/>
+    </section>
+    <section className="mt-6 grid gap-6 xl:grid-cols-[1.15fr_.85fr]">
+      <div className="rounded-3xl border border-stone/15 bg-white p-7"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="eyebrow mb-2">Accounts payable</p><h2 className="font-serif text-2xl">Supplier settlements</h2></div><button onClick={()=>setAction({type:"liability"})} className="inline-flex items-center gap-2 rounded-full bg-sand-light px-4 py-2 text-xs font-bold"><Plus className="size-4"/>Other payment</button></div><div className="mt-6 divide-y divide-stone/15">{settlements.length?settlements.map(row=>{
+        const remaining=Math.max(0,row.amount_due-row.amount_paid);
+        return <div key={row.id} className="grid gap-4 py-5 first:pt-0 last:pb-0 md:grid-cols-[1fr_140px_120px] md:items-center"><div><div className="flex flex-wrap items-center gap-2"><strong>{row.payee_name}</strong><span className="rounded-full bg-sand-light px-2 py-1 text-[.6rem] font-bold uppercase text-stone">{payeeLabels[row.payee_type]}</span></div><p className="mt-1 text-xs text-stone">{row.description||"Supplier payment"}{row.due_date?` · Due ${row.due_date}`:""}</p></div><div><span className="block text-xs text-stone">Outstanding</span><strong className={remaining?"text-slate":"text-emerald-700"}>{money(remaining,row.currency)}</strong></div>{remaining&&row.status!=="waived"?<button onClick={()=>setAction({type:"payment",settlement:row})} className="rounded-full border border-forest/20 px-4 py-2 text-xs font-bold text-forest">Record payment</button>:<span className="flex items-center gap-1 text-xs font-bold text-emerald-700"><CheckCircle2 className="size-4"/>Settled</span>}</div>
+      }):<p className="py-8 text-sm text-stone">No supplier or operational payments were generated.</p>}</div></div>
+      <div className="rounded-3xl bg-forest p-7 text-ivory"><p className="eyebrow mb-2 text-gold-light">Payment progress</p><h2 className="font-serif text-2xl">Journey position</h2><Progress label="Traveller payments" value={collectionProgress} amount={`${money(account.amount_received,account.currency)} received`}/><Progress label="Partner settlements" value={settlementProgress} amount={`${money(supplierPaid,account.currency)} paid`}/><div className="mt-8 grid gap-3 border-t border-white/10 pt-6 text-sm"><Row label="Selling price" value={money(account.selling_price,account.currency)}/><Row label="Internal cost" value={money(account.internal_cost,account.currency)}/><Row label="Gross profit" value={money(account.gross_profit,account.currency)}/><Row label="Cash currently held" value={money(account.amount_received-account.supplier_paid,account.currency)}/></div>{enquiry&&<Link href={`/admin/enquiries/${enquiry.id}`} className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-gold-light">Open traveller enquiry <ArrowLeft className="size-4 rotate-180"/></Link>}</div>
+    </section>
+    <section className="mt-6 rounded-3xl border border-stone/15 bg-white p-7"><div><p className="eyebrow mb-2">Audit trail</p><h2 className="font-serif text-2xl">Payment history</h2></div>{transactions.length?<div className="mt-6 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-stone/20 text-[.65rem] uppercase tracking-widest text-stone"><tr><th className="pb-3">Date</th><th className="pb-3">Entry</th><th className="pb-3">Method</th><th className="pb-3">Reference</th><th className="pb-3 text-right">Amount</th></tr></thead><tbody className="divide-y divide-stone/15">{transactions.map(row=><tr key={row.id}><td className="py-4">{row.payment_date}</td><td className="py-4 font-semibold">{row.transaction_type==="customer_receipt"?"Customer receipt":row.transaction_type==="customer_refund"?"Customer refund":"Supplier payment"}</td><td className="py-4 text-stone">{row.payment_method||"Not specified"}</td><td className="py-4 text-stone">{row.reference||"—"}</td><td className={`py-4 text-right font-bold ${row.transaction_type==="customer_refund"||row.transaction_type==="supplier_payment"?"text-red-700":"text-emerald-700"}`}>{row.transaction_type==="customer_receipt"?"+":"−"} {money(row.amount,row.currency)}</td></tr>)}</tbody></table></div>:<div className="mt-6 rounded-2xl bg-sand-light p-8 text-center text-sm text-stone">No payments recorded yet.</div>}</section>
+    {action&&<div className="fixed inset-0 z-50 grid place-items-center bg-slate/65 p-4 backdrop-blur-sm"><div className="w-full max-w-lg rounded-3xl bg-ivory p-7 shadow-2xl"><p className="eyebrow mb-2">{action.type==="liability"?"Accounts payable":"Payment entry"}</p><h2 className="font-serif text-3xl">{action.type==="receipt"?"Record customer receipt":action.type==="refund"?"Record customer refund":action.type==="payment"?`Pay ${action.settlement.payee_name}`:"Add another payment"}</h2>{action.type==="liability"?<LiabilityForm onSubmit={liability} onCancel={()=>setAction(null)} currency={account.currency}/>:<TransactionForm onSubmit={transaction} onCancel={()=>setAction(null)} currency={account.currency} maximum={action.type==="payment"?action.settlement.amount_due-action.settlement.amount_paid:action.type==="refund"?account.amount_received:customerBalance}/>}</div></div>}
+  </div></AdminShell>;
+}
+
+function Summary({icon:Icon,label,value,detail,tone}:{icon:typeof Banknote;label:string;value:string;detail:string;tone:"gold"|"forest"|"light"}){
+  const style=tone==="gold"?"bg-gold":tone==="forest"?"bg-forest text-ivory":"border border-stone/15 bg-white";
+  return <article className={`rounded-3xl p-6 ${style}`}><Icon className="size-5"/><span className={`mt-5 block text-[.65rem] font-bold uppercase tracking-widest ${tone==="forest"?"text-ivory/55":"text-stone"}`}>{label}</span><strong className="mt-2 block font-serif text-2xl">{value}</strong><span className={`mt-2 block text-xs ${tone==="forest"?"text-ivory/55":"text-stone"}`}>{detail}</span></article>;
+}
+function Progress({label,value,amount}:{label:string;value:number;amount:string}){return <div className="mt-7"><div className="mb-2 flex justify-between text-sm"><span className="text-ivory/60">{label}</span><strong>{Math.round(value)}%</strong></div><div className="h-2.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-gold" style={{width:`${value}%`}}/></div><p className="mt-2 text-xs text-ivory/40">{amount}</p></div>}
+function Row({label,value}:{label:string;value:string}){return <div className="flex justify-between gap-4"><span className="text-ivory/55">{label}</span><strong>{value}</strong></div>}
+function TransactionForm({onSubmit,onCancel,currency,maximum}:{onSubmit:(event:FormEvent<HTMLFormElement>)=>void;onCancel:()=>void;currency:string;maximum:number}){return <form onSubmit={onSubmit} className="mt-6 grid gap-4"><label className="grid gap-2 text-sm font-semibold">Amount ({currency})<input required name="amount" type="number" min=".01" max={Math.max(.01,maximum)} step=".01" defaultValue={maximum>0?maximum.toFixed(2):""} className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Payment date<input required name="date" type="date" defaultValue={today()} className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Payment method<select name="method" className="rounded-xl border border-stone/25 px-4 py-3"><option>Bank transfer</option><option>Card</option><option>Cash</option><option>Online payment</option><option>Other</option></select></label><label className="grid gap-2 text-sm font-semibold">Reference<input name="reference" placeholder="Bank reference or receipt number" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Notes<textarea name="notes" rows={3} className="rounded-xl border border-stone/25 px-4 py-3"/></label><div className="mt-2 flex justify-end gap-3"><Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button><Button type="submit">Save payment</Button></div></form>}
+function LiabilityForm({onSubmit,onCancel,currency}:{onSubmit:(event:FormEvent<HTMLFormElement>)=>void;onCancel:()=>void;currency:string}){return <form onSubmit={onSubmit} className="mt-6 grid gap-4"><label className="grid gap-2 text-sm font-semibold">Payee<input required name="payee" placeholder="Supplier or service provider" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Description<input required name="description" placeholder="What is this payment for?" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Amount ({currency})<input required name="amount" type="number" min=".01" step=".01" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Due date<input name="date" type="date" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Notes<textarea name="notes" rows={3} className="rounded-xl border border-stone/25 px-4 py-3"/></label><div className="mt-2 flex justify-end gap-3"><Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button><Button type="submit">Add payment</Button></div></form>}

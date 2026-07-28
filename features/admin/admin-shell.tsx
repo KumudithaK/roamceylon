@@ -3,13 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import {usePathname,useRouter} from "next/navigation";
-import {BedDouble,CarFront,Handshake,Inbox,LayoutDashboard,LogOut,Map,Settings,Sparkles,UsersRound} from "lucide-react";
+import {BedDouble,CarFront,Handshake,Inbox,LayoutDashboard,LogOut,Map,Settings,Sparkles,UsersRound,WalletCards} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
 
 const navigation=[
   [LayoutDashboard,"Overview","/admin/dashboard"],
   [Inbox,"Traveller Enquiries","/admin/enquiries"],
+  [WalletCards,"Accounting","/admin/accounting"],
   [Map,"Destinations","/admin/resources/destinations"],
   [Sparkles,"Experiences","/admin/resources/experiences"],
   [BedDouble,"Stays","/admin/resources/stays"],
