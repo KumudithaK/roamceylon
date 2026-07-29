@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {AnimatePresence,motion} from "motion/react";
-import {Check,ChevronLeft,ChevronRight,Download,MapPin,Sparkles,X} from "lucide-react";
+import {Check,ChevronLeft,ChevronRight,Download,MapPin,Sparkles} from "lucide-react";
 import {useMemo,useState} from "react";
 import {Button} from "@/components/ui/button";
 import {SriLankaMap} from "@/components/map/sri-lanka-map";
@@ -54,13 +54,12 @@ function PlanStep({data}:{data:JourneyBootstrap}){
 function Builder({data,beginAtExperience=false}:{data:JourneyBootstrap;beginAtExperience?:boolean}){
   const {state,dispatch}=useJourney();
   const [step,setStep]=useState(beginAtExperience?2:0);
-  const [journeyOpen,setJourneyOpen]=useState(false);
   const destinations=useMemo(()=>availableDestinations(data.destinations,state.selectedThemeIds),[data.destinations,state.selectedThemeIds]);
   const experiences=useMemo(()=>availableExperiences(data.experiences,state.selectedDestinationIds),[data.experiences,state.selectedDestinationIds]);
   const current=step===0?data.themes:destinations;
   const selected=step===0?state.selectedThemeIds:state.selectedDestinationIds;
   const field=step===0?"selectedThemeIds":"selectedDestinationIds";
-  return <div className={cn("shell grid gap-8 py-12",step!==2&&"lg:grid-cols-[1fr_340px]")}>
+  return <div className="shell grid gap-8 py-12 lg:grid-cols-[1fr_340px]">
     <section>
       <div className="mb-10 flex gap-2 overflow-x-auto">{steps.map((label,index)=><button key={label} onClick={()=>index<=step&&setStep(index)} className={cn("flex min-w-fit items-center gap-2 rounded-full px-4 py-2 text-xs font-bold",index===step?"bg-forest text-ivory":index<step?"bg-sand text-forest":"bg-stone/10 text-stone")}>{index<step?<Check className="size-3"/>:index+1} {label}</button>)}</div>
       <AnimatePresence mode="wait"><motion.div key={step} initial={{opacity:0,x:22}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-18}}>
@@ -68,13 +67,12 @@ function Builder({data,beginAtExperience=false}:{data:JourneyBootstrap;beginAtEx
         <h1 className="font-serif text-4xl md:text-6xl">{["What kind of journey draws you in?","Where would you like to wake up?","Choose the moments that matter.","Complete your journey."][step]}</h1>
         <p className="mt-4 max-w-2xl text-slate/60">{step===1&&!state.selectedThemeIds.length?"Choose a theme to reveal its linked destinations.":step===2&&!state.selectedDestinationIds.length?"Choose a destination to reveal its linked experiences.":"Shape each choice as you move through your journey."}</p>
         {step<2?<><div className="mt-10 grid gap-5 md:grid-cols-2">{current.map(item=><ChoiceCard key={item.id} item={item} selected={selected.includes(item.id)} onClick={()=>dispatch({type:"toggle",field,id:item.id})}/>)}</div>{step===1&&<div className="mt-10"><SriLankaMap destinations={destinations} selectedIds={state.selectedDestinationIds} onSelect={id=>dispatch({type:"toggle",field:"selectedDestinationIds",id})}/></div>}</>:null}
-        {step===2?<ExperienceDiscovery experiences={experiences} globalTravellers={state.travellerCounts} selectedIds={state.selectedExperienceIds} participantsByExperience={state.experienceParticipants} onInclude={(experience,participants,travellers)=>{dispatch({type:"travellers",counts:travellers});dispatch({type:"includeExperience",experienceId:experience.id,counts:participants})}}/>:null}
+        {step===2?<ExperienceDiscovery compact experiences={experiences} globalTravellers={state.travellerCounts} selectedIds={state.selectedExperienceIds} participantsByExperience={state.experienceParticipants} onInclude={(experience,participants,travellers)=>{dispatch({type:"travellers",counts:travellers});dispatch({type:"includeExperience",experienceId:experience.id,counts:participants})}}/>:null}
         {step===3?<PlanStep data={data}/>:null}
         <div className="mt-10 flex justify-between"><Button variant="ghost" disabled={step===0} onClick={()=>setStep(value=>value-1)}><ChevronLeft/>Back</Button>{step<3?<Button onClick={()=>setStep(value=>value+1)}>Continue<ChevronRight/></Button>:<Button asChild variant="accent"><Link onClick={()=>saveJourneyHandoff(state,null)} href={{pathname:"/contact",query:{journey:"1",quotation:"1"}}}>Request Final Quotation</Link></Button>}</div>
       </motion.div></AnimatePresence>
     </section>
-    {step!==2&&<Summary data={data}/>}
-    {step===2&&<><Button onClick={()=>setJourneyOpen(true)} className="fixed bottom-6 right-6 z-40 shadow-xl"><Sparkles/>Journey ({state.selectedExperienceIds.length})</Button><AnimatePresence>{journeyOpen&&<motion.div className="fixed inset-0 z-[65] bg-slate/60 p-4 backdrop-blur-sm" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onMouseDown={()=>setJourneyOpen(false)}><motion.div onMouseDown={event=>event.stopPropagation()} initial={{x:40,opacity:0}} animate={{x:0,opacity:1}} exit={{x:40,opacity:0}} className="ml-auto h-full max-w-[390px] overflow-y-auto"><button onClick={()=>setJourneyOpen(false)} className="mb-3 ml-auto grid size-10 place-items-center rounded-full bg-white" aria-label="Close journey summary"><X/></button><Summary data={data}/></motion.div></motion.div>}</AnimatePresence></>}
+    <Summary data={data}/>
   </div>;
 }
 
