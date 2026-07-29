@@ -10,7 +10,8 @@ const quoteSchema=z.object({
   selectedVehicleId:z.uuid().nullable(),
   selectedGuideId:z.uuid().nullable(),
   travelDates:z.object({start:z.string().max(10),end:z.string().max(10)}),
-  travellerCounts:z.object({adults:z.number().int().min(1).max(100),children:z.number().int().min(0).max(100)})
+  travellerCounts:z.object({adults:z.number().int().min(0).max(100),children:z.number().int().min(0).max(100),infants:z.number().int().min(0).max(100)}),
+  experienceParticipants:z.record(z.uuid(),z.object({adults:z.number().int().min(0).max(100),children:z.number().int().min(0).max(100),infants:z.number().int().min(0).max(100)}))
 });
 
 export async function POST(request:Request){

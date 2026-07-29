@@ -37,7 +37,7 @@ test("route estimate preserves selection order and computes distance",()=>{
 
 test("DMC package price includes supplier, operational, overhead and margin costs",()=>{
   const config={currency:"USD",roomOccupancy:2,childCostFactor:.5,routeDistanceBufferPercent:0,driverSalaryPerDay:40,fuelPricePerLitre:2,vehicleKmPerLitre:10,tollsPerJourney:10,parkingPerDay:5,guideAccommodationPerNight:25,airportTransferEachWay:30,administrationFixed:20,administrationPercent:5,contingencyPercent:10,serviceFeeFixed:10,serviceFeePercent:5,targetProfitMarginPercent:20};
-  const selection={selectedDestinationIds:["d1"],selectedExperienceIds:["e1"],selectedStayIds:["a1"],selectedVehicleId:"v1",selectedGuideId:"g1",travelDates:{start:"2026-08-01",end:"2026-08-05"},travellerCounts:{adults:2,children:1}};
+  const selection={selectedDestinationIds:["d1"],selectedExperienceIds:["e1"],selectedStayIds:["a1"],selectedVehicleId:"v1",selectedGuideId:"g1",travelDates:{start:"2026-08-01",end:"2026-08-05"},travellerCounts:{adults:2,children:1,infants:0},experienceParticipants:{e1:{adults:2,children:1,infants:0}}};
   const supplierCosts:SupplierCost[]=[
     {id:"1",entityType:"accommodation",entityId:"a1",category:"Accommodation",unit:"per_room_night",amount:100,partnerCommissionPercent:null},
     {id:"2",entityType:"vehicle",entityId:"v1",category:"Vehicle rental",unit:"per_vehicle_day",amount:50,partnerCommissionPercent:null},
@@ -66,9 +66,17 @@ test("DMC package price includes supplier, operational, overhead and margin cost
 
 test("missing confidential inputs require a manual quote instead of inventing costs",()=>{
   const config={currency:"USD",roomOccupancy:2,childCostFactor:1,routeDistanceBufferPercent:0,driverSalaryPerDay:null,fuelPricePerLitre:null,vehicleKmPerLitre:null,tollsPerJourney:null,parkingPerDay:null,guideAccommodationPerNight:null,airportTransferEachWay:null,administrationFixed:null,administrationPercent:null,contingencyPercent:null,serviceFeeFixed:null,serviceFeePercent:null,targetProfitMarginPercent:null};
-  const selection={selectedDestinationIds:["d1"],selectedExperienceIds:["e1"],selectedStayIds:[],selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"",end:""},travellerCounts:{adults:2,children:0}};
+  const selection={selectedDestinationIds:["d1"],selectedExperienceIds:["e1"],selectedStayIds:[],selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"",end:""},travellerCounts:{adults:2,children:0,infants:0},experienceParticipants:{e1:{adults:2,children:0,infants:0}}};
   const quote=calculatePackageQuote({config,supplierCosts:[],selection,durationDays:1,distanceKm:0});
   assert.equal(quote.public.status,"requires_manual_quote");
   assert.equal(quote.public.totalPackagePrice,null);
   assert(quote.missingInputs.includes("supplierCost:experience:e1"));
+});
+
+test("experience pricing uses that experience's participants, not the whole journey",()=>{
+  const config={currency:"USD",roomOccupancy:2,childCostFactor:.5,routeDistanceBufferPercent:0,driverSalaryPerDay:null,fuelPricePerLitre:null,vehicleKmPerLitre:null,tollsPerJourney:null,parkingPerDay:null,guideAccommodationPerNight:null,airportTransferEachWay:0,administrationFixed:0,administrationPercent:0,contingencyPercent:0,serviceFeeFixed:0,serviceFeePercent:0,targetProfitMarginPercent:0};
+  const selection={selectedDestinationIds:[],selectedExperienceIds:["e1"],selectedStayIds:[],selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"2026-08-01",end:"2026-08-02"},travellerCounts:{adults:4,children:0,infants:0},experienceParticipants:{e1:{adults:2,children:0,infants:0}}};
+  const supplierCosts:SupplierCost[]=[{id:"experience-plan",entityType:"experience",entityId:"e1",category:"Experience",unit:"per_person",amount:25,partnerCommissionPercent:null}];
+  const quote=calculatePackageQuote({config,supplierCosts,selection,durationDays:1,distanceKm:0});
+  assert.equal(quote.breakdown.find(line=>line.label==="Experience")?.amount,50);
 });

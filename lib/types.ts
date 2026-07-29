@@ -1,13 +1,15 @@
 export type Theme={id:string;slug:string;name:string;short_description:string|null;hero_image_url:string|null;image_alt:string|null;icon:string|null};
 export type Destination={id:string;slug:string;name:string;province:string|null;region:string|null;short_description:string|null;full_description:string|null;hero_image_url:string|null;image_alt:string|null;gallery:string[];latitude:number|null;longitude:number|null;coming_soon:boolean};
-export type Experience={id:string;slug:string;name:string;category:string|null;short_description:string|null;full_description:string|null;hero_image_url:string|null;image_alt:string|null;gallery:string[];duration:string|null;difficulty:string|null;family_friendly:boolean;priority:string|null;featured:boolean;price_per_person_usd:number|null};
+export type ParticipantCounts={adults:number;children:number;infants:number};
+export type Experience={id:string;slug:string;name:string;category:string|null;short_description:string|null;full_description:string|null;hero_image_url:string|null;image_alt:string|null;gallery:string[];duration:string|null;difficulty:string|null;best_season:string|null;highlights:string[];unique_points:string[];included:string[];things_to_know:string[];nearby_attractions:string[];traveller_tips:string[];badges:string[];family_friendly:boolean;suitable_for_children:boolean;private_option:boolean;priority:string|null;featured:boolean;price_per_person_usd:number|null};
 export type Stay={id:string;slug:string;name:string;property_type:string|null;short_description:string|null;hero_image_url:string|null;image_alt:string|null;price_range:string|null;nightly_rate_usd:number|null;pricing_tier:string|null;amenities:string[];featured:boolean};
 export type Vehicle={id:string;slug:string;listing_title:string;vehicle_type:string|null;short_description:string|null;hero_image_url:string|null;image_alt:string|null;passenger_capacity:number|null;driver_included:boolean;featured:boolean;daily_rate_usd:number|null};
 export type Guide={id:string;slug:string;name:string;short_bio:string|null;profile_image_url:string|null;image_alt:string|null;languages:string[];years_experience:number|null;specialities:string[];featured:boolean;daily_rate_usd:number|null};
 export type ContentKind="themes"|"destinations"|"experiences"|"accommodations"|"vehicles"|"guides";
 export type JourneyTheme=Theme&{destinationIds:string[]};
 export type JourneyDestination=Destination&{themeIds:string[]};
-export type JourneyExperience=Experience&{destinationIds:string[];themeIds:string[];matchedDestinationIds?:string[]};
+export type ExperienceDestination={id:string;name:string;slug:string;latitude:number|null;longitude:number|null};
+export type JourneyExperience=Experience&{destinationIds:string[];themeIds:string[];destinationNames?:string[];destinations?:ExperienceDestination[];matchedDestinationIds?:string[]};
 export type JourneyStay=Stay&{destinationId:string};
 export type JourneyVehicle=Vehicle&{nationwide:boolean;destinationIds:string[];luggage_capacity:string|null;price_guide:string|null;per_km_rate_usd:number|null;verified:boolean};
 export type JourneyGuide=Guide&{nationwide:boolean;destinationIds:string[];themeIds:string[];experienceIds:string[];verified:boolean;relevance?:number};

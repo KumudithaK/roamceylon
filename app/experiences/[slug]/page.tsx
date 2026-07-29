@@ -1,3 +1,25 @@
-import type {Metadata} from "next";import {notFound} from "next/navigation";import {DetailPage} from "@/components/site/detail-page";import {getBySlug} from "@/lib/data";import type {Experience} from "@/lib/types";
-export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{const {slug}=await params;const item=await getBySlug("experiences",slug) as Experience|null;return item?{title:item.name,description:item.short_description,alternates:{canonical:`/experiences/${slug}`}}:{}}
-export default async function Page({params}:{params:Promise<{slug:string}>}){const item=await getBySlug("experiences",(await params).slug) as Experience|null;if(!item)notFound();return <DetailPage backHref="/experiences" backLabel="All experiences" title={item.name} eyebrow={item.category} image={item.hero_image_url} alt={item.image_alt} description={item.short_description} fullDescription={item.full_description} gallery={item.gallery} metadata={[["Duration",item.duration],["Difficulty",item.difficulty],["Family friendly",item.family_friendly?"Yes":null]]}/>}
+import type {Metadata} from "next";
+import {notFound} from "next/navigation";
+import {ExperienceEditorialPage} from "@/features/experiences/experience-editorial";
+import {ExperienceRepository} from "@/lib/repositories/content";
+
+export const dynamic="force-dynamic";
+
+async function getExperience(slug:string){
+  const experiences=await new ExperienceRepository().getEditorial();
+  const experience=experiences.find(item=>item.slug===slug);
+  if(!experience)return {experience:null,related:[]};
+  const related=experiences.filter(item=>item.id!==experience.id&&(item.category===experience.category||item.destinationIds.some(id=>experience.destinationIds.includes(id)))).slice(0,4);
+  return {experience,related};
+}
+
+export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
+  const {experience}=await getExperience((await params).slug);
+  return experience?{title:experience.name,description:experience.short_description,alternates:{canonical:`/experiences/${experience.slug}`}}:{};
+}
+
+export default async function Page({params}:{params:Promise<{slug:string}>}){
+  const {experience,related}=await getExperience((await params).slug);
+  if(!experience)notFound();
+  return <ExperienceEditorialPage experience={experience} related={related}/>;
+}

@@ -12,7 +12,9 @@ const required=[
   "features/journey/journey-builder.tsx","components/site/gallery-carousel.tsx",
   "supabase/migrations/202607260003_full_cms.sql",
   "supabase/migrations/202607280003_journey_accounting.sql",
-  "supabase/migrations/202607280004_supplier_waivers_and_receipts.sql"
+  "supabase/migrations/202607280004_supplier_waivers_and_receipts.sql",
+  "supabase/migrations/202607290001_editorial_experiences.sql",
+  "features/experiences/experience-editorial.tsx"
 ];
 await Promise.all(required.map(file=>access(path.join(root,file))));
 const packageJson=JSON.parse(await read("package.json"));
@@ -42,4 +44,7 @@ assert.match(waiverMigration,/waived_amount numeric not null default 0/);
 assert.match(waiverMigration,/supplier_waiver/);
 assert.match(waiverMigration,/accounting-receipts/);
 assert.match(waiverMigration,/accounting_attachments_staff_read/);
+const editorialMigration=await read("supabase/migrations/202607290001_editorial_experiences.sql");
+assert.match(editorialMigration,/experience_participants jsonb/);
+assert.match(editorialMigration,/best_season text/);
 console.log("Roam Ceylon V2 architecture, routes, dependencies, metadata, and secret boundaries validated.");

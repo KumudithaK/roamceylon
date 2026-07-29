@@ -51,11 +51,16 @@ export function calculatePackageQuote(context:PackagePricingContext):AdminPackag
   missingInputs.push(...requiredEntities.filter(key=>!costEntities.has(key)).map(key=>`supplierCost:${key}`));
 
   const quantities={rooms,nights,days,distance:pricedDistance,travellerUnits,stayCount:selection.selectedStayIds.length};
+  const quantityForCost=(item:{entityType:SupplierEntityType;entityId:string;unit:SupplierCostUnit})=>{
+    const experienceCounts=item.entityType==="experience"?selection.experienceParticipants[item.entityId]:null;
+    const itemTravellerUnits=experienceCounts?experienceCounts.adults+experienceCounts.children*config.childCostFactor:travellerUnits;
+    return quantityFor(item.unit,{...quantities,travellerUnits:itemTravellerUnits});
+  };
   const breakdown:CostBreakdownLine[]=supplierCosts.map(item=>({
     key:`supplier:${item.id}`,
     label:item.category,
     category:"supplier",
-    amount:money(item.amount*quantityFor(item.unit,quantities)),
+    amount:money(item.amount*quantityForCost(item)),
     internal:true
   }));
   const operational:Array<[string,string,number|null,boolean]>=[
@@ -90,10 +95,10 @@ export function calculatePackageQuote(context:PackagePricingContext):AdminPackag
   const grossProfit=money(sellingPrice-internalCost);
   const profitMargin=sellingPrice?money(grossProfit/sellingPrice*100):0;
   for(const item of adjustments)breakdown.push({key:`adjustment:${item.id}`,label:item.label,category:"adjustment",amount:money(adjustmentAmount(item.stage==="internal_cost"?internalBeforeAdjustments:sellingBeforeAdjustments,item)),internal:item.stage==="internal_cost"});
-  const travellers=Math.max(1,selection.travellerCounts.adults+selection.travellerCounts.children);
+  const travellers=Math.max(1,selection.travellerCounts.adults+selection.travellerCounts.children+selection.travellerCounts.infants);
   const componentCosts={accommodation:0,transport:0,experiences:0,guide:0};
   for(const item of supplierCosts){
-    const amount=item.amount*quantityFor(item.unit,quantities);
+    const amount=item.amount*quantityForCost(item);
     if(item.entityType==="accommodation")componentCosts.accommodation+=amount;
     else if(item.entityType==="vehicle")componentCosts.transport+=amount;
     else if(item.entityType==="guide")componentCosts.guide+=amount;

@@ -33,6 +33,7 @@ export function ContactForm({quotation=false}:{quotation?:boolean}){
       travel_end_date:journey?.travelDates.end||null,
       adults:journey?.travellerCounts.adults??1,
       children:journey?.travellerCounts.children??0,
+      experience_participants:journey?.experienceParticipants??{},
       selected_themes:journey?.selectedThemeIds??[],
       selected_destinations:journey?.selectedDestinationIds??[],
       selected_experiences:journey?.selectedExperienceIds??[],

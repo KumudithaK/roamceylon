@@ -1,3 +1,18 @@
-import type {Metadata} from "next";import {listContent} from "@/lib/data";import {ListingPage} from "@/components/site/listing-page";
+import type {Metadata} from "next";
+import {ExperienceDiscovery} from "@/features/experiences/experience-editorial";
+import {ExperienceRepository} from "@/lib/repositories/content";
+
 export const metadata:Metadata={title:"Experiences",description:"Discover meaningful experiences across Sri Lanka."};
-export default async function Page(){const items=await listContent("experiences");return <ListingPage eyebrow="Experience Sri Lanka" title="Moments that stay with you." copy="Wild encounters, living traditions and remarkable landscapes—chosen for depth, not checklists." basePath="/experiences" items={items.map(x=>({id:x.id,slug:x.slug,name:x.name,image:x.hero_image_url,alt:x.image_alt,eyebrow:x.category,description:x.short_description}))}/>}
+export const dynamic="force-dynamic";
+
+export default async function Page(){
+  const experiences=await new ExperienceRepository().getEditorial();
+  return <main className="bg-ivory pb-24">
+    <header className="shell pb-8 pt-20 md:pb-12 md:pt-28">
+      <p className="eyebrow">Experience Sri Lanka</p>
+      <h1 className="mt-5 max-w-5xl font-serif text-5xl leading-[1.02] md:text-8xl">Moments that stay with you.</h1>
+      <p className="mt-6 max-w-2xl text-lg leading-8 text-slate/60">Wild encounters, living traditions and remarkable landscapes—chosen for depth, not checklists.</p>
+    </header>
+    <div className="shell"><ExperienceDiscovery experiences={experiences}/></div>
+  </main>;
+}

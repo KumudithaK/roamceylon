@@ -3,6 +3,8 @@ import {createAdminClient} from "@/lib/supabase/admin";
 import {PackagePricingService} from "@/lib/pricing/package-service";
 import type {AdminPackageQuote,PackageQuoteRequest,SupplierEntityType} from "@/lib/pricing/package-types";
 import type {Database,Json} from "@/lib/database.types";
+import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
+import type {ParticipantCounts} from "@/lib/types";
 
 type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
 type Plan=Database["public"]["Tables"]["pricing_plans"]["Row"];
@@ -14,6 +16,14 @@ export class AccountingPostError extends Error{
 }
 
 const ids=(value:Json)=>Array.isArray(value)?value.filter((item):item is string=>typeof item==="string"):[];
+const participantMap=(value:Json)=>{
+  if(!value||typeof value!=="object"||Array.isArray(value))return {};
+  return Object.fromEntries(Object.entries(value).flatMap(([id,counts])=>{
+    if(!counts||typeof counts!=="object"||Array.isArray(counts))return[];
+    const record=counts as Record<string,Json|undefined>;
+    return [[id,{adults:Number(record.adults)||0,children:Number(record.children)||0,infants:Number(record.infants)||0} satisfies ParticipantCounts]];
+  }));
+};
 const selectionFrom=(row:Enquiry):PackageQuoteRequest=>({
   selectedDestinationIds:ids(row.selected_destinations),
   selectedExperienceIds:ids(row.selected_experiences),
@@ -21,7 +31,8 @@ const selectionFrom=(row:Enquiry):PackageQuoteRequest=>({
   selectedVehicleId:row.selected_vehicle,
   selectedGuideId:row.selected_guide,
   travelDates:{start:row.travel_start_date??"",end:row.travel_end_date??""},
-  travellerCounts:{adults:row.adults,children:row.children}
+  travellerCounts:parseJourneyHandoff(row.trip_state)?.state.travellerCounts??{adults:row.adults,children:row.children,infants:0},
+  experienceParticipants:participantMap(row.experience_participants)
 });
 const asJson=(value:unknown)=>JSON.parse(JSON.stringify(value)) as Json;
 

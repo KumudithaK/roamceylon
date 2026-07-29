@@ -8,12 +8,21 @@ import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import type {Database,Json} from "@/lib/database.types";
+import type {ParticipantCounts} from "@/lib/types";
 
 type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
 type Named={id:string;name:string};
 type SelectionNames={themes:Named[];destinations:Named[];experiences:Named[];stays:Named[];vehicle:string|null;guide:string|null};
 const statuses=[["new","New lead"],["contacted","Contacted"],["quote_preparing","Quotation preparing"],["quote_sent","Quotation sent"],["confirmed","Confirmed"],["closed","Closed"],["cancelled","Cancelled"]] as const;
 const ids=(value:Json)=>Array.isArray(value)?value.filter((item):item is string=>typeof item==="string"):[];
+const participantMap=(value:Json):Record<string,ParticipantCounts>=>{
+  if(!value||typeof value!=="object"||Array.isArray(value))return {};
+  return Object.fromEntries(Object.entries(value).flatMap(([id,counts])=>{
+    if(!counts||typeof counts!=="object"||Array.isArray(counts))return[];
+    const data=counts as Record<string,Json|undefined>;
+    return [[id,{adults:Number(data.adults)||0,children:Number(data.children)||0,infants:Number(data.infants)||0}]];
+  }));
+};
 const emptyNames:SelectionNames={themes:[],destinations:[],experiences:[],stays:[],vehicle:null,guide:null};
 
 export function EnquiryReview({id}:{id:string}){
@@ -74,13 +83,15 @@ export function EnquiryReview({id}:{id:string}){
     setMessage("Enquiry updated.");
   };
   if(!enquiry)return <AdminShell><div className="grid min-h-[60vh] place-items-center text-stone">{message||"Loading enquiry…"}</div></AdminShell>;
-  const travellers=enquiry.adults+enquiry.children;
+  const travellerCounts=handoff?.state.travellerCounts??{adults:enquiry.adults,children:enquiry.children,infants:0};
+  const travellers=travellerCounts.adults+travellerCounts.children+travellerCounts.infants;
+  const experienceParticipants=participantMap(enquiry.experience_participants);
   return <AdminShell><div className="mx-auto max-w-7xl">
     <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">Traveller enquiry</p><h1 className="font-serif text-4xl md:text-5xl">{enquiry.name}</h1><p className="mt-2 text-sm text-stone">Received {new Date(enquiry.created_at).toLocaleString("en-GB")}</p></div><select value={enquiry.status} onChange={event=>void save(event.target.value)} disabled={saving} className="rounded-full border border-stone/25 bg-white px-5 py-3 text-sm font-semibold">{statuses.map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></div>
     {message&&<p className="mt-5 rounded-xl bg-white p-4 text-sm">{message}</p>}
     <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]"><div className="grid gap-6">
-      <Section title="Journey at a glance"><div className="grid gap-4 sm:grid-cols-3"><Metric icon={Users} label="Travellers" value={`${travellers}`} detail={`${enquiry.adults} adults · ${enquiry.children} children`}/><Metric icon={CalendarDays} label="Travel dates" value={enquiry.travel_start_date||"Flexible"} detail={enquiry.travel_end_date?`to ${enquiry.travel_end_date}`:"Departure not selected"}/><Metric icon={MapPin} label="Destinations" value={`${selectionNames.destinations.length}`} detail={selectionNames.destinations.map(item=>item.name).join(" · ")||"Not selected"}/></div></Section>
-      <Section title="Selected journey"><Selection label="Themes" values={selectionNames.themes.map(item=>item.name)}/><Selection label="Destinations and route order" values={selectionNames.destinations.map((item,index)=>`${index+1}. ${item.name}`)}/><Selection label="Experiences" values={selectionNames.experiences.map(item=>item.name)}/><Selection label="Accommodation" values={selectionNames.stays.map(item=>item.name)}/><Selection label="Transport" values={selectionNames.vehicle?[selectionNames.vehicle]:[]}/><Selection label="Local guide" values={selectionNames.guide?[selectionNames.guide]:[]}/></Section>
+      <Section title="Journey at a glance"><div className="grid gap-4 sm:grid-cols-3"><Metric icon={Users} label="Travellers" value={`${travellers}`} detail={`${travellerCounts.adults} adults · ${travellerCounts.children} children · ${travellerCounts.infants} infants`}/><Metric icon={CalendarDays} label="Travel dates" value={enquiry.travel_start_date||"Flexible"} detail={enquiry.travel_end_date?`to ${enquiry.travel_end_date}`:"Departure not selected"}/><Metric icon={MapPin} label="Destinations" value={`${selectionNames.destinations.length}`} detail={selectionNames.destinations.map(item=>item.name).join(" · ")||"Not selected"}/></div></Section>
+      <Section title="Selected journey"><Selection label="Themes" values={selectionNames.themes.map(item=>item.name)}/><Selection label="Destinations and route order" values={selectionNames.destinations.map((item,index)=>`${index+1}. ${item.name}`)}/><Selection label="Experiences" values={selectionNames.experiences.map(item=>{const counts=experienceParticipants[item.id];const count=counts?counts.adults+counts.children+counts.infants:0;return `${item.name}${count?` · ${count} participant${count===1?"":"s"}`:""}`})}/><Selection label="Accommodation" values={selectionNames.stays.map(item=>item.name)}/><Selection label="Transport" values={selectionNames.vehicle?[selectionNames.vehicle]:[]}/><Selection label="Local guide" values={selectionNames.guide?[selectionNames.guide]:[]}/></Section>
       <Section title="Traveller notes"><p className="whitespace-pre-wrap text-sm leading-7 text-slate/70">{enquiry.traveller_notes||enquiry.summary||"No additional notes were supplied."}</p></Section>
       <Section title="Customer package estimate">{quote?.status==="ready"?<div><div className="grid gap-4 sm:grid-cols-3"><Price label="Total package" value={`${quote.currency} ${quote.totalPackagePrice?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/><Price label="Per person" value={`${quote.currency} ${quote.pricePerPerson?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/><Price label="Daily estimate" value={`${quote.currency} ${quote.estimatedDailyCost?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/></div>{quote.components?.length?<div className="mt-6 divide-y divide-stone/15">{quote.components.map(item=><div key={item.category} className="flex justify-between py-3 text-sm"><span>{item.label}</span><strong>{quote.currency} {item.amount.toFixed(2)}</strong></div>)}</div>:null}</div>:<p className="text-sm text-stone">A personal quotation is required. No automated estimate was stored with this enquiry.</p>}</Section>
     </div><aside className="grid h-fit gap-6">

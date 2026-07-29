@@ -1,3 +1,5 @@
+import type {ParticipantCounts} from "@/lib/types";
+
 export type PackageQuoteRequest={
   selectedDestinationIds:string[];
   selectedExperienceIds:string[];
@@ -5,7 +7,8 @@ export type PackageQuoteRequest={
   selectedVehicleId:string|null;
   selectedGuideId:string|null;
   travelDates:{start:string;end:string};
-  travellerCounts:{adults:number;children:number};
+  travellerCounts:ParticipantCounts;
+  experienceParticipants:Record<string,ParticipantCounts>;
 };
 
 export type SupplierEntityType="accommodation"|"vehicle"|"guide"|"experience"|"destination";

@@ -21,6 +21,11 @@ const isJourneyState=(value:unknown):value is JourneyState=>{
     &&Boolean(state.travellerCounts)
     &&Boolean(state.travelDates);
 };
+const normaliseState=(state:JourneyState):JourneyState=>({
+  ...state,
+  travellerCounts:{adults:Number(state.travellerCounts.adults)||0,children:Number(state.travellerCounts.children)||0,infants:Number(state.travellerCounts.infants)||0},
+  experienceParticipants:state.experienceParticipants??{}
+});
 
 export function saveJourneyHandoff(state:JourneyState,quote:PublicPackageQuote|null){
   if(typeof window==="undefined")return;
@@ -35,14 +40,14 @@ export function readJourneyHandoff():JourneyQuotationHandoff|null{
     if(saved){
       const parsed=JSON.parse(saved) as Partial<JourneyQuotationHandoff>;
       if(parsed.version===1&&isJourneyState(parsed.state)){
-        return {version:1,createdAt:parsed.createdAt||new Date().toISOString(),state:parsed.state,quote:parsed.quote??null};
+        return {version:1,createdAt:parsed.createdAt||new Date().toISOString(),state:normaliseState(parsed.state),quote:parsed.quote??null};
       }
     }
     const legacy=localStorage.getItem("roam-ceylon-journey-v2");
     if(!legacy)return null;
     const parsed=JSON.parse(legacy) as {version?:number;state?:unknown};
     return parsed.version===2&&isJourneyState(parsed.state)
-      ?{version:1,createdAt:new Date().toISOString(),state:parsed.state,quote:null}
+      ?{version:1,createdAt:new Date().toISOString(),state:normaliseState(parsed.state),quote:null}
       :null;
   }catch{
     return null;
@@ -64,11 +69,11 @@ export function parseJourneyHandoff(value:Json):JourneyQuotationHandoff|null{
     return {
       version:1,
       createdAt:typeof record.createdAt==="string"?record.createdAt:"",
-      state:record.state,
+      state:normaliseState(record.state),
       quote:record.quote as PublicPackageQuote|null
     };
   }
   return isJourneyState(value)
-    ?{version:1,createdAt:"",state:value,quote:null}
+    ?{version:1,createdAt:"",state:normaliseState(value),quote:null}
     :null;
 }

@@ -9,7 +9,7 @@ export type JourneyPdfDetails={
   vehicle:string|null;
   guide:string|null;
   travelDates:{start:string;end:string};
-  travellerCounts:{adults:number;children:number};
+  travellerCounts:{adults:number;children:number;infants:number};
   estimatedDistance:number;
   estimatedTravelDays:number;
   quote:PublicPackageQuote|null;
@@ -135,7 +135,7 @@ export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes:ArrayB
   const generated=new Intl.DateTimeFormat("en-GB",{day:"2-digit",month:"short",year:"numeric"}).format(new Date());
   page.drawText(`PREPARED ${clean(generated).toUpperCase()}`,{x:176,y:660,size:7,font:bold,color:goldLight});
 
-  const travellers=details.travellerCounts.adults+details.travellerCounts.children;
+  const travellers=details.travellerCounts.adults+details.travellerCounts.children+details.travellerCounts.infants;
   const metricValues=[
     [`${travellers}`,"TRAVELLERS"],
     [details.estimatedDistance?`${details.estimatedDistance} km`:"Route pending","ESTIMATED ROUTE"],
@@ -217,7 +217,7 @@ export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes:ArrayB
 
   const planLines=[
     `Travel dates: ${formatDate(details.travelDates.start)} to ${formatDate(details.travelDates.end)}`,
-    `Travellers: ${details.travellerCounts.adults} adult${details.travellerCounts.adults===1?"":"s"}, ${details.travellerCounts.children} child${details.travellerCounts.children===1?"":"ren"}`,
+    `Travellers: ${details.travellerCounts.adults} adult${details.travellerCounts.adults===1?"":"s"}, ${details.travellerCounts.children} child${details.travellerCounts.children===1?"":"ren"}, ${details.travellerCounts.infants} infant${details.travellerCounts.infants===1?"":"s"}`,
     `Accommodation: ${details.accommodations.length?details.accommodations.join(", "):"Not selected"}`,
     `Private transport: ${details.vehicle||"Not selected"}`,
     `Local guide: ${details.guide||"Optional - not selected"}`
