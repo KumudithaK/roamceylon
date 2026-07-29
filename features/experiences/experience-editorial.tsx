@@ -6,7 +6,6 @@ import {AnimatePresence,motion} from "motion/react";
 import {ArrowLeft,CalendarDays,Check,Clock,MapPin,Minus,Plus,Sparkles,X} from "lucide-react";
 import {useEffect,useMemo,useState} from "react";
 import {Button} from "@/components/ui/button";
-import {SriLankaMap} from "@/components/map/sri-lanka-map";
 import type {JourneyExperience,ParticipantCounts} from "@/lib/types";
 import {cn} from "@/lib/utils";
 
@@ -77,11 +76,6 @@ export function ExperienceInfo({experience}:{experience:JourneyExperience}){
   return <section className="bg-sand-light py-16 md:py-24"><div className="shell"><div className="grid gap-8 md:grid-cols-3">{facts.map(([label,value])=><div key={label}><p className="eyebrow">{label}</p><p className="mt-3 font-serif text-2xl">{value}</p></div>)}</div>{experience.things_to_know.length?<div className="mt-14 grid gap-5 border-t border-stone/15 pt-10 md:grid-cols-3">{experience.things_to_know.map(item=><p key={item} className="leading-7 text-slate/65">{item}</p>)}</div>:null}</div></section>;
 }
 
-export function ExperienceLocation({experience}:{experience:JourneyExperience}){
-  if(!experience.destinations?.length)return null;
-  return <section className="shell py-16 md:py-24"><p className="eyebrow mb-5">Location</p><SriLankaMap destinations={experience.destinations} selectedIds={experience.destinationIds}/></section>;
-}
-
 function Counter({label,detail,value,onChange,dark}:{label:string;detail:string;value:number;onChange:(value:number)=>void;dark:boolean}){
   return <div className={cn("flex items-center justify-between border-b py-4",dark?"border-white/15":"border-stone/20")}><span><strong className="block">{label}</strong><small className={dark?"text-ivory/55":"text-stone"}>{detail}</small></span><div className="flex items-center gap-4"><button type="button" onClick={()=>onChange(Math.max(0,value-1))} className={cn("grid size-9 place-items-center rounded-full border",dark?"border-white/25":"border-stone/30 bg-white text-slate")} aria-label={`Remove one ${label}`}><Minus className="size-4"/></button><strong className="w-5 text-center">{value}</strong><button type="button" onClick={()=>onChange(value+1)} className={cn("grid size-9 place-items-center rounded-full border",dark?"border-white/25":"border-stone/30 bg-white text-slate")} aria-label={`Add one ${label}`}><Plus className="size-4"/></button></div></div>;
 }
@@ -107,12 +101,15 @@ export function ExperienceFooterCTA({experience,globalTravellers=emptyCounts,ini
 
 export function ExperienceRelated({experiences,onOpen}:{experiences:JourneyExperience[];onOpen?:(experience:JourneyExperience)=>void}){
   if(!experiences.length)return null;
-  return <section className="shell py-16 md:py-24"><p className="eyebrow">Continue discovering</p><h2 className="mt-4 font-serif text-4xl md:text-5xl">Related experiences</h2><div className="mt-10 grid gap-6 md:grid-cols-2">{experiences.slice(0,2).map(experience=><ExperienceCard key={experience.id} experience={experience} onOpen={()=>onOpen?.(experience)}/>)}</div></section>;
+  return <section className="shell py-14 md:py-20"><p className="eyebrow">Continue discovering</p><h2 className="mt-3 font-serif text-4xl md:text-5xl">You may also like</h2><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{experiences.slice(0,4).map(experience=>onOpen?<button key={experience.id} onClick={()=>onOpen(experience)} className="group overflow-hidden rounded-2xl bg-white text-left shadow-[0_14px_40px_rgba(26,40,35,.08)] transition hover:-translate-y-1"><RelatedMiniCard experience={experience}/></button>:<Link key={experience.id} href={`/experiences/${experience.slug}`} className="group overflow-hidden rounded-2xl bg-white shadow-[0_14px_40px_rgba(26,40,35,.08)] transition hover:-translate-y-1"><RelatedMiniCard experience={experience}/></Link>)}</div></section>;
+}
+
+function RelatedMiniCard({experience}:{experience:JourneyExperience}){
+  return <><div className="relative aspect-[16/10] overflow-hidden bg-sand">{experience.hero_image_url&&<Image src={experience.hero_image_url} alt={experience.image_alt||experience.name} fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover transition duration-700 group-hover:scale-105"/>}</div><div className="p-4"><p className="text-[.62rem] font-bold uppercase tracking-[.16em] text-gold-dark">{experience.category||"Experience"}</p><h3 className="mt-2 line-clamp-2 font-serif text-lg leading-snug">{experience.name}</h3><p className="mt-2 line-clamp-1 text-xs text-stone">{experience.destinationNames?.join(" · ")||"Sri Lanka"}</p></div></>;
 }
 
 function DetailContents({experience,related,onClose,globalTravellers,initialParticipants,onInclude,included,onRelatedOpen}:{experience:JourneyExperience;related:JourneyExperience[];onClose?:()=>void;globalTravellers?:ParticipantCounts;initialParticipants?:ParticipantCounts;onInclude?:(participants:ParticipantCounts,journeyTravellers:ParticipantCounts)=>void;included?:boolean;onRelatedOpen?:(experience:JourneyExperience)=>void}){
-  const combinations=related.slice(0,3).map(item=>`${item.name}${item.destinationNames?.length?` — ${item.destinationNames.join(" · ")}`:""}`);
-  return <article className="bg-ivory text-slate"><ExperienceHero experience={experience} onClose={onClose}/><ExperienceStory experience={experience}/><ExperienceGallery experience={experience}/><ExperienceHighlights experience={experience}/><EditorialSection eyebrow="Distinctly this place" title="What makes it unique" items={experience.unique_points}/><ExperienceInfo experience={experience}/><ExperienceIncluded experience={experience}/><EditorialSection eyebrow="Close by" title="Nearby attractions" items={experience.nearby_attractions}/><EditorialSection eyebrow="Journey ideas" title="Suggested combinations" items={combinations}/><ExperienceTips experience={experience}/><ExperienceLocation experience={experience}/><ExperienceFooterCTA experience={experience} globalTravellers={globalTravellers} initialParticipants={initialParticipants} onInclude={onInclude} included={included}/><ExperienceRelated experiences={related} onOpen={onRelatedOpen}/></article>;
+  return <article className="bg-ivory text-slate"><ExperienceHero experience={experience} onClose={onClose}/><ExperienceStory experience={experience}/><ExperienceGallery experience={experience}/><ExperienceHighlights experience={experience}/><EditorialSection eyebrow="Distinctly this place" title="What makes it unique" items={experience.unique_points}/><ExperienceInfo experience={experience}/><ExperienceIncluded experience={experience}/><EditorialSection eyebrow="Close by" title="Nearby attractions" items={experience.nearby_attractions}/><ExperienceTips experience={experience}/><ExperienceFooterCTA experience={experience} globalTravellers={globalTravellers} initialParticipants={initialParticipants} onInclude={onInclude} included={included}/><ExperienceRelated experiences={related} onOpen={onRelatedOpen}/></article>;
 }
 
 export function ExperienceDiscovery({experiences,globalTravellers=emptyCounts,selectedIds=[],participantsByExperience={},onInclude,compact=false}:{experiences:JourneyExperience[];globalTravellers?:ParticipantCounts;selectedIds?:string[];participantsByExperience?:Record<string,ParticipantCounts>;onInclude?:(experience:JourneyExperience,participants:ParticipantCounts,journeyTravellers:ParticipantCounts)=>void;compact?:boolean}){
