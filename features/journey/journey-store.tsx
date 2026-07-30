@@ -34,6 +34,17 @@ const normaliseCounts=(counts:ParticipantCounts,requireAdult=false):ParticipantC
   children:Math.max(0,Math.floor(counts.children||0)),
   infants:Math.max(0,Math.floor(counts.infants||0))
 });
+const maximumParticipants=(participants:Record<string,ParticipantCounts>):ParticipantCounts=>Object.values(participants).reduce((maximum,counts)=>({
+  adults:Math.max(maximum.adults,counts.adults),
+  children:Math.max(maximum.children,counts.children),
+  infants:Math.max(maximum.infants,counts.infants)
+}),emptyParticipants);
+const fitWithinTrip=(counts:ParticipantCounts,trip:ParticipantCounts):ParticipantCounts=>totalParticipants(trip)?{
+  adults:Math.min(counts.adults,trip.adults),
+  children:Math.min(counts.children,trip.children),
+  infants:Math.min(counts.infants,trip.infants)
+}:counts;
+const totalParticipants=(counts:ParticipantCounts)=>counts.adults+counts.children+counts.infants;
 const keepParticipants=(participants:Record<string,ParticipantCounts>,ids:string[])=>Object.fromEntries(Object.entries(participants).filter(([id])=>ids.includes(id)));
 const initial:JourneyState={selectedThemeIds:[],selectedDestinationIds:[],selectedExperienceIds:[],selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"",end:""},travellerCounts:emptyParticipants,experienceParticipants:{},budgetPreference:"flexible"};
 
@@ -62,11 +73,15 @@ function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):Journey
   if(action.type==="vehicle")return {...state,selectedVehicleId:action.id};
   if(action.type==="guide")return {...state,selectedGuideId:action.id};
   if(action.type==="dates")return {...state,travelDates:{start:action.start,end:action.end}};
-  if(action.type==="travellers")return {...state,travellerCounts:normaliseCounts(action.counts)};
-  if(action.type==="experienceParticipants")return {...state,experienceParticipants:{...state.experienceParticipants,[action.experienceId]:normaliseCounts(action.counts,true)}};
+  if(action.type==="travellers"){
+    const requested=normaliseCounts(action.counts);
+    const minimum=maximumParticipants(state.experienceParticipants);
+    return {...state,travellerCounts:{adults:Math.max(requested.adults,minimum.adults),children:Math.max(requested.children,minimum.children),infants:Math.max(requested.infants,minimum.infants)}};
+  }
+  if(action.type==="experienceParticipants")return {...state,experienceParticipants:{...state.experienceParticipants,[action.experienceId]:fitWithinTrip(normaliseCounts(action.counts,true),state.travellerCounts)}};
   if(action.type==="includeExperience"){
     const selectedExperienceIds=state.selectedExperienceIds.includes(action.experienceId)?state.selectedExperienceIds:[...state.selectedExperienceIds,action.experienceId];
-    return {...state,selectedExperienceIds,experienceParticipants:{...state.experienceParticipants,[action.experienceId]:normaliseCounts(action.counts,true)}};
+    return {...state,selectedExperienceIds,experienceParticipants:{...state.experienceParticipants,[action.experienceId]:fitWithinTrip(normaliseCounts(action.counts,true),state.travellerCounts)}};
   }
   if(action.type==="budget")return {...state,budgetPreference:action.value};
   return state;
