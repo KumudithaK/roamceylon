@@ -1,9 +1,10 @@
 "use client";
 
-import {createContext,useContext,useMemo,useReducer} from "react";
+import {createContext,useContext,useEffect,useMemo,useReducer,useState} from "react";
 import type {JourneyBootstrap} from "@/lib/journey/journey-service";
 import {availableDestinations,availableExperiences} from "@/lib/journey/journey-selectors";
 import type {ParticipantCounts} from "@/lib/types";
+import {readJourneyState,writeJourneyState} from "@/lib/journey/journey-persistence";
 
 export type JourneyState={
   selectedThemeIds:string[];
@@ -25,6 +26,7 @@ type Action=
   |{type:"travellers";counts:ParticipantCounts}
   |{type:"experienceParticipants";experienceId:string;counts:ParticipantCounts}
   |{type:"includeExperience";experienceId:string;counts:ParticipantCounts}
+  |{type:"removeExperience";experienceId:string}
   |{type:"budget";value:string}
   |{type:"hydrate";state:JourneyState};
 
@@ -46,7 +48,7 @@ const fitWithinTrip=(counts:ParticipantCounts,trip:ParticipantCounts):Participan
 }:counts;
 const totalParticipants=(counts:ParticipantCounts)=>counts.adults+counts.children+counts.infants;
 const keepParticipants=(participants:Record<string,ParticipantCounts>,ids:string[])=>Object.fromEntries(Object.entries(participants).filter(([id])=>ids.includes(id)));
-const initial:JourneyState={selectedThemeIds:[],selectedDestinationIds:[],selectedExperienceIds:[],selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"",end:""},travellerCounts:emptyParticipants,experienceParticipants:{},budgetPreference:"flexible"};
+export const emptyJourneyState:JourneyState={selectedThemeIds:[],selectedDestinationIds:[],selectedExperienceIds:[],selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"",end:""},travellerCounts:emptyParticipants,experienceParticipants:{},budgetPreference:"flexible"};
 
 function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):JourneyState{
   if(action.type==="hydrate")return action.state;
@@ -83,29 +85,52 @@ function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):Journey
     const selectedExperienceIds=state.selectedExperienceIds.includes(action.experienceId)?state.selectedExperienceIds:[...state.selectedExperienceIds,action.experienceId];
     return {...state,selectedExperienceIds,experienceParticipants:{...state.experienceParticipants,[action.experienceId]:fitWithinTrip(normaliseCounts(action.counts,true),state.travellerCounts)}};
   }
+  if(action.type==="removeExperience"){
+    const selectedExperienceIds=state.selectedExperienceIds.filter(id=>id!==action.experienceId);
+    return {...state,selectedExperienceIds,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds)};
+  }
   if(action.type==="budget")return {...state,budgetPreference:action.value};
   return state;
 }
 
 const Context=createContext<{state:JourneyState;dispatch:React.Dispatch<Action>}|null>(null);
 
-export type JourneyInitialSelection={themeId?:string|null;experienceId?:string|null;travellers?:ParticipantCounts;experienceParticipants?:ParticipantCounts};
+export type JourneyInitialSelection={themeId?:string|null;themeIds?:string[];destinationIds?:string[];experienceId?:string|null;travellers?:ParticipantCounts;experienceParticipants?:ParticipantCounts;step?:number};
 export function JourneyProvider({data,initialSelection,children}:{data:JourneyBootstrap;initialSelection?:JourneyInitialSelection;children:React.ReactNode}){
   const startingState=useMemo<JourneyState>(()=>{
     const experience=initialSelection?.experienceId?data.experiences.find(item=>item.id===initialSelection.experienceId):null;
     const destinationId=experience?.destinationIds[0];
     const destination=destinationId?data.destinations.find(item=>item.id===destinationId):null;
-    const themeId=initialSelection?.themeId&&data.themes.some(theme=>theme.id===initialSelection.themeId)?initialSelection.themeId:experience?.themeIds[0]||destination?.themeIds[0];
+    const explicitThemes=[...(initialSelection?.themeIds??[]),...(initialSelection?.themeId?[initialSelection.themeId]:[])].filter(id=>data.themes.some(theme=>theme.id===id));
+    const themeIds=explicitThemes.length?explicitThemes:experience?.themeIds.length?experience.themeIds:destination?.themeIds??[];
+    const destinationIds=[...(initialSelection?.destinationIds??[]),...(destinationId?[destinationId]:[])].filter((id,index,values)=>data.destinations.some(item=>item.id===id)&&values.indexOf(id)===index);
     return {
-      ...initial,
-      selectedThemeIds:themeId?[themeId]:[],
-      selectedDestinationIds:destinationId?[destinationId]:[],
+      ...emptyJourneyState,
+      selectedThemeIds:themeIds,
+      selectedDestinationIds:destinationIds,
       travellerCounts:initialSelection?.travellers?normaliseCounts(initialSelection.travellers):emptyParticipants,
       selectedExperienceIds:experience?[experience.id]:[],
       experienceParticipants:experience&&initialSelection?.experienceParticipants?{[experience.id]:normaliseCounts(initialSelection.experienceParticipants,true)}:{}
     };
   },[data.destinations,data.experiences,data.themes,initialSelection]);
   const [state,dispatch]=useReducer((current:JourneyState,action:Action)=>reducer(data,current,action),startingState);
+  const [hydrated,setHydrated]=useState(false);
+  useEffect(()=>{
+    const saved=readJourneyState();
+    if(saved){
+      const hasLaunchSelection=Boolean(initialSelection?.themeId||initialSelection?.themeIds?.length||initialSelection?.destinationIds?.length||initialSelection?.experienceId);
+      dispatch({type:"hydrate",state:hasLaunchSelection?{
+        ...saved,
+        selectedThemeIds:[...new Set([...saved.selectedThemeIds,...startingState.selectedThemeIds])],
+        selectedDestinationIds:[...new Set([...saved.selectedDestinationIds,...startingState.selectedDestinationIds])],
+        selectedExperienceIds:[...new Set([...saved.selectedExperienceIds,...startingState.selectedExperienceIds])],
+        travellerCounts:initialSelection?.travellers??saved.travellerCounts,
+        experienceParticipants:{...saved.experienceParticipants,...startingState.experienceParticipants}
+      }:saved});
+    }
+    setHydrated(true);
+  },[initialSelection,startingState]);
+  useEffect(()=>{if(hydrated)writeJourneyState(state)},[hydrated,state]);
   const value=useMemo(()=>({state,dispatch}),[state]);
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
