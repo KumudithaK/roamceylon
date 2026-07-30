@@ -83,9 +83,10 @@ function PlanStep({data}:{data:JourneyBootstrap}){
   </div>;
 }
 
-function Builder({data,initialStep=0}:{data:JourneyBootstrap;initialStep?:number}){
+function Builder({data}:{data:JourneyBootstrap}){
   const {state,dispatch}=useJourney();
-  const [step,setStep]=useState(Math.min(3,Math.max(0,initialStep)));
+  const step=state.currentStep;
+  const setStep=(value:number)=>dispatch({type:"step",value});
   const [quotationOpen,setQuotationOpen]=useState(false);
   const destinations=useMemo(()=>availableDestinations(data.destinations,state.selectedThemeIds),[data.destinations,state.selectedThemeIds]);
   const experiences=useMemo(()=>availableExperiences(data.experiences,state.selectedDestinationIds),[data.experiences,state.selectedDestinationIds]);
@@ -105,7 +106,7 @@ function Builder({data,initialStep=0}:{data:JourneyBootstrap;initialStep?:number
         {step<2?<><div className="mt-10 grid gap-5 md:grid-cols-2">{current.map(item=><ChoiceCard key={item.id} item={item} selected={selected.includes(item.id)} onClick={()=>dispatch({type:"toggle",field,id:item.id})}/>)}</div>{step===1&&<div className="mt-10"><SriLankaMap destinations={destinations} selectedIds={state.selectedDestinationIds} onSelect={id=>dispatch({type:"toggle",field:"selectedDestinationIds",id})}/></div>}</>:null}
         {step===2?<ExperienceDiscovery compact experiences={experiences} globalTravellers={state.travellerCounts} selectedIds={state.selectedExperienceIds} participantsByExperience={state.experienceParticipants} onInclude={(experience,participants,travellers)=>{dispatch({type:"travellers",counts:travellers});dispatch({type:"includeExperience",experienceId:experience.id,counts:participants})}} onRemove={experience=>dispatch({type:"removeExperience",experienceId:experience.id})} onParticipantsChange={(experience,participants)=>dispatch({type:"experienceParticipants",experienceId:experience.id,counts:participants})}/>:null}
         {step===3?<PlanStep data={data}/>:null}
-        <div className="mt-10 flex justify-between"><Button variant="ghost" disabled={step===0} onClick={()=>setStep(value=>value-1)}><ChevronLeft/>Back</Button>{step<3?<Button onClick={()=>setStep(value=>value+1)}>Continue<ChevronRight/></Button>:<Button onClick={()=>setQuotationOpen(true)} disabled={!state.selectedDestinationIds.length} variant="accent">Request Final Quotation</Button>}</div>
+        <div className="mt-10 flex justify-between"><Button variant="ghost" disabled={step===0} onClick={()=>setStep(step-1)}><ChevronLeft/>Back</Button>{step<3?<Button onClick={()=>setStep(step+1)}>Continue<ChevronRight/></Button>:<Button onClick={()=>setQuotationOpen(true)} disabled={!state.selectedDestinationIds.length} variant="accent">Request Final Quotation</Button>}</div>
       </motion.div></AnimatePresence>
     </section>
     <Summary data={data} quoteState={packageQuote} onQuotation={()=>setQuotationOpen(true)}/>
@@ -145,5 +146,5 @@ function Summary({data,quoteState,onQuotation}:{data:JourneyBootstrap;quoteState
 }
 
 export function JourneyBuilder({data,initialSelection}:{data:JourneyBootstrap;initialSelection?:JourneyInitialSelection}){
-  return <JourneyProvider data={data} initialSelection={initialSelection}><Builder data={data} initialStep={initialSelection?.step??(initialSelection?.experienceId?2:0)}/></JourneyProvider>;
+  return <JourneyProvider data={data} initialSelection={initialSelection}><Builder data={data}/></JourneyProvider>;
 }
