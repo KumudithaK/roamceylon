@@ -93,4 +93,8 @@ test("experience pricing uses that experience's participants, not the whole jour
   const supplierCosts:SupplierCost[]=[{id:"experience-plan",entityType:"experience",entityId:"e1",category:"Experience",unit:"per_person",amount:25,partnerCommissionPercent:null}];
   const quote=calculatePackageQuote({config,supplierCosts,selection,durationDays:1,distanceKm:0});
   assert.equal(quote.breakdown.find(line=>line.label==="Experience")?.amount,50);
+  assert.equal(quote.public.totalPackagePrice,50);
+  const updated=calculatePackageQuote({config,supplierCosts,selection:{...selection,experienceParticipants:{e1:{adults:1,children:0,infants:0}}},durationDays:1,distanceKm:0});
+  assert.equal(updated.breakdown.find(line=>line.label==="Experience")?.amount,25);
+  assert.equal(updated.public.totalPackagePrice,25);
 });
