@@ -1,5 +1,5 @@
 import type {Metadata} from "next";
-import {ExperienceDiscovery} from "@/features/experiences/experience-editorial";
+import {ExperienceCatalogue} from "@/features/experiences/experience-editorial";
 import {ExperienceRepository} from "@/lib/repositories/content";
 
 export const metadata:Metadata={title:"Experiences",description:"Discover meaningful experiences across Sri Lanka."};
@@ -13,6 +13,6 @@ export default async function Page(){
       <h1 className="mt-5 max-w-5xl font-serif text-5xl leading-[1.02] md:text-8xl">Moments that stay with you.</h1>
       <p className="mt-6 max-w-2xl text-lg leading-8 text-slate/60">Wild encounters, living traditions and remarkable landscapes—chosen for depth, not checklists.</p>
     </header>
-    <div className="shell"><ExperienceDiscovery experiences={experiences}/></div>
+    <div className="shell"><ExperienceCatalogue experiences={experiences}/></div>
   </main>;
 }

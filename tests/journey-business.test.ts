@@ -4,6 +4,20 @@ import {availableDestinations,availableExperiences} from "../lib/journey/journey
 import {calculatePackageQuote} from "../lib/pricing/package-engine.ts";
 import type {SupplierCost} from "../lib/pricing/package-types.ts";
 import {getRouteEstimate} from "../lib/journey/route.ts";
+import {includeExperienceSelection,removeExperienceSelection} from "../lib/journey/journey-selection.ts";
+
+test("external experience selection maps its parent theme and destination",()=>{
+  const state={selectedThemeIds:["wellness"],selectedDestinationIds:[],selectedExperienceIds:[],selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"",end:""},travellerCounts:{adults:0,children:0,infants:0},experienceParticipants:{},budgetPreference:"flexible"};
+  const experience={id:"tea-walk",themeIds:["nature"],destinationIds:["ella","nuwara-eliya"]};
+  const selected=includeExperienceSelection(state as never,experience as never,{adults:2,children:0,infants:0},{adults:3,children:0,infants:0});
+  assert.deepEqual(selected.selectedThemeIds,["wellness","nature"]);
+  assert.deepEqual(selected.selectedDestinationIds,["ella"]);
+  assert.deepEqual(selected.selectedExperienceIds,["tea-walk"]);
+  assert.deepEqual(selected.experienceParticipants["tea-walk"],{adults:2,children:0,infants:0});
+  const removed=removeExperienceSelection(selected,"tea-walk");
+  assert.deepEqual(removed.selectedExperienceIds,[]);
+  assert.equal(removed.experienceParticipants["tea-walk"],undefined);
+});
 
 test("theme selection returns the destination union without duplicates",()=>{
   const destinations=[

@@ -10,6 +10,7 @@ import type {JourneyExperience,ParticipantCounts} from "@/lib/types";
 import {cn} from "@/lib/utils";
 import {emptyJourneyState,type JourneyState} from "@/features/journey/journey-store";
 import {readJourneyState,subscribeJourneyState,writeJourneyState} from "@/lib/journey/journey-persistence";
+import {includeExperienceSelection,removeExperienceSelection} from "@/lib/journey/journey-selection";
 
 const emptyCounts:ParticipantCounts={adults:0,children:0,infants:0};
 const total=(counts:ParticipantCounts)=>counts.adults+counts.children+counts.infants;
@@ -125,7 +126,19 @@ export function ExperienceDiscovery({experiences,globalTravellers=emptyCounts,se
   useEffect(()=>{document.body.style.overflow=active?"hidden":"";return()=>{document.body.style.overflow=""}},[active]);
   const related=useMemo(()=>active?experiences.filter(item=>item.id!==active.id&&(item.category===active.category||item.destinationIds.some(id=>active.destinationIds.includes(id)))).slice(0,4):[],[active,experiences]);
   if(!experiences.length)return <div className="mt-10 rounded-[2rem] bg-sand-light px-7 py-16 text-center text-stone">Choose a destination to discover its experiences.</div>;
-  return <><motion.div layout className={cn("mt-10 grid",compact?"gap-5 md:grid-cols-2":"gap-7 md:grid-cols-2")}>{experiences.map(experience=><ExperienceCard key={experience.id} experience={experience} compact={compact} selected={selectedIds.includes(experience.id)} onOpen={()=>setActive(experience)}/>)}</motion.div><AnimatePresence>{active&&<motion.div className="fixed inset-0 z-[70] overflow-y-auto bg-ivory" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}><DetailContents experience={active} related={related} onClose={()=>setActive(null)} globalTravellers={globalTravellers} initialParticipants={participantsByExperience[active.id]} included={selectedIds.includes(active.id)} onInclude={(participants,journeyTravellers)=>onInclude?.(active,participants,journeyTravellers)} onRemove={()=>onRemove?.(active)} onParticipantsChange={participants=>onParticipantsChange?.(active,participants)} onRelatedOpen={setActive}/></motion.div>}</AnimatePresence></>;
+  return <><motion.div layout className={cn("mt-10 grid",compact?"gap-5 md:grid-cols-2":"gap-7 md:grid-cols-2")}>{experiences.map(experience=><ExperienceCard key={experience.id} experience={experience} compact={compact} selected={selectedIds.includes(experience.id)} onOpen={()=>setActive(experience)}/>)}</motion.div><AnimatePresence>{active&&<motion.div className="fixed inset-0 z-[70] overflow-y-auto bg-ivory" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}><DetailContents experience={active} related={related} onClose={()=>setActive(null)} globalTravellers={globalTravellers} initialParticipants={participantsByExperience[active.id]} included={selectedIds.includes(active.id)} onInclude={(participants,journeyTravellers)=>{const selectedExperience=active;setActive(null);onInclude?.(selectedExperience,participants,journeyTravellers)}} onRemove={()=>onRemove?.(active)} onParticipantsChange={participants=>onParticipantsChange?.(active,participants)} onRelatedOpen={setActive}/></motion.div>}</AnimatePresence></>;
+}
+
+export function ExperienceCatalogue({experiences}:{experiences:JourneyExperience[]}){
+  const [journey,setJourney]=useState<JourneyState>(emptyJourneyState);
+  useEffect(()=>{const saved=readJourneyState();if(saved)setJourney(saved);return subscribeJourneyState(setJourney)},[]);
+  const persist=(next:JourneyState)=>{setJourney(next);writeJourneyState(next)};
+  const include=(experience:JourneyExperience,participants:ParticipantCounts,travellers:ParticipantCounts)=>{
+    persist(includeExperienceSelection(journey,experience,participants,travellers));
+    const query=new URLSearchParams({experience:experience.id,step:"2",adults:String(travellers.adults),children:String(travellers.children),infants:String(travellers.infants),experienceAdults:String(participants.adults),experienceChildren:String(participants.children),experienceInfants:String(participants.infants)});
+    window.location.assign(`/journey-builder?${query.toString()}`);
+  };
+  return <ExperienceDiscovery experiences={experiences} globalTravellers={journey.travellerCounts} selectedIds={journey.selectedExperienceIds} participantsByExperience={journey.experienceParticipants} onInclude={include} onRemove={experience=>persist(removeExperienceSelection(journey,experience.id))} onParticipantsChange={(experience,participants)=>persist({...journey,experienceParticipants:{...journey.experienceParticipants,[experience.id]:participants}})}/>;
 }
 
 export function ExperienceEditorialPage({experience,related}:{experience:JourneyExperience;related:JourneyExperience[]}){
@@ -134,12 +147,12 @@ export function ExperienceEditorialPage({experience,related}:{experience:Journey
   const selected=journey.selectedExperienceIds.includes(experience.id);
   const persist=(next:JourneyState)=>{setJourney(next);writeJourneyState(next)};
   const include=(participants:ParticipantCounts,journeyTravellers:ParticipantCounts)=>{
-    const next:JourneyState={...journey,selectedThemeIds:[...new Set([...journey.selectedThemeIds,...experience.themeIds])],selectedDestinationIds:[...new Set([...journey.selectedDestinationIds,...experience.destinationIds.slice(0,1)])],selectedExperienceIds:[...new Set([...journey.selectedExperienceIds,experience.id])],travellerCounts:journeyTravellers,experienceParticipants:{...journey.experienceParticipants,[experience.id]:participants}};
+    const next=includeExperienceSelection(journey,experience,participants,journeyTravellers);
     persist(next);
     const query=new URLSearchParams({experience:experience.id,step:"2",adults:String(journeyTravellers.adults),children:String(journeyTravellers.children),infants:String(journeyTravellers.infants),experienceAdults:String(participants.adults),experienceChildren:String(participants.children),experienceInfants:String(participants.infants)});
     window.location.assign(`/journey-builder?${query.toString()}`);
   };
-  const remove=()=>{const {[experience.id]:removed,...experienceParticipants}=journey.experienceParticipants;void removed;persist({...journey,selectedExperienceIds:journey.selectedExperienceIds.filter(id=>id!==experience.id),experienceParticipants})};
+  const remove=()=>persist(removeExperienceSelection(journey,experience.id));
   const updateParticipants=(participants:ParticipantCounts)=>persist({...journey,experienceParticipants:{...journey.experienceParticipants,[experience.id]:participants}});
   return <><div className="shell py-5"><Link href="/experiences" className="inline-flex items-center gap-2 text-sm font-semibold text-slate/65 hover:text-slate"><ArrowLeft className="size-4"/>All experiences</Link></div><DetailContents experience={experience} related={related} globalTravellers={journey.travellerCounts} initialParticipants={journey.experienceParticipants[experience.id]} included={selected} onInclude={include} onRemove={remove} onParticipantsChange={updateParticipants}/></>;
 }
