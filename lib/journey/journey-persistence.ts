@@ -21,6 +21,7 @@ export function readJourneyState():JourneyState|null{
       selectedStayIdsByDestination:parsed.selectedStayIdsByDestination??{},
       selectedVehicleId:parsed.selectedVehicleId??null,
       selectedGuideId:parsed.selectedGuideId??null,
+      selectedPricingPlanIds:parsed.selectedPricingPlanIds??{},
       travelDates:parsed.travelDates??{start:"",end:""},
       travellerCounts:{adults:Number(parsed.travellerCounts?.adults)||0,children:Number(parsed.travellerCounts?.children)||0,infants:Number(parsed.travellerCounts?.infants)||0},
       experienceParticipants:parsed.experienceParticipants??{},

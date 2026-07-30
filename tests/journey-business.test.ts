@@ -7,16 +7,18 @@ import {getRouteEstimate} from "../lib/journey/route.ts";
 import {includeExperienceSelection,removeExperienceSelection} from "../lib/journey/journey-selection.ts";
 
 test("external experience selection maps its parent theme and destination",()=>{
-  const state={selectedThemeIds:["wellness"],selectedDestinationIds:[],selectedExperienceIds:[],selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"",end:""},travellerCounts:{adults:0,children:0,infants:0},experienceParticipants:{},budgetPreference:"flexible"};
+  const state={selectedThemeIds:["wellness"],selectedDestinationIds:[],selectedExperienceIds:[],selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds:{},travelDates:{start:"",end:""},travellerCounts:{adults:0,children:0,infants:0},experienceParticipants:{},budgetPreference:"flexible"};
   const experience={id:"tea-walk",themeIds:["nature"],destinationIds:["ella","nuwara-eliya"]};
-  const selected=includeExperienceSelection(state as never,experience as never,{adults:2,children:0,infants:0},{adults:3,children:0,infants:0});
+  const selected=includeExperienceSelection(state as never,experience as never,{adults:2,children:0,infants:0},{adults:3,children:0,infants:0},"tea-private-rate");
   assert.deepEqual(selected.selectedThemeIds,["wellness","nature"]);
   assert.deepEqual(selected.selectedDestinationIds,["ella"]);
   assert.deepEqual(selected.selectedExperienceIds,["tea-walk"]);
   assert.deepEqual(selected.experienceParticipants["tea-walk"],{adults:2,children:0,infants:0});
+  assert.equal(selected.selectedPricingPlanIds["experience:tea-walk"],"tea-private-rate");
   const removed=removeExperienceSelection(selected,"tea-walk");
   assert.deepEqual(removed.selectedExperienceIds,[]);
   assert.equal(removed.experienceParticipants["tea-walk"],undefined);
+  assert.equal(removed.selectedPricingPlanIds["experience:tea-walk"],undefined);
 });
 
 test("theme selection returns the destination union without duplicates",()=>{
@@ -51,7 +53,7 @@ test("route estimate preserves selection order and computes distance",()=>{
 
 test("DMC package price includes supplier, operational, overhead and margin costs",()=>{
   const config={currency:"USD",roomOccupancy:2,childCostFactor:.5,routeDistanceBufferPercent:0,driverSalaryPerDay:40,fuelPricePerLitre:2,vehicleKmPerLitre:10,tollsPerJourney:10,parkingPerDay:5,guideAccommodationPerNight:25,airportTransferEachWay:30,administrationFixed:20,administrationPercent:5,contingencyPercent:10,serviceFeeFixed:10,serviceFeePercent:5,targetProfitMarginPercent:20};
-  const selection={selectedDestinationIds:["d1"],selectedExperienceIds:["e1"],selectedStayIds:["a1"],selectedVehicleId:"v1",selectedGuideId:"g1",travelDates:{start:"2026-08-01",end:"2026-08-05"},travellerCounts:{adults:2,children:1,infants:0},experienceParticipants:{e1:{adults:2,children:1,infants:0}}};
+  const selection={selectedDestinationIds:["d1"],selectedExperienceIds:["e1"],selectedStayIds:["a1"],selectedVehicleId:"v1",selectedGuideId:"g1",selectedPricingPlanIds:{},travelDates:{start:"2026-08-01",end:"2026-08-05"},travellerCounts:{adults:2,children:1,infants:0},experienceParticipants:{e1:{adults:2,children:1,infants:0}}};
   const supplierCosts:SupplierCost[]=[
     {id:"1",entityType:"accommodation",entityId:"a1",category:"Accommodation",unit:"per_room_night",amount:100,partnerCommissionPercent:null},
     {id:"2",entityType:"vehicle",entityId:"v1",category:"Vehicle rental",unit:"per_vehicle_day",amount:50,partnerCommissionPercent:null},
@@ -80,7 +82,7 @@ test("DMC package price includes supplier, operational, overhead and margin cost
 
 test("missing confidential inputs require a manual quote instead of inventing costs",()=>{
   const config={currency:"USD",roomOccupancy:2,childCostFactor:1,routeDistanceBufferPercent:0,driverSalaryPerDay:null,fuelPricePerLitre:null,vehicleKmPerLitre:null,tollsPerJourney:null,parkingPerDay:null,guideAccommodationPerNight:null,airportTransferEachWay:null,administrationFixed:null,administrationPercent:null,contingencyPercent:null,serviceFeeFixed:null,serviceFeePercent:null,targetProfitMarginPercent:null};
-  const selection={selectedDestinationIds:["d1"],selectedExperienceIds:["e1"],selectedStayIds:[],selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"",end:""},travellerCounts:{adults:2,children:0,infants:0},experienceParticipants:{e1:{adults:2,children:0,infants:0}}};
+  const selection={selectedDestinationIds:["d1"],selectedExperienceIds:["e1"],selectedStayIds:[],selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds:{},travelDates:{start:"",end:""},travellerCounts:{adults:2,children:0,infants:0},experienceParticipants:{e1:{adults:2,children:0,infants:0}}};
   const quote=calculatePackageQuote({config,supplierCosts:[],selection,durationDays:1,distanceKm:0});
   assert.equal(quote.public.status,"requires_manual_quote");
   assert.equal(quote.public.totalPackagePrice,null);
@@ -89,7 +91,7 @@ test("missing confidential inputs require a manual quote instead of inventing co
 
 test("experience pricing uses that experience's participants, not the whole journey",()=>{
   const config={currency:"USD",roomOccupancy:2,childCostFactor:.5,routeDistanceBufferPercent:0,driverSalaryPerDay:null,fuelPricePerLitre:null,vehicleKmPerLitre:null,tollsPerJourney:null,parkingPerDay:null,guideAccommodationPerNight:null,airportTransferEachWay:0,administrationFixed:0,administrationPercent:0,contingencyPercent:0,serviceFeeFixed:0,serviceFeePercent:0,targetProfitMarginPercent:0};
-  const selection={selectedDestinationIds:[],selectedExperienceIds:["e1"],selectedStayIds:[],selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"2026-08-01",end:"2026-08-02"},travellerCounts:{adults:4,children:0,infants:0},experienceParticipants:{e1:{adults:2,children:0,infants:0}}};
+  const selection={selectedDestinationIds:[],selectedExperienceIds:["e1"],selectedStayIds:[],selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds:{},travelDates:{start:"2026-08-01",end:"2026-08-02"},travellerCounts:{adults:4,children:0,infants:0},experienceParticipants:{e1:{adults:2,children:0,infants:0}}};
   const supplierCosts:SupplierCost[]=[{id:"experience-plan",entityType:"experience",entityId:"e1",category:"Experience",unit:"per_person",amount:25,partnerCommissionPercent:null}];
   const quote=calculatePackageQuote({config,supplierCosts,selection,durationDays:1,distanceKm:0});
   assert.equal(quote.breakdown.find(line=>line.label==="Experience")?.amount,50);

@@ -8,6 +8,7 @@ const quoteSchema=z.object({
   selectedStayIds:z.array(z.uuid()).max(40),
   selectedVehicleId:z.uuid().nullable(),
   selectedGuideId:z.uuid().nullable(),
+  selectedPricingPlanIds:z.record(z.string(),z.uuid()).default({}),
   travelDates:z.object({start:z.string().max(10),end:z.string().max(10)}),
   travellerCounts:z.object({adults:z.number().int().min(0).max(100),children:z.number().int().min(0).max(100),infants:z.number().int().min(0).max(100)}),
   experienceParticipants:z.record(z.uuid(),z.object({adults:z.number().int().min(0).max(100),children:z.number().int().min(0).max(100),infants:z.number().int().min(0).max(100)}))

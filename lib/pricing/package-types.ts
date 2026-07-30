@@ -6,6 +6,7 @@ export type PackageQuoteRequest={
   selectedStayIds:string[];
   selectedVehicleId:string|null;
   selectedGuideId:string|null;
+  selectedPricingPlanIds:Record<string,string>;
   travelDates:{start:string;end:string};
   travellerCounts:ParticipantCounts;
   experienceParticipants:Record<string,ParticipantCounts>;

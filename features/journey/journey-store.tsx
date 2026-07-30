@@ -14,6 +14,7 @@ export type JourneyState={
   selectedStayIdsByDestination:Record<string,string>;
   selectedVehicleId:string|null;
   selectedGuideId:string|null;
+  selectedPricingPlanIds:Record<string,string>;
   travelDates:{start:string;end:string};
   travellerCounts:ParticipantCounts;
   experienceParticipants:Record<string,ParticipantCounts>;
@@ -21,12 +22,12 @@ export type JourneyState={
 };
 type Action=
   |{type:"toggle";field:"selectedThemeIds"|"selectedDestinationIds"|"selectedExperienceIds";id:string}
-  |{type:"stay";destinationId:string;stayId:string}
-  |{type:"vehicle"|"guide";id:string|null}
+  |{type:"stay";destinationId:string;stayId:string;pricingPlanId?:string}
+  |{type:"vehicle"|"guide";id:string|null;pricingPlanId?:string}
   |{type:"dates";start:string;end:string}
   |{type:"travellers";counts:ParticipantCounts}
-  |{type:"experienceParticipants";experienceId:string;counts:ParticipantCounts}
-  |{type:"includeExperience";experienceId:string;counts:ParticipantCounts}
+  |{type:"experienceParticipants";experienceId:string;counts:ParticipantCounts;pricingPlanId?:string}
+  |{type:"includeExperience";experienceId:string;counts:ParticipantCounts;pricingPlanId?:string}
   |{type:"removeExperience";experienceId:string}
   |{type:"step";value:number}
   |{type:"budget";value:string}
@@ -50,7 +51,19 @@ const fitWithinTrip=(counts:ParticipantCounts,trip:ParticipantCounts):Participan
 }:counts;
 const totalParticipants=(counts:ParticipantCounts)=>counts.adults+counts.children+counts.infants;
 const keepParticipants=(participants:Record<string,ParticipantCounts>,ids:string[])=>Object.fromEntries(Object.entries(participants).filter(([id])=>ids.includes(id)));
-export const emptyJourneyState:JourneyState={currentStep:0,selectedThemeIds:[],selectedDestinationIds:[],selectedExperienceIds:[],selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,travelDates:{start:"",end:""},travellerCounts:emptyParticipants,experienceParticipants:{},budgetPreference:"flexible"};
+export const pricingPlanKey=(type:"accommodation"|"vehicle"|"guide"|"experience",id:string)=>`${type}:${id}`;
+const withoutPlan=(plans:Record<string,string>,type:"accommodation"|"vehicle"|"guide"|"experience",id:string|null)=>{
+  if(!id)return plans;
+  const {[pricingPlanKey(type,id)]:removed,...next}=plans;
+  void removed;
+  return next;
+};
+const withPlan=(plans:Record<string,string>,type:"accommodation"|"vehicle"|"guide"|"experience",id:string,planId?:string)=>{
+  const next=withoutPlan(plans,type,id);
+  return planId?{...next,[pricingPlanKey(type,id)]:planId}:next;
+};
+const keepPlans=(plans:Record<string,string>,type:"accommodation"|"experience",ids:string[])=>Object.fromEntries(Object.entries(plans).filter(([key])=>!key.startsWith(`${type}:`)||ids.includes(key.slice(type.length+1))));
+export const emptyJourneyState:JourneyState={currentStep:0,selectedThemeIds:[],selectedDestinationIds:[],selectedExperienceIds:[],selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds:{},travelDates:{start:"",end:""},travellerCounts:emptyParticipants,experienceParticipants:{},budgetPreference:"flexible"};
 
 function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):JourneyState{
   if(action.type==="hydrate")return action.state;
@@ -63,33 +76,43 @@ function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):Journey
       const selectedDestinationIds=state.selectedDestinationIds.filter(id=>validDestinations.has(id));
       const validExperiences=new Set(availableExperiences(data.experiences,selectedDestinationIds).map(item=>item.id));
       const selectedExperienceIds=state.selectedExperienceIds.filter(id=>validExperiences.has(id));
-      result={...result,selectedDestinationIds,selectedExperienceIds,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedStayIdsByDestination:Object.fromEntries(Object.entries(state.selectedStayIdsByDestination).filter(([id])=>validDestinations.has(id)))};
+      const selectedStayIdsByDestination=Object.fromEntries(Object.entries(state.selectedStayIdsByDestination).filter(([id])=>validDestinations.has(id)));
+      const selectedPricingPlanIds=keepPlans(keepPlans(state.selectedPricingPlanIds,"experience",selectedExperienceIds),"accommodation",Object.values(selectedStayIdsByDestination));
+      result={...result,selectedDestinationIds,selectedExperienceIds,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedStayIdsByDestination,selectedPricingPlanIds};
     }
     if(action.field==="selectedDestinationIds"){
       const validExperiences=new Set(availableExperiences(data.experiences,next).map(item=>item.id));
       const selectedExperienceIds=state.selectedExperienceIds.filter(id=>validExperiences.has(id));
-      result={...result,selectedExperienceIds,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedStayIdsByDestination:Object.fromEntries(Object.entries(state.selectedStayIdsByDestination).filter(([id])=>next.includes(id)))};
+      const selectedStayIdsByDestination=Object.fromEntries(Object.entries(state.selectedStayIdsByDestination).filter(([id])=>next.includes(id)));
+      const selectedPricingPlanIds=keepPlans(keepPlans(state.selectedPricingPlanIds,"experience",selectedExperienceIds),"accommodation",Object.values(selectedStayIdsByDestination));
+      result={...result,selectedExperienceIds,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedStayIdsByDestination,selectedPricingPlanIds};
     }
-    if(action.field==="selectedExperienceIds"&&!next.includes(action.id))result={...result,experienceParticipants:keepParticipants(state.experienceParticipants,next)};
+    if(action.field==="selectedExperienceIds"&&!next.includes(action.id))result={...result,experienceParticipants:keepParticipants(state.experienceParticipants,next),selectedPricingPlanIds:withoutPlan(state.selectedPricingPlanIds,"experience",action.id)};
     return result;
   }
-  if(action.type==="stay")return {...state,selectedStayIdsByDestination:{...state.selectedStayIdsByDestination,[action.destinationId]:action.stayId}};
-  if(action.type==="vehicle")return {...state,selectedVehicleId:action.id};
-  if(action.type==="guide")return {...state,selectedGuideId:action.id};
+  if(action.type==="stay"){
+    const previous=state.selectedStayIdsByDestination[action.destinationId]||null;
+    const selectedStayIdsByDestination={...state.selectedStayIdsByDestination};
+    if(action.stayId)selectedStayIdsByDestination[action.destinationId]=action.stayId;
+    else delete selectedStayIdsByDestination[action.destinationId];
+    return {...state,selectedStayIdsByDestination,selectedPricingPlanIds:action.stayId?withPlan(withoutPlan(state.selectedPricingPlanIds,"accommodation",previous),"accommodation",action.stayId,action.pricingPlanId):withoutPlan(state.selectedPricingPlanIds,"accommodation",previous)};
+  }
+  if(action.type==="vehicle")return {...state,selectedVehicleId:action.id,selectedPricingPlanIds:action.id?withPlan(withoutPlan(state.selectedPricingPlanIds,"vehicle",state.selectedVehicleId),"vehicle",action.id,action.pricingPlanId):withoutPlan(state.selectedPricingPlanIds,"vehicle",state.selectedVehicleId)};
+  if(action.type==="guide")return {...state,selectedGuideId:action.id,selectedPricingPlanIds:action.id?withPlan(withoutPlan(state.selectedPricingPlanIds,"guide",state.selectedGuideId),"guide",action.id,action.pricingPlanId):withoutPlan(state.selectedPricingPlanIds,"guide",state.selectedGuideId)};
   if(action.type==="dates")return {...state,travelDates:{start:action.start,end:action.end}};
   if(action.type==="travellers"){
     const requested=normaliseCounts(action.counts);
     const minimum=maximumParticipants(state.experienceParticipants);
     return {...state,travellerCounts:{adults:Math.max(requested.adults,minimum.adults),children:Math.max(requested.children,minimum.children),infants:Math.max(requested.infants,minimum.infants)}};
   }
-  if(action.type==="experienceParticipants")return {...state,experienceParticipants:{...state.experienceParticipants,[action.experienceId]:fitWithinTrip(normaliseCounts(action.counts,true),state.travellerCounts)}};
+  if(action.type==="experienceParticipants")return {...state,experienceParticipants:{...state.experienceParticipants,[action.experienceId]:fitWithinTrip(normaliseCounts(action.counts,true),state.travellerCounts)},selectedPricingPlanIds:withPlan(state.selectedPricingPlanIds,"experience",action.experienceId,action.pricingPlanId)};
   if(action.type==="includeExperience"){
     const selectedExperienceIds=state.selectedExperienceIds.includes(action.experienceId)?state.selectedExperienceIds:[...state.selectedExperienceIds,action.experienceId];
-    return {...state,selectedExperienceIds,experienceParticipants:{...state.experienceParticipants,[action.experienceId]:fitWithinTrip(normaliseCounts(action.counts,true),state.travellerCounts)}};
+    return {...state,selectedExperienceIds,experienceParticipants:{...state.experienceParticipants,[action.experienceId]:fitWithinTrip(normaliseCounts(action.counts,true),state.travellerCounts)},selectedPricingPlanIds:withPlan(state.selectedPricingPlanIds,"experience",action.experienceId,action.pricingPlanId)};
   }
   if(action.type==="removeExperience"){
     const selectedExperienceIds=state.selectedExperienceIds.filter(id=>id!==action.experienceId);
-    return {...state,selectedExperienceIds,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds)};
+    return {...state,selectedExperienceIds,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedPricingPlanIds:withoutPlan(state.selectedPricingPlanIds,"experience",action.experienceId)};
   }
   if(action.type==="step")return {...state,currentStep:Math.min(3,Math.max(0,action.value))};
   if(action.type==="budget")return {...state,budgetPreference:action.value};

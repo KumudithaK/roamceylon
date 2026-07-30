@@ -7,6 +7,7 @@ import {AdminShell} from "./admin-shell";
 import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
+import {pricingPlanKey} from "@/features/journey/journey-store";
 import type {Database,Json} from "@/lib/database.types";
 import type {ParticipantCounts} from "@/lib/types";
 
@@ -29,6 +30,7 @@ export function EnquiryReview({id}:{id:string}){
   const router=useRouter();
   const [enquiry,setEnquiry]=useState<Enquiry|null>(null);
   const [selectionNames,setSelectionNames]=useState<SelectionNames>(emptyNames);
+  const [pricingPlanNames,setPricingPlanNames]=useState<Record<string,string>>({});
   const [notes,setNotes]=useState("");
   const [message,setMessage]=useState("");
   const [saving,setSaving]=useState(false);
@@ -40,13 +42,16 @@ export function EnquiryReview({id}:{id:string}){
     if(error||!row){setMessage("This enquiry could not be found.");return}
     setEnquiry(row);setNotes(row.internal_notes||"");
     const themeIds=ids(row.selected_themes);const destinationIds=ids(row.selected_destinations);const experienceIds=ids(row.selected_experiences);const stayIds=ids(row.selected_stays);
-    const [themes,destinations,experiences,stays,vehicle,guide]=await Promise.all([
+    const handoff=parseJourneyHandoff(row.trip_state);
+    const selectedPlanIds=Object.values(handoff?.state.selectedPricingPlanIds??{});
+    const [themes,destinations,experiences,stays,vehicle,guide,pricingPlans]=await Promise.all([
       themeIds.length?database.from("themes").select("id,name").in("id",themeIds):Promise.resolve({data:[]}),
       destinationIds.length?database.from("destinations").select("id,name").in("id",destinationIds):Promise.resolve({data:[]}),
       experienceIds.length?database.from("experiences").select("id,name").in("id",experienceIds):Promise.resolve({data:[]}),
       stayIds.length?database.from("accommodations").select("id,name").in("id",stayIds):Promise.resolve({data:[]}),
       row.selected_vehicle?database.from("vehicles").select("listing_title").eq("id",row.selected_vehicle).maybeSingle():Promise.resolve({data:null}),
-      row.selected_guide?database.from("guides").select("name").eq("id",row.selected_guide).maybeSingle():Promise.resolve({data:null})
+      row.selected_guide?database.from("guides").select("name").eq("id",row.selected_guide).maybeSingle():Promise.resolve({data:null}),
+      selectedPlanIds.length?database.from("pricing_plans").select("id,name").in("id",selectedPlanIds):Promise.resolve({data:[]})
     ]);
     const order=(values:Named[]|null,orderedIds:string[])=>orderedIds.map(value=>values?.find(item=>item.id===value)).filter((item):item is Named=>Boolean(item));
     setSelectionNames({
@@ -57,6 +62,7 @@ export function EnquiryReview({id}:{id:string}){
       vehicle:vehicle.data?.listing_title??null,
       guide:guide.data?.name??null
     });
+    setPricingPlanNames(Object.fromEntries((pricingPlans.data??[]).map(plan=>[plan.id,plan.name])));
   })()},[id,router]);
   const handoff=useMemo(()=>enquiry?parseJourneyHandoff(enquiry.trip_state):null,[enquiry]);
   const quote=handoff?.quote??null;
@@ -86,12 +92,16 @@ export function EnquiryReview({id}:{id:string}){
   const travellerCounts=handoff?.state.travellerCounts??{adults:enquiry.adults,children:enquiry.children,infants:0};
   const travellers=travellerCounts.adults+travellerCounts.children+travellerCounts.infants;
   const experienceParticipants=participantMap(enquiry.experience_participants);
+  const planName=(type:"accommodation"|"vehicle"|"guide"|"experience",entityId:string)=>{
+    const planId=handoff?.state.selectedPricingPlanIds[pricingPlanKey(type,entityId)];
+    return planId?pricingPlanNames[planId]??null:null;
+  };
   return <AdminShell><div className="mx-auto max-w-7xl">
     <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">Traveller enquiry</p><h1 className="font-serif text-4xl md:text-5xl">{enquiry.name}</h1><p className="mt-2 text-sm text-stone">Received {new Date(enquiry.created_at).toLocaleString("en-GB")}</p></div><select value={enquiry.status} onChange={event=>void save(event.target.value)} disabled={saving} className="rounded-full border border-stone/25 bg-white px-5 py-3 text-sm font-semibold">{statuses.map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></div>
     {message&&<p className="mt-5 rounded-xl bg-white p-4 text-sm">{message}</p>}
     <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]"><div className="grid gap-6">
       <Section title="Journey at a glance"><div className="grid gap-4 sm:grid-cols-3"><Metric icon={Users} label="Travellers" value={`${travellers}`} detail={`${travellerCounts.adults} adults · ${travellerCounts.children} children · ${travellerCounts.infants} infants`}/><Metric icon={CalendarDays} label="Travel dates" value={enquiry.travel_start_date||"Flexible"} detail={enquiry.travel_end_date?`to ${enquiry.travel_end_date}`:"Departure not selected"}/><Metric icon={MapPin} label="Destinations" value={`${selectionNames.destinations.length}`} detail={selectionNames.destinations.map(item=>item.name).join(" · ")||"Not selected"}/></div></Section>
-      <Section title="Selected journey"><Selection label="Themes" values={selectionNames.themes.map(item=>item.name)}/><Selection label="Destinations and route order" values={selectionNames.destinations.map((item,index)=>`${index+1}. ${item.name}`)}/><Selection label="Experiences" values={selectionNames.experiences.map(item=>{const counts=experienceParticipants[item.id];const count=counts?counts.adults+counts.children+counts.infants:0;return `${item.name}${count?` · ${count} participant${count===1?"":"s"}`:""}`})}/><Selection label="Accommodation" values={selectionNames.stays.map(item=>item.name)}/><Selection label="Transport" values={selectionNames.vehicle?[selectionNames.vehicle]:[]}/><Selection label="Local guide" values={selectionNames.guide?[selectionNames.guide]:[]}/></Section>
+      <Section title="Selected journey"><Selection label="Themes" values={selectionNames.themes.map(item=>item.name)}/><Selection label="Destinations and route order" values={selectionNames.destinations.map((item,index)=>`${index+1}. ${item.name}`)}/><Selection label="Experiences" values={selectionNames.experiences.map(item=>{const counts=experienceParticipants[item.id];const count=counts?counts.adults+counts.children+counts.infants:0;const plan=planName("experience",item.id);return `${item.name}${count?` · ${count} participant${count===1?"":"s"}`:""}${plan?` · ${plan}`:""}`})}/><Selection label="Accommodation" values={selectionNames.stays.map(item=>`${item.name}${planName("accommodation",item.id)?` · ${planName("accommodation",item.id)}`:""}`)}/><Selection label="Transport" values={selectionNames.vehicle?[`${selectionNames.vehicle}${enquiry.selected_vehicle&&planName("vehicle",enquiry.selected_vehicle)?` · ${planName("vehicle",enquiry.selected_vehicle)}`:""}`]:[]}/><Selection label="Local guide" values={selectionNames.guide?[`${selectionNames.guide}${enquiry.selected_guide&&planName("guide",enquiry.selected_guide)?` · ${planName("guide",enquiry.selected_guide)}`:""}`]:[]}/></Section>
       <Section title="Traveller notes"><p className="whitespace-pre-wrap text-sm leading-7 text-slate/70">{enquiry.traveller_notes||enquiry.summary||"No additional notes were supplied."}</p></Section>
       <Section title="Customer package estimate">{quote?.status==="ready"?<div><div className="grid gap-4 sm:grid-cols-3"><Price label="Total package" value={`${quote.currency} ${quote.totalPackagePrice?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/><Price label="Per person" value={`${quote.currency} ${quote.pricePerPerson?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/><Price label="Daily estimate" value={`${quote.currency} ${quote.estimatedDailyCost?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/></div>{quote.components?.length?<div className="mt-6 divide-y divide-stone/15">{quote.components.map(item=><div key={item.category} className="flex justify-between py-3 text-sm"><span>{item.label}</span><strong>{quote.currency} {item.amount.toFixed(2)}</strong></div>)}</div>:null}</div>:<p className="text-sm text-stone">A personal quotation is required. No automated estimate was stored with this enquiry.</p>}</Section>
     </div><aside className="grid h-fit gap-6">

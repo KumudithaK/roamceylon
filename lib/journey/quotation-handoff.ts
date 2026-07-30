@@ -25,7 +25,8 @@ const normaliseState=(state:JourneyState):JourneyState=>({
   ...state,
   currentStep:Math.min(3,Math.max(0,Number(state.currentStep)||0)),
   travellerCounts:{adults:Number(state.travellerCounts.adults)||0,children:Number(state.travellerCounts.children)||0,infants:Number(state.travellerCounts.infants)||0},
-  experienceParticipants:state.experienceParticipants??{}
+  experienceParticipants:state.experienceParticipants??{},
+  selectedPricingPlanIds:state.selectedPricingPlanIds??{}
 });
 
 export function saveJourneyHandoff(state:JourneyState,quote:PublicPackageQuote|null){

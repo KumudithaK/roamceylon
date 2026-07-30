@@ -75,7 +75,24 @@ export class PackagePricingService{
       const key=`${row.entity_type}:${row.entity_id}`;
       grouped.set(key,[...(grouped.get(key)??[]),row]);
     }
-    const selectedPlans=[...grouped.values()].flatMap(rows=>rows[0]?.entity_type==="destination"?rows:rows.slice(0,1));
+    const selectedEntities:Array<[SupplierCost["entityType"],string]>=[
+      ...selection.selectedStayIds.map((id):[SupplierCost["entityType"],string]=>["accommodation",id]),
+      ...selection.selectedExperienceIds.map((id):[SupplierCost["entityType"],string]=>["experience",id]),
+      ...(selection.selectedVehicleId?[["vehicle",selection.selectedVehicleId] satisfies [SupplierCost["entityType"],string]]:[]),
+      ...(selection.selectedGuideId?[["guide",selection.selectedGuideId] satisfies [SupplierCost["entityType"],string]]:[])
+    ];
+    for(const [type,id] of selectedEntities){
+      const requestedId=selection.selectedPricingPlanIds[`${type}:${id}`];
+      if(requestedId&&!allPlans.some(row=>row.id===requestedId&&row.entity_type===type&&row.entity_id===id))throw new PackagePricingError("INVALID_SELECTION","A selected pricing plan does not belong to its journey resource.");
+    }
+    const selectedPlans=[
+      ...selection.selectedDestinationIds.flatMap(id=>grouped.get(`destination:${id}`)??[]),
+      ...selectedEntities.flatMap(([type,id])=>{
+        const rows=grouped.get(`${type}:${id}`)??[];
+        const requestedId=selection.selectedPricingPlanIds[`${type}:${id}`];
+        return requestedId?rows.filter(row=>row.id===requestedId):rows.slice(0,1);
+      })
+    ];
     const supplierCosts=selectedPlans.map(mapCost);
     const destinations=(destinationsResult.data??[]).map(item=>({...item,latitude:item.latitude===null?null:Number(item.latitude),longitude:item.longitude===null?null:Number(item.longitude)}));
     const route=getRouteEstimate(destinations,selection.selectedDestinationIds);
@@ -83,11 +100,6 @@ export class PackagePricingService{
     if(quote.public.status==="requires_manual_quote"){
       const activeKeys=new Set(supplierCosts.map(item=>`${item.entityType}:${item.entityId}`));
       const inactiveKeys=new Set(allPlans.filter(item=>!item.active).map(item=>`${item.entity_type}:${item.entity_id}`));
-      const selectedEntities:Array<[SupplierCost["entityType"],string]>=[];
-      for(const id of selection.selectedStayIds)selectedEntities.push(["accommodation",id]);
-      for(const id of selection.selectedExperienceIds)selectedEntities.push(["experience",id]);
-      if(selection.selectedVehicleId)selectedEntities.push(["vehicle",selection.selectedVehicleId]);
-      if(selection.selectedGuideId)selectedEntities.push(["guide",selection.selectedGuideId]);
       quote.public.inactiveRatesFor=[...new Set(selectedEntities.filter(([type,id])=>!activeKeys.has(`${type}:${id}`)&&inactiveKeys.has(`${type}:${id}`)).map(([type])=>type))];
     }
     return quote;

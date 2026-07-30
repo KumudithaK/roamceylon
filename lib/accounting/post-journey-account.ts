@@ -24,16 +24,20 @@ const participantMap=(value:Json)=>{
     return [[id,{adults:Number(record.adults)||0,children:Number(record.children)||0,infants:Number(record.infants)||0} satisfies ParticipantCounts]];
   }));
 };
-const selectionFrom=(row:Enquiry):PackageQuoteRequest=>({
+const selectionFrom=(row:Enquiry):PackageQuoteRequest=>{
+  const handoff=parseJourneyHandoff(row.trip_state);
+  return {
   selectedDestinationIds:ids(row.selected_destinations),
   selectedExperienceIds:ids(row.selected_experiences),
   selectedStayIds:ids(row.selected_stays),
   selectedVehicleId:row.selected_vehicle,
   selectedGuideId:row.selected_guide,
   travelDates:{start:row.travel_start_date??"",end:row.travel_end_date??""},
-  travellerCounts:parseJourneyHandoff(row.trip_state)?.state.travellerCounts??{adults:row.adults,children:row.children,infants:0},
-  experienceParticipants:participantMap(row.experience_participants)
-});
+  travellerCounts:handoff?.state.travellerCounts??{adults:row.adults,children:row.children,infants:0},
+  experienceParticipants:participantMap(row.experience_participants),
+  selectedPricingPlanIds:handoff?.state.selectedPricingPlanIds??{}
+  };
+};
 const asJson=(value:unknown)=>JSON.parse(JSON.stringify(value)) as Json;
 
 async function resourceNames(plans:Plan[]){
