@@ -3,19 +3,22 @@
 import Link from "next/link";
 import {FormEvent,useEffect,useState} from "react";
 import {useRouter} from "next/navigation";
-import {ArrowLeft,Banknote,Building2,CheckCircle2,CircleDollarSign,Paperclip,PiggyBank,Plus,TrendingUp,WalletCards} from "lucide-react";
+import {AlertTriangle,ArrowLeft,Banknote,Building2,CheckCircle2,CircleDollarSign,Paperclip,PiggyBank,Plus,TrendingUp,WalletCards} from "lucide-react";
 import {AdminShell} from "./admin-shell";
 import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
+import {enquiryStatusLabels} from "@/lib/enquiries/enquiry-workflow";
 import type {Database} from "@/lib/database.types";
 
 type Account=Database["public"]["Tables"]["journey_accounts"]["Row"];
 type Settlement=Database["public"]["Tables"]["journey_settlements"]["Row"];
 type Transaction=Database["public"]["Tables"]["accounting_transactions"]["Row"];
 type Attachment=Database["public"]["Tables"]["accounting_attachments"]["Row"];
+type LifecycleEvent=Database["public"]["Tables"]["accounting_lifecycle_history"]["Row"];
 type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
 type Action={type:"receipt"|"refund"}|{type:"payment";settlement:Settlement}|{type:"liability"}|null;
 const payeeLabels={accommodation:"Stay",vehicle:"Fleet",guide:"Guide",experience:"Experience",destination:"Destination fee",operations:"Operations",other:"Other"} as const;
+const accountStatusLabels:Record<Account["status"],string>={pending_deposit:"Pending Deposit",active:"Active",review_required:"Review Required",part_paid:"Part Paid",fully_paid:"Fully Paid",cancelled:"Cancelled",refund_pending:"Refund Pending",refunded:"Refunded",closed:"Closed"};
 const money=(value:number,currency:string)=>`${currency} ${value.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
 const today=()=>new Date().toISOString().slice(0,10);
 
@@ -25,6 +28,7 @@ export function JourneyAccountReview({id}:{id:string}){
   const [settlements,setSettlements]=useState<Settlement[]>([]);
   const [transactions,setTransactions]=useState<Transaction[]>([]);
   const [attachments,setAttachments]=useState<Attachment[]>([]);
+  const [lifecycle,setLifecycle]=useState<LifecycleEvent[]>([]);
   const [attachmentUrls,setAttachmentUrls]=useState<Record<string,string>>({});
   const [enquiry,setEnquiry]=useState<Enquiry|null>(null);
   const [action,setAction]=useState<Action>(null);
@@ -36,15 +40,16 @@ export function JourneyAccountReview({id}:{id:string}){
     if(!session){router.replace("/admin/login");return}
     const {data:row,error}=await database.from("journey_accounts").select("*").eq("id",id).maybeSingle();
     if(error||!row){setMessage(error?.message??"Journey account not found.");setLoading(false);return}
-    const [settlementResult,transactionResult,enquiryResult,attachmentResult]=await Promise.all([
+    const [settlementResult,transactionResult,enquiryResult,attachmentResult,lifecycleResult]=await Promise.all([
       database.from("journey_settlements").select("*").eq("account_id",id).order("created_at"),
       database.from("accounting_transactions").select("*").eq("account_id",id).order("payment_date",{ascending:false}).order("created_at",{ascending:false}),
       database.from("enquiries").select("*").eq("id",row.enquiry_id).maybeSingle(),
-      database.from("accounting_attachments").select("*").eq("account_id",id).order("created_at")
+      database.from("accounting_attachments").select("*").eq("account_id",id).order("created_at"),
+      database.from("accounting_lifecycle_history").select("*").eq("account_id",id).order("created_at",{ascending:false})
     ]);
     const files=attachmentResult.data??[];
     const signed=await Promise.all(files.map(async file=>[file.id,(await database.storage.from("accounting-receipts").createSignedUrl(file.storage_path,600)).data?.signedUrl??""] as const));
-    setAccount(row);setSettlements(settlementResult.data??[]);setTransactions(transactionResult.data??[]);setAttachments(files);setAttachmentUrls(Object.fromEntries(signed));setEnquiry(enquiryResult.data??null);setLoading(false);
+    setAccount(row);setSettlements(settlementResult.data??[]);setTransactions(transactionResult.data??[]);setAttachments(files);setLifecycle(lifecycleResult.data??[]);setAttachmentUrls(Object.fromEntries(signed));setEnquiry(enquiryResult.data??null);setLoading(false);
   };
   useEffect(()=>{void (async()=>{
     const database=createClient();
@@ -52,15 +57,16 @@ export function JourneyAccountReview({id}:{id:string}){
     if(!session){router.replace("/admin/login");return}
     const {data:row,error}=await database.from("journey_accounts").select("*").eq("id",id).maybeSingle();
     if(error||!row){setMessage(error?.message??"Journey account not found.");setLoading(false);return}
-    const [settlementResult,transactionResult,enquiryResult,attachmentResult]=await Promise.all([
+    const [settlementResult,transactionResult,enquiryResult,attachmentResult,lifecycleResult]=await Promise.all([
       database.from("journey_settlements").select("*").eq("account_id",id).order("created_at"),
       database.from("accounting_transactions").select("*").eq("account_id",id).order("payment_date",{ascending:false}).order("created_at",{ascending:false}),
       database.from("enquiries").select("*").eq("id",row.enquiry_id).maybeSingle(),
-      database.from("accounting_attachments").select("*").eq("account_id",id).order("created_at")
+      database.from("accounting_attachments").select("*").eq("account_id",id).order("created_at"),
+      database.from("accounting_lifecycle_history").select("*").eq("account_id",id).order("created_at",{ascending:false})
     ]);
     const files=attachmentResult.data??[];
     const signed=await Promise.all(files.map(async file=>[file.id,(await database.storage.from("accounting-receipts").createSignedUrl(file.storage_path,600)).data?.signedUrl??""] as const));
-    setAccount(row);setSettlements(settlementResult.data??[]);setTransactions(transactionResult.data??[]);setAttachments(files);setAttachmentUrls(Object.fromEntries(signed));setEnquiry(enquiryResult.data??null);setLoading(false);
+    setAccount(row);setSettlements(settlementResult.data??[]);setTransactions(transactionResult.data??[]);setAttachments(files);setLifecycle(lifecycleResult.data??[]);setAttachmentUrls(Object.fromEntries(signed));setEnquiry(enquiryResult.data??null);setLoading(false);
   })()},[id,router]);
   const request=async(path:string,payload:unknown)=>{
     const {data:{session}}=await createClient().auth.getSession();
@@ -113,8 +119,10 @@ export function JourneyAccountReview({id}:{id:string}){
   const settlementProgress=supplierDue?Math.min(100,(supplierPaid+supplierSavings)/supplierDue*100):100;
   return <AdminShell><div className="mx-auto max-w-7xl">
     <Link href="/admin/accounting" className="inline-flex items-center gap-2 text-sm font-semibold text-forest"><ArrowLeft className="size-4"/>Back to accounting</Link>
-    <div className="mt-6 flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">{account.account_number}</p><h1 className="font-serif text-4xl md:text-5xl">{account.traveller_name}</h1><p className="mt-2 text-sm text-stone">{account.traveller_email} · Posted {new Date(account.posted_at).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}</p></div><div className="flex flex-wrap gap-2"><Button variant="outline" onClick={()=>setAction({type:"refund"})}>Record refund</Button><Button onClick={()=>setAction({type:"receipt"})}><Banknote/>Record customer receipt</Button></div></div>
+    <div className="mt-6 flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">{account.journey_reference} · {account.account_number}</p><h1 className="font-serif text-4xl md:text-5xl">{account.traveller_name}</h1><p className="mt-2 text-sm text-stone">{account.traveller_email} · Accounting activated {account.activated_at?new Date(account.activated_at).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):"pending deposit"}</p><div className="mt-3 flex flex-wrap gap-2"><span className="rounded-full bg-sand-light px-3 py-1 text-xs font-semibold">Financial: {accountStatusLabels[account.status]}</span><span className="rounded-full bg-sand-light px-3 py-1 text-xs font-semibold">Journey: {enquiry?enquiryStatusLabels[enquiry.status]:"Unavailable"}</span></div></div><div className="flex flex-wrap gap-2"><Button disabled={!account.active} variant="outline" onClick={()=>setAction({type:"refund"})}>Record refund</Button><Button disabled={!account.active} onClick={()=>setAction({type:"receipt"})}><Banknote/>Record customer receipt</Button></div></div>
     {message&&<div className="mt-6 rounded-2xl border border-gold/25 bg-gold/10 p-4 text-sm">{message}</div>}
+    {account.status==="review_required"&&<div className="mt-6 flex gap-3 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800"><AlertTriangle className="mt-0.5 size-5 shrink-0"/><div><strong>Accounting review required</strong><p className="mt-1 leading-6">{account.review_reason||"The Traveller Enquiry lifecycle was reverted after financial activity. Review all payments and obligations before continuing."}</p></div></div>}
+    {!account.active&&<div className="mt-6 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900"><AlertTriangle className="mt-0.5 size-5 shrink-0"/><p>This account is inactive because no customer payment is currently recorded. Its commercial snapshot and audit history are preserved.</p></div>}
     <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
       <Summary icon={CircleDollarSign} label="Package selling price" value={money(account.selling_price,account.currency)} detail={`${account.profit_margin.toFixed(1)}% target margin`} tone="gold"/>
       <Summary icon={WalletCards} label="Customer balance" value={money(customerBalance,account.currency)} detail={`${Math.round(collectionProgress)}% collected`} tone="forest"/>
@@ -129,7 +137,7 @@ export function JourneyAccountReview({id}:{id:string}){
       }):<p className="py-8 text-sm text-stone">No supplier or operational payments were generated.</p>}</div></div>
       <div className="rounded-3xl bg-forest p-7 text-ivory"><p className="eyebrow mb-2 text-gold-light">Payment progress</p><h2 className="font-serif text-2xl">Journey position</h2><Progress label="Traveller payments" value={collectionProgress} amount={`${money(account.amount_received,account.currency)} received`}/><Progress label="Partner settlements" value={settlementProgress} amount={`${money(supplierPaid,account.currency)} paid · ${money(supplierSavings,account.currency)} waived`}/><div className="mt-8 grid gap-3 border-t border-white/10 pt-6 text-sm"><Row label="Selling price" value={money(account.selling_price,account.currency)}/><Row label="Original internal cost" value={money(account.internal_cost,account.currency)}/><Row label="Supplier courtesy savings" value={`+ ${money(supplierSavings,account.currency)}`}/><Row label="Realized internal cost" value={money(Math.max(0,account.internal_cost-supplierSavings),account.currency)}/><Row label="Realized gross profit" value={money(realizedProfit,account.currency)}/><Row label="Cash currently held" value={money(account.amount_received-account.supplier_paid,account.currency)}/></div>{enquiry&&<Link href={`/admin/enquiries/${enquiry.id}`} className="mt-7 inline-flex items-center gap-2 text-sm font-semibold text-gold-light">Open traveller enquiry <ArrowLeft className="size-4 rotate-180"/></Link>}</div>
     </section>
-    <section className="mt-6 rounded-3xl border border-stone/15 bg-white p-7"><div><p className="eyebrow mb-2">Audit trail</p><h2 className="font-serif text-2xl">Payment history</h2></div>{transactions.length?<div className="mt-6 overflow-x-auto"><table className="w-full min-w-[820px] text-left text-sm"><thead className="border-b border-stone/20 text-[.65rem] uppercase tracking-widest text-stone"><tr><th className="pb-3">Date</th><th className="pb-3">Entry</th><th className="pb-3">Method</th><th className="pb-3">Reference</th><th className="pb-3">Receipt</th><th className="pb-3 text-right">Amount</th></tr></thead><tbody className="divide-y divide-stone/15">{transactions.map(row=>{const file=attachments.find(item=>item.transaction_id===row.id);const outgoing=row.transaction_type==="customer_refund"||row.transaction_type==="supplier_payment";return <tr key={row.id}><td className="py-4">{row.payment_date}</td><td className="py-4 font-semibold">{row.transaction_type==="customer_receipt"?"Customer receipt":row.transaction_type==="customer_refund"?"Customer refund":row.transaction_type==="supplier_waiver"?"Supplier courtesy saving":"Supplier payment"}</td><td className="py-4 text-stone">{row.payment_method||"Not specified"}</td><td className="py-4 text-stone">{row.reference||"—"}</td><td className="py-4">{file&&attachmentUrls[file.id]?<a href={attachmentUrls[file.id]} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-bold text-forest"><Paperclip className="size-3"/>View receipt</a>:<span className="text-stone">—</span>}</td><td className={`py-4 text-right font-bold ${outgoing?"text-red-700":"text-emerald-700"}`}>{outgoing?"−":"+"} {money(row.amount,row.currency)}</td></tr>})}</tbody></table></div>:<div className="mt-6 rounded-2xl bg-sand-light p-8 text-center text-sm text-stone">No payments recorded yet.</div>}</section>
+    <section className="mt-6 rounded-3xl border border-stone/15 bg-white p-7"><div><p className="eyebrow mb-2">Audit trail</p><h2 className="font-serif text-2xl">Payment history</h2></div>{lifecycle.length?<div className="mt-6 rounded-2xl bg-sand-light p-5"><p className="text-[.65rem] font-bold uppercase tracking-widest text-gold">Lifecycle history</p><div className="mt-3 grid gap-2">{lifecycle.slice(0,4).map(event=><div key={event.id} className="flex flex-wrap justify-between gap-2 text-xs"><span>{event.reason}</span><span className="text-stone">{new Date(event.created_at).toLocaleString("en-GB")}</span></div>)}</div></div>:null}{transactions.length?<div className="mt-6 overflow-x-auto"><table className="w-full min-w-[820px] text-left text-sm"><thead className="border-b border-stone/20 text-[.65rem] uppercase tracking-widest text-stone"><tr><th className="pb-3">Date</th><th className="pb-3">Entry</th><th className="pb-3">Method</th><th className="pb-3">Reference</th><th className="pb-3">Receipt</th><th className="pb-3 text-right">Amount</th></tr></thead><tbody className="divide-y divide-stone/15">{transactions.map(row=>{const file=attachments.find(item=>item.transaction_id===row.id);const outgoing=row.transaction_type==="customer_refund"||row.transaction_type==="supplier_payment";return <tr key={row.id}><td className="py-4">{row.payment_date}</td><td className="py-4 font-semibold">{row.transaction_type==="customer_receipt"?"Customer receipt":row.transaction_type==="customer_refund"?"Customer refund":row.transaction_type==="supplier_waiver"?"Supplier courtesy saving":"Supplier payment"}</td><td className="py-4 text-stone">{row.payment_method||"Not specified"}</td><td className="py-4 text-stone">{row.reference||"—"}</td><td className="py-4">{file&&attachmentUrls[file.id]?<a href={attachmentUrls[file.id]} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs font-bold text-forest"><Paperclip className="size-3"/>View receipt</a>:<span className="text-stone">—</span>}</td><td className={`py-4 text-right font-bold ${outgoing?"text-red-700":"text-emerald-700"}`}>{outgoing?"−":"+"} {money(row.amount,row.currency)}</td></tr>})}</tbody></table></div>:<div className="mt-6 rounded-2xl bg-sand-light p-8 text-center text-sm text-stone">No payments recorded yet.</div>}</section>
     {action&&<div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-slate/65 p-4 backdrop-blur-sm"><div className="my-6 w-full max-w-lg rounded-3xl bg-ivory p-7 shadow-2xl"><p className="eyebrow mb-2">{action.type==="liability"?"Accounts payable":"Payment entry"}</p><h2 className="font-serif text-3xl">{action.type==="receipt"?"Record customer receipt":action.type==="refund"?"Record customer refund":action.type==="payment"?`Settle ${action.settlement.payee_name}`:"Add another payment"}</h2>{action.type==="liability"?<LiabilityForm onSubmit={liability} onCancel={()=>setAction(null)} currency={account.currency}/>:<TransactionForm onSubmit={transaction} onCancel={()=>setAction(null)} currency={account.currency} supplier={action.type==="payment"} maximum={action.type==="payment"?action.settlement.amount_due-action.settlement.amount_paid-action.settlement.waived_amount:action.type==="refund"?account.amount_received:customerBalance}/>}</div></div>}
   </div></AdminShell>;
 }

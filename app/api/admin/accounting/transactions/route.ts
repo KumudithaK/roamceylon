@@ -47,7 +47,8 @@ export async function POST(request:Request){
   }
   const {data:account,error:accountError}=await database.from("journey_accounts").select("*").eq("id",value.accountId).maybeSingle();
   if(accountError||!account)return NextResponse.json({error:"Journey account not found."},{status:404});
-  if(account.status==="void")return NextResponse.json({error:"Payments cannot be recorded against a void account."},{status:409});
+  if(!account.active)return NextResponse.json({error:"This accounting record is inactive because no deposit is currently recorded."},{status:409});
+  if(account.status==="refunded"&&value.type!=="customer_refund")return NextResponse.json({error:"New payments cannot be recorded against a refunded account."},{status:409});
   let settlementId:string|null=null;
   let previousWaiver=0;
   let previousReason:string|null=null;

@@ -10,6 +10,13 @@ type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
 type Plan=Database["public"]["Tables"]["pricing_plans"]["Row"];
 type Account=Database["public"]["Tables"]["journey_accounts"]["Row"];
 type SettlementInsert=Database["public"]["Tables"]["journey_settlements"]["Insert"];
+export type DepositPayment={
+  amount:number;
+  paymentDate:string;
+  paymentMethod?:string;
+  reference?:string;
+  notes?:string;
+};
 
 export class AccountingPostError extends Error{
   constructor(public code:"NOT_FOUND"|"PRICING"|"DATABASE",message:string){super(message);this.name="AccountingPostError"}
@@ -111,47 +118,90 @@ async function settlementsFor(account:Account,quote:AdminPackageQuote):Promise<S
   return [...supplierLines,...operations];
 }
 
-export async function postJourneyToAccounts(enquiryId:string,userId:string):Promise<Account>{
+export async function activateJourneyAccount(enquiryId:string,userId:string,deposit:DepositPayment):Promise<Account>{
   const database=createAdminClient();
   if(!database)throw new AccountingPostError("DATABASE","Supabase server credentials are unavailable.");
-  const {data:existing}=await database.from("journey_accounts").select("*").eq("enquiry_id",enquiryId).maybeSingle();
-  if(existing){
-    if((await database.from("enquiries").update({status:"completed"}).eq("id",enquiryId)).error)throw new AccountingPostError("DATABASE","The journey account exists but the enquiry could not be marked complete.");
-    return existing;
-  }
   const {data:enquiry,error:enquiryError}=await database.from("enquiries").select("*").eq("id",enquiryId).maybeSingle();
   if(enquiryError)throw new AccountingPostError("DATABASE",enquiryError.message);
   if(!enquiry)throw new AccountingPostError("NOT_FOUND","The traveller enquiry could not be found.");
-  let quote:AdminPackageQuote;
-  try{quote=await new PackagePricingService().quote(selectionFrom(enquiry))}
-  catch(error){throw new AccountingPostError("PRICING",error instanceof Error?error.message:"The package could not be priced.")}
-  if(quote.public.status!=="ready"||quote.sellingPrice===null||quote.internalCost===null||quote.grossProfit===null||quote.profitMargin===null){
-    throw new AccountingPostError("PRICING","Complete all journey supplier rates and DMC pricing settings before closing this journey.");
-  }
-  const {data:account,error:accountError}=await database.from("journey_accounts").insert({
-    enquiry_id:enquiry.id,
-    traveller_name:enquiry.name,
-    traveller_email:enquiry.email,
-    currency:quote.public.currency,
-    selling_price:quote.sellingPrice,
-    internal_cost:quote.internalCost,
-    gross_profit:quote.grossProfit,
-    profit_margin:quote.profitMargin,
-    travel_start_date:enquiry.travel_start_date,
-    travel_end_date:enquiry.travel_end_date,
-    quote_snapshot:asJson(quote),
-    created_by:userId
-  }).select("*").single();
-  if(accountError||!account)throw new AccountingPostError("DATABASE",accountError?.message??"The journey account could not be created.");
-  const settlements=await settlementsFor(account,quote);
-  if(settlements.length){
-    const {error:settlementError}=await database.from("journey_settlements").insert(settlements);
-    if(settlementError){
-      await database.from("journey_accounts").delete().eq("id",account.id);
-      throw new AccountingPostError("DATABASE",settlementError.message);
+  let {data:account,error:accountLookupError}=await database.from("journey_accounts").select("*").eq("enquiry_id",enquiryId).maybeSingle();
+  if(accountLookupError)throw new AccountingPostError("DATABASE",accountLookupError.message);
+  let created=false;
+  if(!account){
+    let quote:AdminPackageQuote;
+    try{quote=await new PackagePricingService().quote(selectionFrom(enquiry))}
+    catch(error){throw new AccountingPostError("PRICING",error instanceof Error?error.message:"The package could not be priced.")}
+    if(quote.public.status!=="ready"||quote.sellingPrice===null||quote.internalCost===null||quote.grossProfit===null||quote.profitMargin===null){
+      throw new AccountingPostError("PRICING","Complete all journey supplier rates and DMC pricing settings before recording the deposit.");
+    }
+    if(deposit.amount>quote.sellingPrice+0.005)throw new AccountingPostError("DATABASE","Deposit exceeds the package selling price.");
+    const {data:createdAccount,error:accountError}=await database.from("journey_accounts").insert({
+      enquiry_id:enquiry.id,
+      journey_reference:enquiry.journey_reference,
+      traveller_name:enquiry.name,
+      traveller_email:enquiry.email,
+      status:"active",
+      active:true,
+      activated_at:new Date().toISOString(),
+      currency:quote.public.currency,
+      selling_price:quote.sellingPrice,
+      internal_cost:quote.internalCost,
+      gross_profit:quote.grossProfit,
+      profit_margin:quote.profitMargin,
+      travel_start_date:enquiry.travel_start_date,
+      travel_end_date:enquiry.travel_end_date,
+      quote_snapshot:asJson(quote),
+      created_by:userId
+    }).select("*").single();
+    if(accountError||!createdAccount)throw new AccountingPostError("DATABASE",accountError?.message??"The journey account could not be created.");
+    account=createdAccount;created=true;
+    const settlements=await settlementsFor(account,quote);
+    if(settlements.length){
+      const {error:settlementError}=await database.from("journey_settlements").insert(settlements);
+      if(settlementError){
+        await database.from("journey_accounts").delete().eq("id",account.id);
+        throw new AccountingPostError("DATABASE",settlementError.message);
+      }
     }
   }
-  const {error:completeError}=await database.from("enquiries").update({status:"completed"}).eq("id",enquiry.id);
-  if(completeError)throw new AccountingPostError("DATABASE",completeError.message);
-  return account;
+  const idempotencyKey=`initial-deposit:${enquiry.id}`;
+  const {data:existingDeposit,error:depositLookupError}=await database.from("accounting_transactions").select("id").eq("account_id",account.id).eq("idempotency_key",idempotencyKey).maybeSingle();
+  if(depositLookupError)throw new AccountingPostError("DATABASE",depositLookupError.message);
+  if(!existingDeposit){
+    const remaining=Math.max(0,account.selling_price-account.amount_received);
+    if(deposit.amount>remaining+0.005)throw new AccountingPostError("DATABASE","Deposit exceeds the outstanding customer balance.");
+    const beforeStatus=account.status;
+    const {error:activateError}=await database.from("journey_accounts").update({active:true,deactivated_at:null,activated_at:account.activated_at??new Date().toISOString(),review_reason:null,status:account.status==="pending_deposit"?"active":account.status}).eq("id",account.id);
+    if(activateError)throw new AccountingPostError("DATABASE",activateError.message);
+    const {error:depositError}=await database.from("accounting_transactions").insert({
+      account_id:account.id,
+      transaction_type:"customer_receipt",
+      amount:deposit.amount,
+      currency:account.currency,
+      payment_date:deposit.paymentDate,
+      payment_method:deposit.paymentMethod||null,
+      reference:deposit.reference||null,
+      notes:deposit.notes||"Initial traveller deposit",
+      idempotency_key:idempotencyKey,
+      created_by:userId
+    });
+    if(depositError){
+      if(created)await database.from("journey_accounts").delete().eq("id",account.id);
+      throw new AccountingPostError("DATABASE",depositError.message);
+    }
+    const {data:afterDeposit}=await database.from("journey_accounts").select("status").eq("id",account.id).single();
+    await database.from("accounting_lifecycle_history").insert({
+      account_id:account.id,
+      from_status:beforeStatus,
+      to_status:afterDeposit?.status??"part_paid",
+      enquiry_status:"deposit_paid",
+      reason:"Initial traveller deposit recorded.",
+      changed_by:userId
+    });
+  }
+  const {error:statusError}=await database.from("enquiries").update({status:"deposit_paid"}).eq("id",enquiry.id);
+  if(statusError)throw new AccountingPostError("DATABASE",statusError.message);
+  const {data:result,error:resultError}=await database.from("journey_accounts").select("*").eq("id",account.id).single();
+  if(resultError||!result)throw new AccountingPostError("DATABASE",resultError?.message??"The activated journey account could not be loaded.");
+  return result;
 }

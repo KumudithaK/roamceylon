@@ -18,9 +18,9 @@ export async function POST(request:Request){
   const parsed=schema.safeParse(await request.json().catch(()=>null));
   if(!parsed.success)return NextResponse.json({error:"Check the payee, description, and amount."},{status:400});
   const value=parsed.data;
-  const {data:account}=await database.from("journey_accounts").select("id,currency,status").eq("id",value.accountId).maybeSingle();
+  const {data:account}=await database.from("journey_accounts").select("id,currency,status,active").eq("id",value.accountId).maybeSingle();
   if(!account)return NextResponse.json({error:"Journey account not found."},{status:404});
-  if(account.status==="void")return NextResponse.json({error:"Liabilities cannot be added to a void account."},{status:409});
+  if(!account.active)return NextResponse.json({error:"Liabilities cannot be added to an inactive accounting record."},{status:409});
   const {error}=await database.from("journey_settlements").insert({
     account_id:account.id,
     source_key:`other:${crypto.randomUUID()}`,
