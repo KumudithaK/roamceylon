@@ -6,3 +6,5 @@ node_modules/
 dist/
 .next/
 reports/latest-import-report.json
+/tmp/
+/output/

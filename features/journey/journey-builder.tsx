@@ -134,7 +134,29 @@ function Summary({data,quoteState,onQuotation}:{data:JourneyBootstrap;quoteState
   const travellers=state.travellerCounts.adults+state.travellerCounts.children+state.travellerCounts.infants;
   const exportPdf=async()=>{
     setExporting(true);
-    try{await exportJourneyPdf({themes:state.selectedThemeIds.map(id=>data.themes.find(item=>item.id===id)?.name).filter((name):name is string=>Boolean(name)),destinations:state.selectedDestinationIds.map(id=>data.destinations.find(item=>item.id===id)?.name).filter((name):name is string=>Boolean(name)),experiences:state.selectedExperienceIds.map(id=>{const item=data.experiences.find(experience=>experience.id===id);if(!item)return null;const plan=selectedPlanName("experience",item);return `${item.name}${plan?` — ${plan}`:""}`}).filter((name):name is string=>Boolean(name)),accommodations:selectedStays.map(item=>`${item.name}${selectedPlanName("accommodation",item)?` — ${selectedPlanName("accommodation",item)}`:""}`),vehicle:vehicle?`${vehicle.listing_title}${selectedPlanName("vehicle",vehicle)?` — ${selectedPlanName("vehicle",vehicle)}`:""}`:null,guide:guide?`${guide.name}${selectedPlanName("guide",guide)?` — ${selectedPlanName("guide",guide)}`:""}`:null,travelDates:state.travelDates,travellerCounts:state.travellerCounts,estimatedDistance:route.estimatedDistance,estimatedTravelDays:route.estimatedTravelDays,quote});}finally{setExporting(false)}
+    try{
+      const selectedDestinations=state.selectedDestinationIds.map(id=>data.destinations.find(item=>item.id===id)).filter((item):item is JourneyBootstrap["destinations"][number]=>Boolean(item));
+      await exportJourneyPdf({
+        themes:state.selectedThemeIds.map(id=>data.themes.find(item=>item.id===id)?.name).filter((name):name is string=>Boolean(name)),
+        destinations:selectedDestinations.map(item=>item.name),
+        routeCoordinates:selectedDestinations.filter(item=>Number.isFinite(item.latitude)&&Number.isFinite(item.longitude)).map(item=>({name:item.name,latitude:Number(item.latitude),longitude:Number(item.longitude)})),
+        experiences:state.selectedExperienceIds.map(id=>{
+          const item=data.experiences.find(experience=>experience.id===id);if(!item)return null;
+          const plan=selectedPlanName("experience",item);
+          const counts=state.experienceParticipants[item.id];
+          const participants=counts?counts.adults+counts.children+counts.infants:0;
+          return `${item.name}${participants?` - ${participants} participant${participants===1?"":"s"}`:""}${plan?` - ${plan}`:""}`;
+        }).filter((name):name is string=>Boolean(name)),
+        accommodations:selectedStays.map(item=>`${item.name}${selectedPlanName("accommodation",item)?` - ${selectedPlanName("accommodation",item)}`:""}`),
+        vehicle:vehicle?`${vehicle.listing_title}${selectedPlanName("vehicle",vehicle)?` - ${selectedPlanName("vehicle",vehicle)}`:""}`:null,
+        guide:guide?`${guide.name}${selectedPlanName("guide",guide)?` - ${selectedPlanName("guide",guide)}`:""}`:null,
+        travelDates:state.travelDates,
+        travellerCounts:state.travellerCounts,
+        estimatedDistance:route.estimatedDistance,
+        estimatedTravelDays:route.estimatedTravelDays,
+        quote
+      });
+    }finally{setExporting(false)}
   };
   const ready=quote?.status==="ready";
   const rateLabels={accommodation:"accommodation",vehicle:"vehicle",guide:"guide",experience:"experiences",destination:"destination fees"};

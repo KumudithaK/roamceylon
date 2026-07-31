@@ -12,6 +12,7 @@ export type JourneyPdfDetails={
   travellerCounts:{adults:number;children:number;infants:number};
   estimatedDistance:number;
   estimatedTravelDays:number;
+  routeCoordinates?:Array<{name:string;latitude:number;longitude:number}>;
   quote:PublicPackageQuote|null;
 };
 
@@ -19,6 +20,7 @@ const PAGE_WIDTH=595;
 const PAGE_HEIGHT=842;
 const MARGIN=38;
 const CONTENT_WIDTH=PAGE_WIDTH-(MARGIN*2);
+const ISLAND_POINTS:Array<[number,number]>=[[198.4,270.3],[190.6,314.7],[175.7,335.1],[145.2,356.3],[121.7,364.6],[103,374.8],[88.9,376.7],[73.2,371.1],[53.7,346.2],[47.4,316.5],[39.6,282.3],[36.4,262],[34.1,224],[27.8,176.9],[38,145.4],[47.4,117.7],[45.8,104.7],[55.2,90.9],[59.9,76.1],[56,61.2],[63,47.4],[73.2,38.1],[67,24.2],[63,17.8],[78.7,24.2],[94.3,42.7],[86.5,52],[106.1,61.2],[120.2,79.7],[133.5,102.9],[145.2,126],[157,149.1],[164.8,176.9],[172.6,190.7],[184.3,213.9],[190.6,237],[198.4,270.3]];
 
 const clean=(value:string)=>value
   .normalize("NFKD")
@@ -74,6 +76,33 @@ export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes:ArrayB
   const white=rgb(1,1,1);
   const border=rgb(226/255,218/255,201/255);
 
+  const drawLotusMotif=(page:PDFPage,x:number,y:number,scale=1,opacity=.18)=>{
+    const petals:Array<[number,number]>=[[0,13],[12,5],[8,-9],[0,-14],[-8,-9],[-12,5]];
+    petals.forEach(([dx,dy])=>page.drawCircle({x:x+(dx*scale),y:y+(dy*scale),size:5.5*scale,borderColor:goldLight,borderWidth:.8,opacity}));
+    page.drawCircle({x,y,size:4*scale,color:goldLight,opacity});
+  };
+
+  const drawCoverMap=(page:PDFPage,x:number,y:number,width:number,height:number)=>{
+    const mapPoint=([pointX,pointY]:[number,number])=>({x:x+(pointX/220)*width,y:y+height-(pointY/400)*height});
+    for(let index=1;index<ISLAND_POINTS.length;index+=1){
+      page.drawLine({start:mapPoint(ISLAND_POINTS[index-1]),end:mapPoint(ISLAND_POINTS[index]),thickness:1.15,color:white,opacity:.34});
+    }
+    const coordinates=(details.routeCoordinates??[]).filter(item=>Number.isFinite(item.latitude)&&Number.isFinite(item.longitude));
+    const routePoint=(item:{latitude:number;longitude:number})=>mapPoint([32+((item.longitude-79.6)/2.4)*166,376-((item.latitude-5.8)/4.2)*344]);
+    const actualPoints=coordinates.map(routePoint);
+    actualPoints.slice(1).forEach((point,index)=>page.drawLine({start:actualPoints[index],end:point,thickness:2,color:goldLight,opacity:.9}));
+    const displayedPoints:Array<{x:number;y:number}>=[];
+    actualPoints.forEach((actual,index)=>{
+      let marker={...actual};
+      while(displayedPoints.some(point=>Math.hypot(point.x-marker.x,point.y-marker.y)<17))marker={x:marker.x+15,y:marker.y-(index%2?13:-13)};
+      if(marker.x!==actual.x||marker.y!==actual.y)page.drawLine({start:actual,end:marker,thickness:.8,color:white,opacity:.65});
+      displayedPoints.push(marker);
+      page.drawCircle({x:marker.x,y:marker.y,size:8,color:goldLight,borderColor:white,borderWidth:1});
+      const label=String(index+1);
+      page.drawText(label,{x:marker.x-(bold.widthOfTextAtSize(label,7)/2),y:marker.y-2.5,size:7,font:bold,color:forest});
+    });
+  };
+
   const wrap=(value:string,font:PDFFont,size:number,maxWidth:number)=>{
     const words=clean(value).split(" ").filter(Boolean);
     const lines:string[]=[];
@@ -102,56 +131,67 @@ export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes:ArrayB
   const drawFooter=(page:PDFPage)=>{
     page.drawLine({start:{x:MARGIN,y:39},end:{x:PAGE_WIDTH-MARGIN,y:39},thickness:.7,color:border});
     page.drawText("ROAM CEYLON  |  JOURNEYS THAT CONNECT",{x:MARGIN,y:22,size:7,font:bold,color:forest});
+    page.drawText("JOURNEY SUMMARY",{x:PAGE_WIDTH/2-34,y:22,size:7,font:bold,color:gold});
     const number=String(pageNumber);
     page.drawText(number,{x:PAGE_WIDTH-MARGIN-bold.widthOfTextAtSize(number,8),y:21,size:8,font:bold,color:stone});
   };
 
-  const createPage=(continuation=false)=>{
+  const createPage=()=>{
     pageNumber+=1;
     const page=pdf.addPage([PAGE_WIDTH,PAGE_HEIGHT]);
     page.drawRectangle({x:0,y:0,width:PAGE_WIDTH,height:PAGE_HEIGHT,color:ivory});
     page.drawRectangle({x:0,y:PAGE_HEIGHT-6,width:PAGE_WIDTH,height:6,color:gold});
-    if(continuation){
-      page.drawRectangle({x:0,y:PAGE_HEIGHT-94,width:PAGE_WIDTH,height:88,color:forest});
-      const logoSize=logo.scaleToFit(64,54);
-      page.drawRectangle({x:MARGIN,y:PAGE_HEIGHT-78,width:72,height:58,color:white});
-      page.drawImage(logo,{x:MARGIN+4+(64-logoSize.width)/2,y:PAGE_HEIGHT-76+(54-logoSize.height)/2,width:logoSize.width,height:logoSize.height});
-      page.drawText("YOUR ROAM CEYLON JOURNEY",{x:128,y:PAGE_HEIGHT-48,size:18,font:serif,color:white});
-      page.drawText("PERSONALISED JOURNEY - CONTINUED",{x:128,y:PAGE_HEIGHT-68,size:7,font:bold,color:goldLight});
-    }
+    page.drawRectangle({x:0,y:PAGE_HEIGHT-92,width:PAGE_WIDTH,height:86,color:forest});
+    const logoSize=logo.scaleToFit(70,56);
+    page.drawRectangle({x:MARGIN,y:PAGE_HEIGHT-76,width:78,height:58,color:white,borderColor:goldLight,borderWidth:.6});
+    page.drawImage(logo,{x:MARGIN+4+(70-logoSize.width)/2,y:PAGE_HEIGHT-74+(56-logoSize.height)/2,width:logoSize.width,height:logoSize.height});
+    page.drawText("YOUR SRI LANKA STORY",{x:136,y:PAGE_HEIGHT-46,size:19,font:serif,color:white});
+    page.drawText("A PERSONALISED JOURNEY SUMMARY",{x:136,y:PAGE_HEIGHT-67,size:7,font:bold,color:goldLight});
+    drawLotusMotif(page,PAGE_WIDTH-55,PAGE_HEIGHT-48,.75,.28);
     drawFooter(page);
     return page;
   };
 
-  let page=createPage();
-  page.drawRectangle({x:0,y:632,width:PAGE_WIDTH,height:204,color:forest});
-  page.drawRectangle({x:MARGIN,y:703,width:112,height:96,color:white,borderColor:goldLight,borderWidth:.8});
-  const logoSize=logo.scaleToFit(104,86);
-  page.drawImage(logo,{x:MARGIN+4+(104-logoSize.width)/2,y:708+(86-logoSize.height)/2,width:logoSize.width,height:logoSize.height});
-  page.drawText("PRIVATE, TAILOR-MADE SRI LANKA",{x:176,y:786,size:7,font:bold,color:goldLight});
-  page.drawText("Your Roam Ceylon",{x:176,y:750,size:28,font:serif,color:white});
-  page.drawText("journey",{x:176,y:716,size:28,font:serif,color:white});
-  page.drawText("A considered plan, shaped around the places and moments that matter to you.",{x:176,y:687,size:9,font:regular,color:rgb(.85,.88,.85)});
+  let pageNumberedCover=pdf.addPage([PAGE_WIDTH,PAGE_HEIGHT]);
+  pageNumber+=1;
+  pageNumberedCover.drawRectangle({x:0,y:0,width:PAGE_WIDTH,height:PAGE_HEIGHT,color:forest});
+  pageNumberedCover.drawRectangle({x:0,y:PAGE_HEIGHT-8,width:PAGE_WIDTH,height:8,color:gold});
+  pageNumberedCover.drawRectangle({x:0,y:0,width:PAGE_WIDTH,height:150,color:forestSoft});
+  drawLotusMotif(pageNumberedCover,42,72,1.5,.12);
+  drawLotusMotif(pageNumberedCover,PAGE_WIDTH-42,PAGE_HEIGHT-52,1.15,.16);
+  const coverLogo=logo.scaleToFit(110,90);
+  pageNumberedCover.drawRectangle({x:MARGIN,y:PAGE_HEIGHT-142,width:120,height:104,color:white,borderColor:goldLight,borderWidth:.8});
+  pageNumberedCover.drawImage(logo,{x:MARGIN+5+(110-coverLogo.width)/2,y:PAGE_HEIGHT-135+(90-coverLogo.height)/2,width:coverLogo.width,height:coverLogo.height});
+  pageNumberedCover.drawText("PRIVATE, TAILOR-MADE SRI LANKA",{x:MARGIN,y:PAGE_HEIGHT-185,size:7,font:bold,color:goldLight});
+  pageNumberedCover.drawText("Your Sri Lanka",{x:MARGIN,y:PAGE_HEIGHT-232,size:31,font:serif,color:white});
+  pageNumberedCover.drawText("story starts here.",{x:MARGIN,y:PAGE_HEIGHT-270,size:31,font:serif,color:white});
+  drawWrapped(pageNumberedCover,"A considered journey shaped around your pace, your interests and the moments that will stay with you.",MARGIN,PAGE_HEIGHT-304,{size:10,color:rgb(.82,.87,.84),maxWidth:275,lineHeight:15});
   const generated=new Intl.DateTimeFormat("en-GB",{day:"2-digit",month:"short",year:"numeric"}).format(new Date());
-  page.drawText(`PREPARED ${clean(generated).toUpperCase()}`,{x:176,y:660,size:7,font:bold,color:goldLight});
+  pageNumberedCover.drawText(`PREPARED ${clean(generated).toUpperCase()}`,{x:MARGIN,y:PAGE_HEIGHT-366,size:7,font:bold,color:goldLight});
+  drawCoverMap(pageNumberedCover,345,205,190,350);
+  pageNumberedCover.drawText("YOUR ROUTE",{x:372,y:189,size:7,font:bold,color:goldLight});
+  const coverRoute=clean(details.destinations.join("  -  ")||"Your route will appear here");
+  drawWrapped(pageNumberedCover,coverRoute,372,171,{font:bold,size:8.5,color:white,maxWidth:170,lineHeight:12});
 
   const travellers=details.travellerCounts.adults+details.travellerCounts.children+details.travellerCounts.infants;
   const metricValues=[
     [`${travellers}`,"TRAVELLERS"],
-    [details.estimatedDistance?`${details.estimatedDistance} km`:"Route pending","ESTIMATED ROUTE"],
-    [details.quote?.status==="ready"?formatMoney(details.quote.currency,details.quote.totalPackagePrice):"Personal quote","PACKAGE ESTIMATE"]
+    [details.travelDates.start?`${formatDate(details.travelDates.start)} - ${formatDate(details.travelDates.end)}`:"Dates to be selected","TRAVEL WINDOW"],
+    [details.estimatedDistance?`${details.estimatedDistance} km  |  ${details.estimatedTravelDays} travel days`:"Route in progress","JOURNEY ROUTE"]
   ];
   metricValues.forEach(([value,label],index)=>{
     const x=MARGIN+(index*177);
-    page.drawRectangle({x,y:549,width:165,height:64,color:white,borderColor:border,borderWidth:.8});
-    page.drawText(label,{x:x+13,y:592,size:6.5,font:bold,color:gold});
-    const valueLines=wrap(value,bold,index===2?10:14,139);
-    valueLines.slice(0,2).forEach((line,lineIndex)=>page.drawText(line,{x:x+13,y:569-(lineIndex*13),size:index===2?10:14,font:bold,color:forest}));
+    pageNumberedCover.drawRectangle({x,y:66,width:165,height:65,color:forest,borderColor:goldLight,borderWidth:.65,opacity:.96});
+    pageNumberedCover.drawText(label,{x:x+13,y:108,size:6.5,font:bold,color:goldLight});
+    const valueLines=wrap(value,bold,index===1?8.5:11,139);
+    valueLines.slice(0,2).forEach((line,lineIndex)=>pageNumberedCover.drawText(line,{x:x+13,y:84-(lineIndex*12),size:index===1?8.5:11,font:bold,color:white}));
   });
+  pageNumberedCover.drawText("JOURNEY SUMMARY  |  PLANNING DOCUMENT - NOT A BOOKING CONFIRMATION",{x:MARGIN,y:30,size:6.5,font:bold,color:rgb(.67,.75,.71)});
 
-  let cursorY=520;
+  let page=createPage();
+  let cursorY=720;
   const nextPage=()=>{
-    page=createPage(true);
+    page=createPage();
     cursorY=720;
   };
   const ensureSpace=(height:number)=>{
@@ -197,23 +237,17 @@ export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes:ArrayB
     }
   };
 
-  const routeNames=details.destinations.length?details.destinations:["Choose destinations in the Journey Designer"];
-  const routeText=routeNames.join("  >  ");
-  const routeLines=wrap(routeText,bold,10,CONTENT_WIDTH-36);
-  const routeHeight=76+(Math.max(0,routeLines.length-1)*14);
-  ensureSpace(routeHeight);
-  page.drawRectangle({x:MARGIN,y:cursorY-routeHeight,width:CONTENT_WIDTH,height:routeHeight,color:sand,borderColor:border,borderWidth:.7});
-  page.drawText("YOUR ROUTE",{x:MARGIN+18,y:cursorY-23,size:7,font:bold,color:gold});
-  routeLines.forEach((line,index)=>page.drawText(line,{x:MARGIN+18,y:cursorY-47-(index*14),size:10,font:bold,color:forest}));
-  if(details.estimatedDistance){
-    const routeMeta=`${details.estimatedDistance} km estimated road distance  |  ${details.estimatedTravelDays} travel day${details.estimatedTravelDays===1?"":"s"}`;
-    page.drawText(clean(routeMeta),{x:MARGIN+18,y:cursorY-routeHeight+14,size:8,font:regular,color:stone});
-  }
-  cursorY-=routeHeight+13;
+  page.drawText("THE JOURNEY AT A GLANCE",{x:MARGIN,y:cursorY,size:7,font:bold,color:gold});
+  page.drawText("Everything you have chosen, beautifully connected.",{x:MARGIN,y:cursorY-31,size:20,font:serif,color:forest});
+  drawWrapped(page,"This summary brings together your route, experiences and travel preferences before your journey designer prepares the final proposal.",MARGIN,cursorY-54,{size:8.5,color:stone,maxWidth:CONTENT_WIDTH,lineHeight:12});
+  cursorY-=88;
 
+  const routeNames=details.destinations.length?details.destinations:["Choose destinations in the Journey Designer"];
+  const routeEntries=routeNames.map((name,index)=>`${index+1}. ${name}`);
+  if(details.estimatedDistance)routeEntries.push(`${details.estimatedDistance} km estimated road distance - ${details.estimatedTravelDays} travel day${details.estimatedTravelDays===1?"":"s"}`);
+  drawListSection("Your route",routeEntries);
   drawListSection("Travel themes",details.themes);
-  drawListSection("Destinations",details.destinations);
-  drawListSection("Experiences",details.experiences);
+  drawListSection("Experiences to look forward to",details.experiences);
 
   const planLines=[
     `Travel dates: ${formatDate(details.travelDates.start)} to ${formatDate(details.travelDates.end)}`,
