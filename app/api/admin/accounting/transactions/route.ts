@@ -7,7 +7,7 @@ export const runtime="nodejs";
 const schema=z.object({
   accountId:z.uuid(),
   settlementId:z.union([z.uuid(),z.literal(""),z.null()]).optional(),
-  type:z.enum(["customer_receipt","customer_refund","supplier_payment"]),
+  type:z.enum(["customer_receipt","customer_refund","supplier_payment","supplier_recovery"]),
   amount:z.coerce.number().min(0).max(100000000),
   waivedAmount:z.coerce.number().min(0).max(100000000).default(0),
   waiverReason:z.string().trim().max(500).optional(),
@@ -48,14 +48,20 @@ export async function POST(request:Request){
   const {data:account,error:accountError}=await database.from("journey_accounts").select("*").eq("id",value.accountId).maybeSingle();
   if(accountError||!account)return NextResponse.json({error:"Journey account not found."},{status:404});
   if(!account.active)return NextResponse.json({error:"This accounting record is inactive because no deposit is currently recorded."},{status:409});
-  if(account.status==="refunded"&&value.type!=="customer_refund")return NextResponse.json({error:"New payments cannot be recorded against a refunded account."},{status:409});
+  if(account.status==="refunded"&&!["customer_refund","supplier_recovery"].includes(value.type))return NextResponse.json({error:"Only pending refunds or supplier recoveries can be recorded against a refunded account."},{status:409});
   let settlementId:string|null=null;
   let previousWaiver=0;
   let previousReason:string|null=null;
-  if(value.type==="supplier_payment"){
+  if(value.type==="supplier_payment"||value.type==="supplier_recovery"){
     if(!value.settlementId)return NextResponse.json({error:"Choose a supplier settlement."},{status:400});
     const {data:settlement}=await database.from("journey_settlements").select("*").eq("id",value.settlementId).eq("account_id",account.id).maybeSingle();
     if(!settlement)return NextResponse.json({error:"Supplier settlement not found."},{status:404});
+    if(value.type==="supplier_recovery"){
+      const {data:cancellation}=await database.from("journey_cancellation_cases").select("status").eq("account_id",account.id).maybeSingle();
+      if(!cancellation)return NextResponse.json({error:"Supplier recoveries are available only for a cancelled journey."},{status:409});
+      if(value.amount>settlement.amount_paid+0.005)return NextResponse.json({error:"Recovery exceeds the net amount paid to this supplier."},{status:409});
+      settlementId=settlement.id;
+    }else{
     if(settlement.status==="waived")return NextResponse.json({error:"This supplier obligation has already been fully waived."},{status:409});
     const remaining=settlement.amount_due-settlement.amount_paid-settlement.waived_amount;
     if(value.amount+value.waivedAmount>remaining+0.005)return NextResponse.json({error:"Payment and waiver exceed the outstanding supplier balance."},{status:409});
@@ -65,8 +71,17 @@ export async function POST(request:Request){
       const {error:waiverError}=await database.from("journey_settlements").update({waived_amount:settlement.waived_amount+value.waivedAmount,waiver_reason:reason}).eq("id",settlement.id);
       if(waiverError)return NextResponse.json({error:waiverError.message},{status:500});
     }
+    }
   }else if(value.type==="customer_refund"&&value.amount>account.amount_received+0.005){
     return NextResponse.json({error:"Refund exceeds the amount received from the traveller."},{status:409});
+  }
+  if(value.type==="customer_refund"){
+    const {data:cancellation}=await database.from("journey_cancellation_cases").select("status,approved_refund").eq("account_id",account.id).maybeSingle();
+    if(cancellation){
+      if(!["approved","part_refunded"].includes(cancellation.status))return NextResponse.json({error:"The cancellation refund must be calculated and approved before payment."},{status:409});
+      const remaining=Math.max(0,(cancellation.approved_refund??0)-account.amount_refunded);
+      if(value.amount>remaining+0.005)return NextResponse.json({error:"Refund exceeds the approved refund liability."},{status:409});
+    }
   }
   let paymentTransactionId:string|null=null;
   const transactionIds:string[]=[];
