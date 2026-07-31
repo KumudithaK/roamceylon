@@ -9,7 +9,7 @@ const settlementSchema=z.object({
   settlementId:z.uuid(),
   resolution:z.enum(["cancelled_without_cost","recoverable","waived","non_recoverable"]),
   nonRecoverableAmount:z.coerce.number().min(0).max(100000000),
-  notes:z.string().trim().min(3).max(500)
+  notes:z.string().trim().min(3,"Enter a supplier confirmation or reference (at least 3 characters).").max(500,"Supplier confirmation must be 500 characters or fewer.")
 });
 const calculateSchema=z.object({
   action:z.literal("calculate"),
