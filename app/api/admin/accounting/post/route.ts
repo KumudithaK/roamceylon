@@ -19,13 +19,13 @@ export async function POST(request:Request){
       return NextResponse.json({error:error instanceof Error?error.message:"The journey could not be posted to accounts."},{status});
     }
   }
-  const [{data:closed,error},{data:existing}]=await Promise.all([
-    actor.database.from("enquiries").select("id").eq("status","closed"),
+  const [{data:completed,error},{data:existing}]=await Promise.all([
+    actor.database.from("enquiries").select("id").eq("status","completed"),
     actor.database.from("journey_accounts").select("enquiry_id")
   ]);
   if(error)return NextResponse.json({error:error.message},{status:500});
   const existingIds=new Set((existing??[]).map(item=>item.enquiry_id));
-  const pending=(closed??[]).filter(item=>!existingIds.has(item.id));
+  const pending=(completed??[]).filter(item=>!existingIds.has(item.id));
   const posted:string[]=[];const skipped:Array<{id:string;reason:string}>=[];
   for(const item of pending){
     try{posted.push((await postJourneyToAccounts(item.id,actor.user.id)).id)}

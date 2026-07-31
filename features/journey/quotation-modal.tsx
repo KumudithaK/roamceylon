@@ -6,8 +6,8 @@ import {useEffect,useState} from "react";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {Button} from "@/components/ui/button";
+import {createClient} from "@/lib/supabase/client";
 import {journeyHandoffToJson,type JourneyQuotationHandoff} from "@/lib/journey/quotation-handoff";
-import {JourneyRequestService} from "@/lib/journey-requests/journey-request-service";
 import type {PublicPackageQuote} from "@/lib/pricing/package-types";
 import type {JourneyState} from "./journey-store";
 
@@ -42,21 +42,28 @@ export function QuotationModal({open,onClose,state,quote}:{open:boolean;onClose:
     setSubmitError("");
     const submittedState={...state,travelDates:{start:values.arrival||state.travelDates.start,end:values.departure||state.travelDates.end}};
     const handoff:JourneyQuotationHandoff={version:1,createdAt:new Date().toISOString(),state:submittedState,quote};
-    try{
-      await new JourneyRequestService().submit({
-        customerName:values.name,
-        whatsappNumber:values.phone,
-        emailAddress:values.email,
-        country:values.country,
-        arrivalDate:submittedState.travelDates.start,
-        departureDate:submittedState.travelDates.end,
-        specialRequests:values.notes,
-        journeySnapshot:journeyHandoffToJson(handoff)
-      });
-    }catch{
-      setSubmitError("We could not send your journey request. Please try again.");
-      return;
-    }
+    const {error}=await createClient().from("enquiries").insert({
+      name:values.name,
+      email:values.email,
+      phone:values.phone,
+      nationality:values.country||null,
+      summary:"Personalised journey requested.",
+      traveller_notes:values.notes||null,
+      status:"new",
+      trip_state:journeyHandoffToJson(handoff),
+      travel_start_date:submittedState.travelDates.start||null,
+      travel_end_date:submittedState.travelDates.end||null,
+      adults:submittedState.travellerCounts.adults,
+      children:submittedState.travellerCounts.children,
+      experience_participants:submittedState.experienceParticipants,
+      selected_themes:submittedState.selectedThemeIds,
+      selected_destinations:submittedState.selectedDestinationIds,
+      selected_experiences:submittedState.selectedExperienceIds,
+      selected_stays:Object.values(submittedState.selectedStayIdsByDestination).filter(Boolean),
+      selected_vehicle:submittedState.selectedVehicleId,
+      selected_guide:submittedState.selectedGuideId
+    });
+    if(error){setSubmitError("We could not send your journey request. Please try again.");return}
     setSent(true);
   };
   return <div role="dialog" aria-modal="true" aria-labelledby="quotation-title" className="fixed inset-0 z-[100] grid place-items-center overflow-y-auto bg-slate/70 p-4 backdrop-blur-sm" onMouseDown={event=>{if(event.target===event.currentTarget)onClose();}}>

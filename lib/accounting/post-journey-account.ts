@@ -116,7 +116,7 @@ export async function postJourneyToAccounts(enquiryId:string,userId:string):Prom
   if(!database)throw new AccountingPostError("DATABASE","Supabase server credentials are unavailable.");
   const {data:existing}=await database.from("journey_accounts").select("*").eq("enquiry_id",enquiryId).maybeSingle();
   if(existing){
-    if((await database.from("enquiries").update({status:"closed"}).eq("id",enquiryId)).error)throw new AccountingPostError("DATABASE","The journey account exists but the enquiry could not be closed.");
+    if((await database.from("enquiries").update({status:"completed"}).eq("id",enquiryId)).error)throw new AccountingPostError("DATABASE","The journey account exists but the enquiry could not be marked complete.");
     return existing;
   }
   const {data:enquiry,error:enquiryError}=await database.from("enquiries").select("*").eq("id",enquiryId).maybeSingle();
@@ -151,7 +151,7 @@ export async function postJourneyToAccounts(enquiryId:string,userId:string):Prom
       throw new AccountingPostError("DATABASE",settlementError.message);
     }
   }
-  const {error:closeError}=await database.from("enquiries").update({status:"closed"}).eq("id",enquiry.id);
-  if(closeError)throw new AccountingPostError("DATABASE",closeError.message);
+  const {error:completeError}=await database.from("enquiries").update({status:"completed"}).eq("id",enquiry.id);
+  if(completeError)throw new AccountingPostError("DATABASE",completeError.message);
   return account;
 }

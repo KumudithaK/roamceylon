@@ -20,7 +20,7 @@ export function AccountingOverview(){
   const router=useRouter();
   const [accounts,setAccounts]=useState<Account[]>([]);
   const [settlements,setSettlements]=useState<Settlement[]>([]);
-  const [closed,setClosed]=useState<Enquiry[]>([]);
+  const [completed,setCompleted]=useState<Enquiry[]>([]);
   const [loading,setLoading]=useState(true);
   const [syncing,setSyncing]=useState(false);
   const [message,setMessage]=useState("");
@@ -28,27 +28,27 @@ export function AccountingOverview(){
     const database=createClient();
     const {data:{session}}=await database.auth.getSession();
     if(!session){router.replace("/admin/login");return}
-    const [accountResult,settlementResult,closedResult]=await Promise.all([
+    const [accountResult,settlementResult,completedResult]=await Promise.all([
       database.from("journey_accounts").select("*").order("posted_at",{ascending:false}),
       database.from("journey_settlements").select("*").order("due_date",{ascending:true}),
-      database.from("enquiries").select("id,status").eq("status","closed")
+      database.from("enquiries").select("id,status").eq("status","completed")
     ]);
-    const error=accountResult.error||settlementResult.error||closedResult.error;
+    const error=accountResult.error||settlementResult.error||completedResult.error;
     if(error){setMessage(error.message.includes("journey_accounts")?"Apply the latest Supabase migration to activate Accounting.":error.message);setLoading(false);return}
-    setAccounts(accountResult.data??[]);setSettlements(settlementResult.data??[]);setClosed(closedResult.data??[]);setLoading(false);
+    setAccounts(accountResult.data??[]);setSettlements(settlementResult.data??[]);setCompleted(completedResult.data??[]);setLoading(false);
   };
   useEffect(()=>{void (async()=>{
     const database=createClient();
     const {data:{session}}=await database.auth.getSession();
     if(!session){router.replace("/admin/login");return}
-    const [accountResult,settlementResult,closedResult]=await Promise.all([
+    const [accountResult,settlementResult,completedResult]=await Promise.all([
       database.from("journey_accounts").select("*").order("posted_at",{ascending:false}),
       database.from("journey_settlements").select("*").order("due_date",{ascending:true}),
-      database.from("enquiries").select("id,status").eq("status","closed")
+      database.from("enquiries").select("id,status").eq("status","completed")
     ]);
-    const error=accountResult.error||settlementResult.error||closedResult.error;
+    const error=accountResult.error||settlementResult.error||completedResult.error;
     if(error){setMessage(error.message.includes("journey_accounts")?"Apply the latest Supabase migration to activate Accounting.":error.message);setLoading(false);return}
-    setAccounts(accountResult.data??[]);setSettlements(settlementResult.data??[]);setClosed(closedResult.data??[]);setLoading(false);
+    setAccounts(accountResult.data??[]);setSettlements(settlementResult.data??[]);setCompleted(completedResult.data??[]);setLoading(false);
   })()},[router]);
   const sync=async()=>{
     setSyncing(true);setMessage("");
@@ -57,10 +57,10 @@ export function AccountingOverview(){
     const result=await response.json() as {posted?:string[];skipped?:Array<{reason:string}>;error?:string};
     setSyncing(false);
     if(!response.ok){setMessage(result.error??"Closed journeys could not be posted.");return}
-    setMessage(`${result.posted?.length??0} closed journey${result.posted?.length===1?"":"s"} posted.${result.skipped?.length?` ${result.skipped.length} require pricing attention.`:""}`);
+    setMessage(`${result.posted?.length??0} completed journey${result.posted?.length===1?"":"s"} posted.${result.skipped?.length?` ${result.skipped.length} require pricing attention.`:""}`);
     await load();
   };
-  const unposted=closed.filter(row=>!accounts.some(account=>account.enquiry_id===row.id)).length;
+  const unposted=completed.filter(row=>!accounts.some(account=>account.enquiry_id===row.id)).length;
   const currency=accounts[0]?.currency??"USD";
   const revenue=accounts.filter(row=>row.status!=="void").reduce((total,row)=>total+row.selling_price,0);
   const received=accounts.filter(row=>row.status!=="void").reduce((total,row)=>total+row.amount_received,0);
@@ -77,7 +77,7 @@ export function AccountingOverview(){
   }).filter(item=>item.due>0);
   if(loading)return <AdminShell><div className="min-h-[70vh] animate-pulse rounded-3xl bg-white"/></AdminShell>;
   return <AdminShell><div className="mx-auto max-w-[1500px]">
-    <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">Financial control</p><h1 className="font-serif text-4xl md:text-5xl">Journey accounting</h1><p className="mt-3 max-w-2xl text-sm text-slate/55">Revenue, customer receipts, supplier obligations and profitability for every closed journey.</p></div><button onClick={()=>void sync()} disabled={syncing} className="inline-flex items-center gap-2 rounded-full bg-forest px-5 py-3 text-sm font-bold text-white disabled:opacity-50"><RefreshCw className={`size-4 ${syncing?"animate-spin":""}`}/>{syncing?"Posting journeys…":unposted?`Post ${unposted} closed journey${unposted===1?"":"s"}`:"Accounts up to date"}</button></div>
+    <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">Financial control</p><h1 className="font-serif text-4xl md:text-5xl">Journey accounting</h1><p className="mt-3 max-w-2xl text-sm text-slate/55">Revenue, customer receipts, supplier obligations and profitability for every completed journey.</p></div><button onClick={()=>void sync()} disabled={syncing} className="inline-flex items-center gap-2 rounded-full bg-forest px-5 py-3 text-sm font-bold text-white disabled:opacity-50"><RefreshCw className={`size-4 ${syncing?"animate-spin":""}`}/>{syncing?"Posting journeys…":unposted?`Post ${unposted} completed journey${unposted===1?"":"s"}`:"Accounts up to date"}</button></div>
     {message&&<div className="mt-6 rounded-2xl border border-gold/25 bg-gold/10 p-4 text-sm text-slate">{message}</div>}
     <section className="mt-9 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
       <Metric icon={CircleDollarSign} label="Journey revenue" value={money(revenue,currency)} detail={`${accounts.length} journey account${accounts.length===1?"":"s"}`} tone="gold"/>
@@ -87,13 +87,13 @@ export function AccountingOverview(){
       <Metric icon={WalletCards} label="Cash position" value={money(cashPosition,currency)} detail="Receipts less supplier payments" tone={cashPosition>=0?"light":"danger"}/>
     </section>
     <section className="mt-6 grid gap-6 xl:grid-cols-[1.25fr_.75fr]">
-      <div className="overflow-hidden rounded-3xl border border-stone/15 bg-white"><div className="flex items-center justify-between border-b border-stone/15 p-7"><div><p className="eyebrow mb-2">Journey ledger</p><h2 className="font-serif text-2xl">Closed journey accounts</h2></div><span className="text-xs text-stone">{accounts.length} total</span></div>{accounts.length?<div className="divide-y divide-stone/15">{accounts.map(account=>{
+      <div className="overflow-hidden rounded-3xl border border-stone/15 bg-white"><div className="flex items-center justify-between border-b border-stone/15 p-7"><div><p className="eyebrow mb-2">Journey ledger</p><h2 className="font-serif text-2xl">Completed journey accounts</h2></div><span className="text-xs text-stone">{accounts.length} total</span></div>{accounts.length?<div className="divide-y divide-stone/15">{accounts.map(account=>{
         const balance=Math.max(0,account.selling_price-account.amount_received);
         return <Link href={`/admin/accounting/${account.id}`} key={account.id} className="grid gap-4 p-5 transition hover:bg-sand-light lg:grid-cols-[1.2fr_.8fr_.7fr_.5fr] lg:items-center"><div><strong className="font-serif text-xl">{account.traveller_name}</strong><p className="mt-1 text-xs text-stone">{account.account_number} · {account.travel_start_date||"Flexible dates"}</p></div><div><span className={`rounded-full px-3 py-1 text-[.65rem] font-bold uppercase ${statusStyles[account.status]}`}>{statusLabels[account.status]}</span></div><div><span className="block text-xs text-stone">Balance to collect</span><strong className="text-sm text-forest">{money(balance,account.currency)}</strong></div><ArrowUpRight className="size-5 text-stone"/></Link>
-      })}</div>:<Empty text="No journey accounts yet. Close a fully priced enquiry, then post it to Accounting."/>}</div>
+      })}</div>:<Empty text="No journey accounts yet. Complete a fully priced enquiry, then post it to Accounting."/>}</div>
       <div className="rounded-3xl bg-forest p-7 text-ivory"><p className="eyebrow mb-3 text-gold-light">Settlement control</p><h2 className="font-serif text-2xl">Supplier exposure</h2><div className="mt-7 grid gap-5">{typeTotals.length?typeTotals.map(item=>{const resolved=item.paid+item.waived;const progress=item.due?Math.min(100,resolved/item.due*100):0;return <div key={item.type}><div className="mb-2 flex justify-between gap-3 text-sm"><span className="text-ivory/65">{payeeLabels[item.type]}</span><strong>{money(Math.max(0,item.due-resolved),currency)}</strong></div><div className="h-2 rounded-full bg-white/10"><div className="h-full rounded-full bg-gold" style={{width:`${progress}%`}}/></div><p className="mt-1 text-[.65rem] text-ivory/40">{Math.round(progress)}% resolved · {money(item.waived,currency)} waived</p></div>}):<p className="text-sm leading-6 text-ivory/55">Supplier obligations will appear when a priced journey is posted.</p>}</div><div className="mt-8 border-t border-white/10 pt-6"><div className="flex justify-between text-sm"><span className="text-ivory/55">Total committed</span><strong>{money(due,currency)}</strong></div><div className="mt-2 flex justify-between text-sm"><span className="text-ivory/55">Already paid</span><strong>{money(paid,currency)}</strong></div><div className="mt-2 flex justify-between text-sm text-gold-light"><span>Courtesy savings</span><strong>{money(savings,currency)}</strong></div></div></div>
     </section>
-    <section className="mt-6 rounded-3xl border border-stone/15 bg-white p-7"><div className="flex items-center gap-3"><Landmark className="text-gold"/><div><p className="eyebrow mb-1">How it works</p><h2 className="font-serif text-2xl">One commercial truth per journey</h2></div></div><div className="mt-6 grid gap-4 md:grid-cols-4">{["Close a fully priced traveller enquiry.","Freeze revenue, internal cost and margin.","Track customer receipts and supplier dues.","Finish when customer and partners are settled."].map((text,index)=><div key={text} className="rounded-2xl bg-sand-light p-5"><span className="font-serif text-3xl text-gold">0{index+1}</span><p className="mt-3 text-sm leading-6 text-slate/65">{text}</p></div>)}</div></section>
+    <section className="mt-6 rounded-3xl border border-stone/15 bg-white p-7"><div className="flex items-center gap-3"><Landmark className="text-gold"/><div><p className="eyebrow mb-1">How it works</p><h2 className="font-serif text-2xl">One commercial truth per journey</h2></div></div><div className="mt-6 grid gap-4 md:grid-cols-4">{["Complete a fully priced traveller enquiry.","Freeze revenue, internal cost and margin.","Track customer receipts and supplier dues.","Finish when customer and partners are settled."].map((text,index)=><div key={text} className="rounded-2xl bg-sand-light p-5"><span className="font-serif text-3xl text-gold">0{index+1}</span><p className="mt-3 text-sm leading-6 text-slate/65">{text}</p></div>)}</div></section>
   </div></AdminShell>;
 }
 

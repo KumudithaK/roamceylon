@@ -2,19 +2,19 @@
 
 import {useEffect,useMemo,useState} from "react";
 import {useRouter} from "next/navigation";
-import {CalendarDays,Mail,MapPin,Phone,Users} from "lucide-react";
+import {CalendarDays,CreditCard,FileText,FolderOpen,Handshake,History,Mail,MapPin,Phone,Users} from "lucide-react";
 import {AdminShell} from "./admin-shell";
 import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
+import {enquiryWorkflow} from "@/lib/enquiries/enquiry-workflow";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import {pricingPlanKey} from "@/features/journey/journey-store";
-import type {Database,Json} from "@/lib/database.types";
+import type {Database,EnquiryStatus,Json} from "@/lib/database.types";
 import type {ParticipantCounts} from "@/lib/types";
 
 type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
 type Named={id:string;name:string};
 type SelectionNames={themes:Named[];destinations:Named[];experiences:Named[];stays:Named[];vehicle:string|null;guide:string|null};
-const statuses=[["new","New lead"],["contacted","Contacted"],["quote_preparing","Quotation preparing"],["quote_sent","Quotation sent"],["confirmed","Confirmed"],["closed","Closed"],["cancelled","Cancelled"]] as const;
 const ids=(value:Json)=>Array.isArray(value)?value.filter((item):item is string=>typeof item==="string"):[];
 const participantMap=(value:Json):Record<string,ParticipantCounts>=>{
   if(!value||typeof value!=="object"||Array.isArray(value))return {};
@@ -66,11 +66,11 @@ export function EnquiryReview({id}:{id:string}){
   })()},[id,router]);
   const handoff=useMemo(()=>enquiry?parseJourneyHandoff(enquiry.trip_state):null,[enquiry]);
   const quote=handoff?.quote??null;
-  const save=async(status=enquiry?.status)=>{
+  const save=async(status:EnquiryStatus|undefined=enquiry?.status)=>{
     if(!enquiry||!status)return;
     setSaving(true);setMessage("");
     const database=createClient();
-    if(status==="closed"){
+    if(status==="completed"){
       const {error:notesError}=await database.from("enquiries").update({internal_notes:notes}).eq("id",id);
       if(notesError){setSaving(false);setMessage(notesError.message);return}
       const {data:{session}}=await database.auth.getSession();
@@ -79,7 +79,7 @@ export function EnquiryReview({id}:{id:string}){
       setSaving(false);
       if(!response.ok){setMessage(result.error??"The journey could not be posted to Accounting.");return}
       setEnquiry({...enquiry,status,internal_notes:notes});
-      setMessage("Journey closed and posted to Accounting.");
+      setMessage("Journey completed and posted to Accounting.");
       return;
     }
     const {error}=await database.from("enquiries").update({status,internal_notes:notes}).eq("id",id);
@@ -97,13 +97,14 @@ export function EnquiryReview({id}:{id:string}){
     return planId?pricingPlanNames[planId]??null:null;
   };
   return <AdminShell><div className="mx-auto max-w-7xl">
-    <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">Traveller enquiry</p><h1 className="font-serif text-4xl md:text-5xl">{enquiry.name}</h1><p className="mt-2 text-sm text-stone">Received {new Date(enquiry.created_at).toLocaleString("en-GB")}</p></div><select value={enquiry.status} onChange={event=>void save(event.target.value)} disabled={saving} className="rounded-full border border-stone/25 bg-white px-5 py-3 text-sm font-semibold">{statuses.map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></div>
+    <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">Traveller enquiry · {enquiry.journey_reference}</p><h1 className="font-serif text-4xl md:text-5xl">{enquiry.name}</h1><p className="mt-2 text-sm text-stone">Received {new Date(enquiry.created_at).toLocaleString("en-GB")}</p></div><select value={enquiry.status} onChange={event=>void save(event.target.value as EnquiryStatus)} disabled={saving} className="rounded-full border border-stone/25 bg-white px-5 py-3 text-sm font-semibold">{enquiryWorkflow.map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></div>
     {message&&<p className="mt-5 rounded-xl bg-white p-4 text-sm">{message}</p>}
     <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]"><div className="grid gap-6">
       <Section title="Journey at a glance"><div className="grid gap-4 sm:grid-cols-3"><Metric icon={Users} label="Travellers" value={`${travellers}`} detail={`${travellerCounts.adults} adults · ${travellerCounts.children} children · ${travellerCounts.infants} infants`}/><Metric icon={CalendarDays} label="Travel dates" value={enquiry.travel_start_date||"Flexible"} detail={enquiry.travel_end_date?`to ${enquiry.travel_end_date}`:"Departure not selected"}/><Metric icon={MapPin} label="Destinations" value={`${selectionNames.destinations.length}`} detail={selectionNames.destinations.map(item=>item.name).join(" · ")||"Not selected"}/></div></Section>
       <Section title="Selected journey"><Selection label="Themes" values={selectionNames.themes.map(item=>item.name)}/><Selection label="Destinations and route order" values={selectionNames.destinations.map((item,index)=>`${index+1}. ${item.name}`)}/><Selection label="Experiences" values={selectionNames.experiences.map(item=>{const counts=experienceParticipants[item.id];const count=counts?counts.adults+counts.children+counts.infants:0;const plan=planName("experience",item.id);return `${item.name}${count?` · ${count} participant${count===1?"":"s"}`:""}${plan?` · ${plan}`:""}`})}/><Selection label="Accommodation" values={selectionNames.stays.map(item=>`${item.name}${planName("accommodation",item.id)?` · ${planName("accommodation",item.id)}`:""}`)}/><Selection label="Transport" values={selectionNames.vehicle?[`${selectionNames.vehicle}${enquiry.selected_vehicle&&planName("vehicle",enquiry.selected_vehicle)?` · ${planName("vehicle",enquiry.selected_vehicle)}`:""}`]:[]}/><Selection label="Local guide" values={selectionNames.guide?[`${selectionNames.guide}${enquiry.selected_guide&&planName("guide",enquiry.selected_guide)?` · ${planName("guide",enquiry.selected_guide)}`:""}`]:[]}/></Section>
       <Section title="Traveller notes"><p className="whitespace-pre-wrap text-sm leading-7 text-slate/70">{enquiry.traveller_notes||enquiry.summary||"No additional notes were supplied."}</p></Section>
       <Section title="Customer package estimate">{quote?.status==="ready"?<div><div className="grid gap-4 sm:grid-cols-3"><Price label="Total package" value={`${quote.currency} ${quote.totalPackagePrice?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/><Price label="Per person" value={`${quote.currency} ${quote.pricePerPerson?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/><Price label="Daily estimate" value={`${quote.currency} ${quote.estimatedDailyCost?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/></div>{quote.components?.length?<div className="mt-6 divide-y divide-stone/15">{quote.components.map(item=><div key={item.category} className="flex justify-between py-3 text-sm"><span>{item.label}</span><strong>{quote.currency} {item.amount.toFixed(2)}</strong></div>)}</div>:null}</div>:<p className="text-sm text-stone">A personal quotation is required. No automated estimate was stored with this enquiry.</p>}</Section>
+      <Section title="Journey workflow"><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5"><WorkflowPlaceholder icon={FileText} label="Journey Proposal"/><WorkflowPlaceholder icon={CreditCard} label="Payments"/><WorkflowPlaceholder icon={FolderOpen} label="Journey Documents"/><WorkflowPlaceholder icon={Handshake} label="Supplier Management"/><WorkflowPlaceholder icon={History} label="Timeline"/></div></Section>
     </div><aside className="grid h-fit gap-6">
       <Section title="Contact"><div className="grid gap-3 text-sm"><a href={`mailto:${enquiry.email}`} className="flex items-center gap-2 text-forest"><Mail className="size-4"/>{enquiry.email}</a>{enquiry.phone&&<a href={`tel:${enquiry.phone}`} className="flex items-center gap-2 text-forest"><Phone className="size-4"/>{enquiry.phone}</a>}<span className="text-stone">{enquiry.nationality||"Nationality not provided"}</span></div></Section>
       <Section title="Internal follow-up notes"><textarea rows={10} value={notes} onChange={event=>setNotes(event.target.value)} placeholder="Record calls, supplier checks, preferences and next actions…" className="w-full rounded-xl border border-stone/25 p-4 text-sm outline-none focus:border-gold"/><Button disabled={saving} className="mt-3 w-full" onClick={()=>void save()}>{saving?"Saving…":"Save enquiry"}</Button></Section>
@@ -115,3 +116,4 @@ function Section({title,children}:{title:string;children:React.ReactNode}){retur
 function Selection({label,values}:{label:string;values:string[]}){return <div className="border-b border-stone/15 py-5 first:pt-0 last:border-0 last:pb-0"><p className="text-[.65rem] font-bold uppercase tracking-widest text-gold">{label}</p><div className="mt-3 flex flex-wrap gap-2">{values.length?values.map(value=><span key={value} className="rounded-full bg-sand-light px-3 py-2 text-xs">{value}</span>):<span className="text-sm text-stone">Not selected</span>}</div></div>}
 function Metric({icon:Icon,label,value,detail}:{icon:typeof Users;label:string;value:string;detail:string}){return <div className="rounded-2xl bg-sand-light p-5"><Icon className="size-5 text-gold"/><span className="mt-4 block text-xs font-bold uppercase tracking-widest text-stone">{label}</span><strong className="mt-1 block font-serif text-3xl">{value}</strong><small className="mt-1 block text-stone">{detail}</small></div>}
 function Price({label,value}:{label:string;value:string}){return <div className="rounded-2xl bg-forest p-5 text-ivory"><span className="text-xs text-ivory/55">{label}</span><strong className="mt-2 block font-serif text-2xl">{value}</strong></div>}
+function WorkflowPlaceholder({icon:Icon,label}:{icon:typeof FileText;label:string}){return <div className="rounded-2xl border border-dashed border-stone/25 bg-sand-light p-4"><Icon className="size-5 text-gold"/><strong className="mt-3 block text-sm">{label}</strong><span className="mt-1 block text-xs text-stone">Reserved for the next workflow phase.</span></div>}
