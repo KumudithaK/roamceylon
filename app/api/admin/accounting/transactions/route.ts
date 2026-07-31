@@ -1,6 +1,7 @@
 import {NextResponse} from "next/server";
 import {z} from "zod";
 import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
+import {canPayAssessmentRefund} from "@/lib/accounting/cancellation";
 
 export const runtime="nodejs";
 
@@ -76,12 +77,16 @@ export async function POST(request:Request){
     return NextResponse.json({error:"Refund exceeds the amount received from the traveller."},{status:409});
   }
   if(value.type==="customer_refund"){
-    const {data:cancellation}=await database.from("journey_cancellation_cases").select("status,approved_refund").eq("account_id",account.id).maybeSingle();
+    const {data:cancellation}=await database.from("journey_cancellation_cases").select("status,outcome,approved_refund").eq("account_id",account.id).maybeSingle();
     if(cancellation){
-      if(!["approved","part_refunded"].includes(cancellation.status))return NextResponse.json({error:"The cancellation refund must be calculated and approved before payment."},{status:409});
+      if(!["approved","part_refunded"].includes(cancellation.status)||!canPayAssessmentRefund(cancellation.outcome,cancellation.approved_refund,account.amount_refunded,value.amount))return NextResponse.json({error:"This payment exceeds the approved Refund assessment or the cancellation outcome is not Refund."},{status:409});
       const remaining=Math.max(0,(cancellation.approved_refund??0)-account.amount_refunded);
       if(value.amount>remaining+0.005)return NextResponse.json({error:"Refund exceeds the approved refund liability."},{status:409});
     }
+  }
+  if(value.type==="customer_receipt"){
+    const {data:cancellation}=await database.from("journey_cancellation_cases").select("assessment_locked_at").eq("account_id",account.id).maybeSingle();
+    if(cancellation?.assessment_locked_at)return NextResponse.json({error:"Customer payments cannot change after the cancellation assessment is completed."},{status:409});
   }
   let paymentTransactionId:string|null=null;
   const transactionIds:string[]=[];
