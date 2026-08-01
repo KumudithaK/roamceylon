@@ -3,7 +3,7 @@ import test from "node:test";
 import {availableDestinations,availableExperiences} from "../lib/journey/journey-selectors.ts";
 import {calculatePackageQuote} from "../lib/pricing/package-engine.ts";
 import type {SupplierCost} from "../lib/pricing/package-types.ts";
-import {getRouteEstimate} from "../lib/journey/route.ts";
+import {getNearbyDestinations,getRouteEstimate} from "../lib/journey/route.ts";
 import {includeExperienceSelection,removeExperienceSelection} from "../lib/journey/journey-selection.ts";
 
 test("external experience selection maps its parent theme and destination",()=>{
@@ -49,6 +49,18 @@ test("route estimate preserves selection order and computes distance",()=>{
   assert.deepEqual(result.route.map(item=>item.id),["kandy","ella"]);
   assert(result.estimatedDistance>60);
   assert(result.estimatedTravelDays>=1);
+});
+
+test("destination discovery returns the nearest places without the current destination",()=>{
+  const destinations=[
+    {id:"ahungalla",slug:"ahungalla",name:"Ahungalla",latitude:6.3152,longitude:80.0303},
+    {id:"bentota",slug:"bentota",name:"Bentota",latitude:6.4189,longitude:79.9971},
+    {id:"galle",slug:"galle",name:"Galle",latitude:6.0329,longitude:80.2168},
+    {id:"missing",slug:"missing",name:"Missing",latitude:null,longitude:null}
+  ];
+  const nearby=getNearbyDestinations(destinations,"ahungalla",2);
+  assert.deepEqual(nearby.map(item=>item.id),["bentota","galle"]);
+  assert(nearby.every(item=>item.estimatedDistance>0));
 });
 
 test("DMC package price includes supplier, operational, overhead and margin costs",()=>{

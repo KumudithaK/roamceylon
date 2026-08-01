@@ -18,3 +18,14 @@ export function getRouteEstimate(destinations:RouteDestination[],selectedIds:str
   const estimatedTravelDays=estimatedDistance>0?Math.max(1,Math.ceil(estimatedDistance/180)):0;
   return {route,estimatedDistance,estimatedTravelDays};
 }
+
+export function getNearbyDestinations(destinations:RouteDestination[],destinationId:string,limit=5){
+  const located=destinations.filter((item):item is LocatedRouteDestination=>Number.isFinite(item.latitude)&&Number.isFinite(item.longitude));
+  const current=located.find(item=>item.id===destinationId);
+  if(!current)return [];
+  return located
+    .filter(item=>item.id!==destinationId)
+    .map(item=>({...item,estimatedDistance:Math.round(haversine(current,item)*1.28)}))
+    .sort((a,b)=>a.estimatedDistance-b.estimatedDistance||a.name.localeCompare(b.name))
+    .slice(0,Math.max(0,limit));
+}
