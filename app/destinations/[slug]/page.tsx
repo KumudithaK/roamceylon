@@ -9,7 +9,7 @@ import {DestinationWeather} from "@/components/weather/destination-weather";
 import {DestinationInsights} from "@/components/destinations/destination-insights";
 import {JourneyService} from "@/lib/journey/journey-service";
 import {getNearbyDestinations} from "@/lib/journey/route";
-import type {Experience,JourneyDestination} from "@/lib/types";
+import type {JourneyDestination} from "@/lib/types";
 
 const editorialCopy=(value:string|null)=>value?.replaceAll("\\n","\n")||value;
 
@@ -30,12 +30,10 @@ export default async function DestinationPage({params}:{params:Promise<{slug:str
   const themeNames=item.themeIds.map(id=>data.themes.find(theme=>theme.id===id)?.name).filter(Boolean);
   const journeyHref=`/journey-builder?themes=${item.themeIds.join(",")}&destination=${item.id}&step=1`;
   const nearbyDestinations=getNearbyDestinations(data.destinations,item.id,5);
-  const nearbyDestinationIds=new Set([item.id,...nearbyDestinations.map(destination=>destination.id)]);
-  const nearbyExperiences=data.experiences.filter(experience=>experience.destinationIds.some(id=>nearbyDestinationIds.has(id))).sort((a,b)=>Number(b.featured)-Number(a.featured)||a.name.localeCompare(b.name)).slice(0,3);
   return <main>
     <section className="relative min-h-[75svh] overflow-hidden bg-slate text-ivory">{item.hero_image_url&&<Image src={item.hero_image_url} alt={item.image_alt||item.name} fill priority sizes="100vw" className="object-cover opacity-60"/>}<div className="absolute inset-0 bg-gradient-to-t from-slate via-slate/25 to-slate/20"/><div className="shell relative flex min-h-[75svh] flex-col justify-end pb-16"><Link href="/destinations" className="mb-8 inline-flex items-center gap-2 text-sm"><ArrowLeft className="size-4"/>All destinations</Link><p className="eyebrow flex items-center gap-2 text-gold-light"><MapPin className="size-4"/>{item.province||item.region||"Sri Lanka"}</p><h1 className="display mt-4">{item.name}</h1>{item.short_description&&<p className="mt-6 max-w-2xl text-lg leading-8 text-ivory/80">{item.short_description}</p>}<Button asChild variant="accent" className="mt-8 w-fit"><Link href={journeyHref}>Build a journey here<ArrowRight/></Link></Button></div></section>
     <section className="section"><div className="shell grid gap-12 xl:grid-cols-[minmax(0,1fr)_560px]"><article><p className="eyebrow">A closer look</p><h2 className="heading mt-4">Why visit {item.name}?</h2><p className="prose-luxury mt-7 max-w-3xl whitespace-pre-line">{editorialCopy(item.full_description||item.short_description)}</p>{themeNames.length?<div className="mt-8 flex flex-wrap gap-2">{themeNames.map(name=><span key={name} className="rounded-full bg-sand-light px-4 py-2 text-xs font-bold text-forest">{name}</span>)}</div>:null}</article><SriLankaMap destinations={data.destinations} selectedIds={[item.id]} mode="destination" destination={item} nearbyDestinations={nearbyDestinations} journeyHref={journeyHref}/></div></section>
-    <DestinationStory item={item} nearbyExperiences={nearbyExperiences}/>
+    <DestinationStory item={item}/>
     {item.gallery.length?<section className="pb-20"><div className="shell grid gap-4 md:grid-cols-3">{item.gallery.slice(0,3).map((src,index)=><div key={src} className={`relative overflow-hidden rounded-3xl bg-sand ${index===0?"aspect-[16/10] md:col-span-2":"aspect-square"}`}><Image src={src} alt={`${item.name} gallery ${index+1}`} fill sizes="66vw" className="object-cover"/></div>)}</div></section>:null}
     <Related title={`Experiences in ${item.name}`} eyebrow="Things to do" empty="No published experiences are linked to this destination yet." items={experiences.map(entry=>({id:entry.id,title:entry.name,description:entry.short_description,image:entry.hero_image_url,alt:entry.image_alt,href:`/experiences/${entry.slug}`,meta:entry.category}))}/>
     <Related title="Places to stay" eyebrow="Accommodation" empty="No published accommodation is available here yet." items={stays.map(entry=>({id:entry.id,title:entry.name,description:entry.short_description,image:entry.hero_image_url,alt:entry.image_alt,href:`/hotels/${entry.slug}`,meta:entry.property_type}))} shaded/>
@@ -43,7 +41,7 @@ export default async function DestinationPage({params}:{params:Promise<{slug:str
   </main>;
 }
 
-function DestinationStory({item,nearbyExperiences}:{item:JourneyDestination;nearbyExperiences:Experience[]}){
+function DestinationStory({item}:{item:JourneyDestination}){
   const stories=[
     ["Why visit",item.why_visit],
     ["Historical importance",item.historical_importance],
@@ -56,7 +54,7 @@ function DestinationStory({item,nearbyExperiences}:{item:JourneyDestination;near
   return <section id="destination-story" className="bg-sand-light py-20"><div className="shell">
     {stories.length?<div className="grid gap-6 md:grid-cols-2">{stories.map(([title,copy])=><article key={title} className={`rounded-3xl border p-7 ${title==="Best time to visit"?"border-gold/25 bg-gold/[.08]":"border-transparent bg-white"}`}><p className="eyebrow">{title}</p><p className="mt-4 whitespace-pre-line leading-8 text-slate/65">{editorialCopy(copy)}</p></article>)}</div>:null}
     {item.weather?<div className="mt-6"><DestinationWeather name={item.name} latitude={item.latitude} longitude={item.longitude} climate={item.weather}/></div>:null}
-    <DestinationInsights item={item} experiences={nearbyExperiences}/>
+    <DestinationInsights item={item}/>
   </div></section>;
 }
 
