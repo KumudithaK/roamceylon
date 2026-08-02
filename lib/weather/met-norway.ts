@@ -54,7 +54,7 @@ export function parseMetForecast(payload:unknown,now=new Date()):DestinationFore
     if(distance<group.symbolDistance){group.symbol=symbolOf(entry);group.symbolDistance=distance;}
     groups.set(key,group);
   }
-  const days=[...groups.entries()].slice(0,3).map(([date,group])=>({
+  const days=[...groups.entries()].slice(0,7).map(([date,group])=>({
     date,
     label:date===today?"Today":date===tomorrow?"Tomorrow":weekday.format(group.date),
     minimum:Math.round(Math.min(...group.temperatures)),

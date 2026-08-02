@@ -1,10 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import {ArrowUpRight,Binoculars,CalendarCheck,Camera,Compass,Landmark,Luggage,MapPin,PawPrint,Sparkles,Sun,Waves} from "lucide-react";
+import {ArrowUpRight,Binoculars,CalendarCheck,Camera,Compass,Landmark,Luggage,MapPin,PawPrint,Sun,Waves} from "lucide-react";
 import {getNearbyDestinations} from "@/lib/journey/route";
 import type {Destination,JourneyDestination} from "@/lib/types";
 
-type IconComponent=typeof Sparkles;
+type IconComponent=typeof Sun;
 
 const normalise=(value:string)=>value.toLowerCase().replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
 
@@ -42,16 +42,16 @@ export function DestinationInsights({item,destinations}:{item:JourneyDestination
     <div className="mt-12 grid items-start gap-10 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,.65fr)]">
       {item.local_highlights.length?<section aria-labelledby="local-highlights-heading">
         <div className="flex items-end justify-between gap-5"><div><p className="eyebrow">The character of {item.name}</p><h3 id="local-highlights-heading" className="mt-3 font-serif text-3xl">Local highlights</h3></div><Binoculars className="hidden size-7 text-gold md:block" aria-hidden="true"/></div>
-        <ul className="mt-7 grid gap-4 sm:grid-cols-2">
+        <ol className="mt-7 grid overflow-hidden rounded-[1.75rem] border border-stone/15 bg-white shadow-sm sm:grid-cols-2">
           {item.local_highlights.map((highlight,index)=>{
-            const image=item.gallery[index]||null;
-            return <li key={highlight} className={`${index===0&&item.local_highlights.length>2?"sm:col-span-2":""} group relative min-h-48 overflow-hidden rounded-[1.75rem] border border-stone/15 bg-white p-6 shadow-sm transition duration-300 motion-safe:hover:-translate-y-1 motion-safe:hover:scale-[1.01] hover:border-gold/40 hover:shadow-xl`}>
-              {image?<><Image src={image} alt="" fill sizes={index===0?"(max-width: 1280px) 100vw, 55vw":"(max-width: 640px) 100vw, 28vw"} className="object-cover opacity-20 transition duration-700 group-hover:scale-105 group-hover:opacity-25"/><div className="absolute inset-0 bg-gradient-to-t from-white via-white/90 to-white/30"/></>:null}
-              <Sparkles className="absolute -bottom-5 -right-4 size-28 text-gold opacity-[.08] transition duration-500 group-hover:rotate-6 group-hover:opacity-[.14]" aria-hidden="true"/>
-              <div className="relative flex h-full flex-col justify-between"><span className="grid size-11 place-items-center rounded-full bg-gold/10 text-gold"><Sparkles className="size-5" aria-hidden="true"/></span><h4 className="mt-10 max-w-xl font-serif text-2xl leading-snug text-slate">{highlight}</h4></div>
+            const lastOdd=item.local_highlights.length%2===1&&index===item.local_highlights.length-1;
+            const finalRow=lastOdd||(item.local_highlights.length%2===0&&index>=item.local_highlights.length-2);
+            return <li key={highlight} className={`group flex min-h-32 gap-5 border-b border-stone/15 px-6 py-7 transition duration-300 last:border-b-0 hover:bg-gold/[.055] ${index%2===0&&!lastOdd?"sm:border-r":""} ${lastOdd?"sm:col-span-2":""} ${finalRow?"sm:border-b-0":""}`}>
+              <span className="font-serif text-2xl text-gold/55 transition group-hover:text-gold" aria-hidden="true">{String(index+1).padStart(2,"0")}</span>
+              <h4 className="max-w-xl font-serif text-xl leading-snug text-slate">{highlight}</h4>
             </li>;
           })}
-        </ul>
+        </ol>
       </section>:null}
 
       {item.nearby_attractions.length?<section aria-labelledby="nearby-attractions-heading" className="rounded-[2rem] bg-forest p-6 text-ivory md:p-8">

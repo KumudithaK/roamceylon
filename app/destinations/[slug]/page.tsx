@@ -50,13 +50,13 @@ function DestinationStory({item,destinations}:{item:JourneyDestination;destinati
     ["Historical importance",item.historical_importance],
     ["Cultural significance",item.cultural_significance],
     ["UNESCO information",item.unesco_information],
-    ["Nature & wildlife",item.nature_wildlife]
+    ["Nature & wildlife",item.nature_wildlife],
+    ["Best time to visit",item.best_time_to_visit]
   ].filter((entry):entry is [string,string]=>Boolean(entry[1]));
-  const facts=[["Best time to visit",item.best_time_to_visit]].filter((entry):entry is [string,string]=>Boolean(entry[1]));
-  if(!stories.length&&!facts.length&&!item.local_highlights.length&&!item.nearby_attractions.length&&!item.travel_tips.length)return null;
+  if(!stories.length&&!item.weather&&!item.local_highlights.length&&!item.nearby_attractions.length&&!item.travel_tips.length)return null;
   return <section id="destination-story" className="bg-sand-light py-20"><div className="shell">
-    {stories.length?<div className="grid gap-6 md:grid-cols-2">{stories.map(([title,copy])=><article key={title} className="rounded-3xl bg-white p-7"><p className="eyebrow">{title}</p><p className="mt-4 whitespace-pre-line leading-8 text-slate/65">{editorialCopy(copy)}</p></article>)}</div>:null}
-    {(facts.length||item.weather)?<div className="mt-6 grid gap-6 md:grid-cols-2">{facts.map(([title,copy])=><article key={title} className="rounded-3xl bg-forest p-7 text-ivory"><p className="eyebrow text-gold-light">{title}</p><p className="mt-4 leading-7 text-ivory/70">{copy}</p></article>)}<DestinationWeather name={item.name} latitude={item.latitude} longitude={item.longitude} climate={item.weather}/></div>:null}
+    {stories.length?<div className="grid gap-6 md:grid-cols-2">{stories.map(([title,copy])=><article key={title} className={`rounded-3xl border p-7 ${title==="Best time to visit"?"border-gold/25 bg-gold/[.08]":"border-transparent bg-white"}`}><p className="eyebrow">{title}</p><p className="mt-4 whitespace-pre-line leading-8 text-slate/65">{editorialCopy(copy)}</p></article>)}</div>:null}
+    {item.weather?<div className="mt-6"><DestinationWeather name={item.name} latitude={item.latitude} longitude={item.longitude} climate={item.weather}/></div>:null}
     <DestinationInsights item={item} destinations={destinations}/>
   </div></section>;
 }
