@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import {ArrowUpRight,Binoculars,CalendarCheck,Camera,Compass,Landmark,Luggage,MapPin,PawPrint,Sun,Waves} from "lucide-react";
-import {getNearbyDestinations} from "@/lib/journey/route";
-import type {Destination,JourneyDestination} from "@/lib/types";
+import {ArrowUpRight,Binoculars,CalendarCheck,Camera,Compass,Landmark,Luggage,PawPrint,Sun,Waves} from "lucide-react";
+import type {Experience,JourneyDestination} from "@/lib/types";
 
 type IconComponent=typeof Sun;
 
@@ -20,16 +19,8 @@ function essentialIcon(value:string):IconComponent{
   return Luggage;
 }
 
-function matchedDestination(value:string,destinations:Destination[]){
-  const text=normalise(value);
-  return destinations
-    .filter(destination=>text===normalise(destination.name)||text.startsWith(`${normalise(destination.name)} `))
-    .sort((a,b)=>b.name.length-a.name.length)[0]||null;
-}
-
-export function DestinationInsights({item,destinations}:{item:JourneyDestination;destinations:Destination[]}){
-  const distances=new Map(getNearbyDestinations(destinations,item.id,destinations.length).map(destination=>[destination.id,destination.estimatedDistance]));
-  const hasContent=item.local_highlights.length||item.nearby_attractions.length||item.travel_tips.length;
+export function DestinationInsights({item,experiences}:{item:JourneyDestination;experiences:Experience[]}){
+  const hasContent=item.local_highlights.length||experiences.length||item.travel_tips.length;
   if(!hasContent)return null;
 
   return <div id="destination-insights" className="mt-20 scroll-mt-28 border-t border-stone/20 pt-16">
@@ -39,7 +30,7 @@ export function DestinationInsights({item,destinations}:{item:JourneyDestination
       <p className="mt-5 max-w-2xl text-base leading-7 text-slate/60">Local character, places worth a detour and thoughtful details for a more rewarding stay.</p>
     </header>
 
-    <div className="mt-12 grid items-start gap-10 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,.65fr)]">
+    <div className="mt-12 grid items-start gap-8 xl:grid-cols-2">
       {item.local_highlights.length?<section aria-labelledby="local-highlights-heading">
         <div className="flex items-end justify-between gap-5"><div><p className="eyebrow">The character of {item.name}</p><h3 id="local-highlights-heading" className="mt-3 font-serif text-3xl">Local highlights</h3></div><Binoculars className="hidden size-7 text-gold md:block" aria-hidden="true"/></div>
         <ol className="mt-7 grid overflow-hidden rounded-[1.75rem] border border-stone/15 bg-white shadow-sm sm:grid-cols-2">
@@ -54,15 +45,10 @@ export function DestinationInsights({item,destinations}:{item:JourneyDestination
         </ol>
       </section>:null}
 
-      {item.nearby_attractions.length?<section aria-labelledby="nearby-attractions-heading" className="rounded-[2rem] bg-forest p-6 text-ivory md:p-8">
+      {experiences.length?<section aria-labelledby="nearby-experiences-heading" className="rounded-[2rem] bg-forest p-6 text-ivory md:p-8">
         <p className="eyebrow text-gold-light">Extend the journey</p>
-        <h3 id="nearby-attractions-heading" className="mt-3 font-serif text-3xl">Nearby attractions</h3>
-        <div className="mt-7 grid gap-3">{item.nearby_attractions.map(attraction=>{
-          const destination=matchedDestination(attraction,destinations);
-          const distance=destination?distances.get(destination.id):null;
-          const content=<><div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-white/10">{destination?.hero_image_url?<Image src={destination.hero_image_url} alt="" fill sizes="64px" className="object-cover transition duration-500 group-hover:scale-105"/>:<MapPin className="absolute inset-0 m-auto size-5 text-gold-light" aria-hidden="true"/>}</div><div className="min-w-0 flex-1"><h4 className="font-serif text-lg leading-snug">{attraction}</h4>{distance!==null&&distance!==undefined?<p className="mt-1 text-xs text-ivory/50">Approximately {distance} km away</p>:null}</div>{destination?<ArrowUpRight className="size-5 shrink-0 text-gold-light transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true"/>:null}</>;
-          return destination?<Link key={attraction} href={`/destinations/${destination.slug}`} className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[.06] p-3 transition duration-300 hover:border-gold-light/35 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-light">{content}<span className="sr-only">Explore {destination.name}</span></Link>:<article key={attraction} className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[.06] p-3">{content}</article>;
-        })}</div>
+        <h3 id="nearby-experiences-heading" className="mt-3 font-serif text-3xl">Experiences nearby</h3>
+        <div className="mt-7 grid gap-3">{experiences.map(experience=><Link key={experience.id} href={`/experiences/${experience.slug}`} className="group flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[.06] p-3 transition duration-300 hover:border-gold-light/35 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-light"><div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-white/10">{experience.hero_image_url?<Image src={experience.hero_image_url} alt={experience.image_alt||experience.name} fill sizes="80px" className="object-cover transition duration-500 group-hover:scale-105"/>:null}</div><div className="min-w-0 flex-1"><p className="text-[.62rem] font-bold uppercase tracking-widest text-gold-light">{experience.category||"Experience"}{experience.duration?` · ${experience.duration}`:""}</p><h4 className="mt-1.5 line-clamp-2 font-serif text-lg leading-snug">{experience.name}</h4></div><ArrowUpRight className="size-5 shrink-0 text-gold-light transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true"/><span className="sr-only">Explore {experience.name}</span></Link>)}</div>
       </section>:null}
     </div>
 
