@@ -6,9 +6,12 @@ import {notFound} from "next/navigation";
 import {SriLankaMap} from "@/components/map/sri-lanka-map";
 import {Button} from "@/components/ui/button";
 import {DestinationWeather} from "@/components/weather/destination-weather";
+import {DestinationInsights} from "@/components/destinations/destination-insights";
 import {JourneyService} from "@/lib/journey/journey-service";
 import {getNearbyDestinations} from "@/lib/journey/route";
 import type {JourneyDestination} from "@/lib/types";
+
+const editorialCopy=(value:string|null)=>value?.replaceAll("\\n","\n")||value;
 
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
   const {slug}=await params;
@@ -31,8 +34,8 @@ export default async function DestinationPage({params}:{params:Promise<{slug:str
   const nearbyDestinations=getNearbyDestinations(data.destinations,item.id,5);
   return <main>
     <section className="relative min-h-[75svh] overflow-hidden bg-slate text-ivory">{item.hero_image_url&&<Image src={item.hero_image_url} alt={item.image_alt||item.name} fill priority sizes="100vw" className="object-cover opacity-60"/>}<div className="absolute inset-0 bg-gradient-to-t from-slate via-slate/25 to-slate/20"/><div className="shell relative flex min-h-[75svh] flex-col justify-end pb-16"><Link href="/destinations" className="mb-8 inline-flex items-center gap-2 text-sm"><ArrowLeft className="size-4"/>All destinations</Link><p className="eyebrow flex items-center gap-2 text-gold-light"><MapPin className="size-4"/>{item.province||item.region||"Sri Lanka"}</p><h1 className="display mt-4">{item.name}</h1>{item.short_description&&<p className="mt-6 max-w-2xl text-lg leading-8 text-ivory/80">{item.short_description}</p>}<Button asChild variant="accent" className="mt-8 w-fit"><Link href={journeyHref}>Build a journey here<ArrowRight/></Link></Button></div></section>
-    <section className="section"><div className="shell grid gap-12 xl:grid-cols-[minmax(0,1fr)_560px]"><article><p className="eyebrow">A closer look</p><h2 className="heading mt-4">Why visit {item.name}?</h2><p className="prose-luxury mt-7 max-w-3xl">{item.full_description||item.short_description}</p>{themeNames.length?<div className="mt-8 flex flex-wrap gap-2">{themeNames.map(name=><span key={name} className="rounded-full bg-sand-light px-4 py-2 text-xs font-bold text-forest">{name}</span>)}</div>:null}</article><SriLankaMap destinations={data.destinations} selectedIds={[item.id]} mode="destination" destination={item} nearbyDestinations={nearbyDestinations} journeyHref={journeyHref}/></div></section>
-    <DestinationStory item={item}/>
+    <section className="section"><div className="shell grid gap-12 xl:grid-cols-[minmax(0,1fr)_560px]"><article><p className="eyebrow">A closer look</p><h2 className="heading mt-4">Why visit {item.name}?</h2><p className="prose-luxury mt-7 max-w-3xl whitespace-pre-line">{editorialCopy(item.full_description||item.short_description)}</p>{themeNames.length?<div className="mt-8 flex flex-wrap gap-2">{themeNames.map(name=><span key={name} className="rounded-full bg-sand-light px-4 py-2 text-xs font-bold text-forest">{name}</span>)}</div>:null}</article><SriLankaMap destinations={data.destinations} selectedIds={[item.id]} mode="destination" destination={item} nearbyDestinations={nearbyDestinations} journeyHref={journeyHref}/></div></section>
+    <DestinationStory item={item} destinations={data.destinations}/>
     {item.gallery.length?<section className="pb-20"><div className="shell grid gap-4 md:grid-cols-3">{item.gallery.slice(0,3).map((src,index)=><div key={src} className={`relative overflow-hidden rounded-3xl bg-sand ${index===0?"aspect-[16/10] md:col-span-2":"aspect-square"}`}><Image src={src} alt={`${item.name} gallery ${index+1}`} fill sizes="66vw" className="object-cover"/></div>)}</div></section>:null}
     <Related title={`Experiences in ${item.name}`} eyebrow="Things to do" empty="No published experiences are linked to this destination yet." items={experiences.map(entry=>({id:entry.id,title:entry.name,description:entry.short_description,image:entry.hero_image_url,alt:entry.image_alt,href:`/experiences/${entry.slug}`,meta:entry.category}))}/>
     <Related title="Places to stay" eyebrow="Accommodation" empty="No published accommodation is available here yet." items={stays.map(entry=>({id:entry.id,title:entry.name,description:entry.short_description,image:entry.hero_image_url,alt:entry.image_alt,href:`/hotels/${entry.slug}`,meta:entry.property_type}))} shaded/>
@@ -41,7 +44,7 @@ export default async function DestinationPage({params}:{params:Promise<{slug:str
   </main>;
 }
 
-function DestinationStory({item}:{item:JourneyDestination}){
+function DestinationStory({item,destinations}:{item:JourneyDestination;destinations:JourneyDestination[]}){
   const stories=[
     ["Why visit",item.why_visit],
     ["Historical importance",item.historical_importance],
@@ -52,9 +55,9 @@ function DestinationStory({item}:{item:JourneyDestination}){
   const facts=[["Best time to visit",item.best_time_to_visit]].filter((entry):entry is [string,string]=>Boolean(entry[1]));
   if(!stories.length&&!facts.length&&!item.local_highlights.length&&!item.nearby_attractions.length&&!item.travel_tips.length)return null;
   return <section id="destination-story" className="bg-sand-light py-20"><div className="shell">
-    {stories.length?<div className="grid gap-6 md:grid-cols-2">{stories.map(([title,copy])=><article key={title} className="rounded-3xl bg-white p-7"><p className="eyebrow">{title}</p><p className="mt-4 whitespace-pre-line leading-8 text-slate/65">{copy}</p></article>)}</div>:null}
+    {stories.length?<div className="grid gap-6 md:grid-cols-2">{stories.map(([title,copy])=><article key={title} className="rounded-3xl bg-white p-7"><p className="eyebrow">{title}</p><p className="mt-4 whitespace-pre-line leading-8 text-slate/65">{editorialCopy(copy)}</p></article>)}</div>:null}
     {(facts.length||item.weather)?<div className="mt-6 grid gap-6 md:grid-cols-2">{facts.map(([title,copy])=><article key={title} className="rounded-3xl bg-forest p-7 text-ivory"><p className="eyebrow text-gold-light">{title}</p><p className="mt-4 leading-7 text-ivory/70">{copy}</p></article>)}<DestinationWeather name={item.name} latitude={item.latitude} longitude={item.longitude} climate={item.weather}/></div>:null}
-    <div className="mt-10 grid gap-8 md:grid-cols-3">{[["Local highlights",item.local_highlights],["Nearby attractions",item.nearby_attractions],["Travel tips",item.travel_tips]].filter(([,values])=>(values as string[]).length).map(([title,values])=><div key={title as string}><h3 className="font-serif text-2xl">{title as string}</h3><div className="mt-5 grid gap-3">{(values as string[]).map(value=><p key={value} className="border-b border-stone/20 pb-3 text-sm leading-6 text-slate/65">{value}</p>)}</div></div>)}</div>
+    <DestinationInsights item={item} destinations={destinations}/>
   </div></section>;
 }
 
