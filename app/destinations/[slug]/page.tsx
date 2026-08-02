@@ -1,12 +1,13 @@
 import type {Metadata} from "next";
 import Image from "next/image";
 import Link from "next/link";
-import {ArrowLeft,ArrowRight,MapPin} from "lucide-react";
+import {ArrowLeft,ArrowRight,MapPin,Star} from "lucide-react";
 import {notFound} from "next/navigation";
 import {SriLankaMap} from "@/components/map/sri-lanka-map";
 import {Button} from "@/components/ui/button";
 import {DestinationWeather} from "@/components/weather/destination-weather";
 import {DestinationInsights} from "@/components/destinations/destination-insights";
+import {UnescoBadge} from "@/components/destinations/unesco-badge";
 import {JourneyService} from "@/lib/journey/journey-service";
 import {getNearbyDestinations} from "@/lib/journey/route";
 import type {JourneyDestination} from "@/lib/types";
@@ -52,7 +53,7 @@ function DestinationStory({item}:{item:JourneyDestination}){
   ].filter((entry):entry is [string,string]=>Boolean(entry[1]));
   if(!stories.length&&!item.weather&&!item.local_highlights.length&&!item.nearby_attractions.length&&!item.travel_tips.length)return null;
   return <section id="destination-story" className="bg-sand-light py-20"><div className="shell">
-    {stories.length?<div className="grid gap-6 md:grid-cols-2">{stories.map(([title,copy])=><article key={title} className={`rounded-3xl border p-7 ${title==="Best time to visit"?"border-gold/25 bg-gold/[.08]":"border-transparent bg-white"}`}><p className="eyebrow">{title}</p><p className="mt-4 whitespace-pre-line leading-8 text-slate/65">{editorialCopy(copy)}</p></article>)}</div>:null}
+    {stories.length?<div className="grid gap-6 md:grid-cols-2">{stories.map(([title,copy])=>{const unesco=title==="UNESCO information";return <article key={title} className={`relative overflow-hidden rounded-3xl border p-7 ${unesco?"border-gold/45 bg-gradient-to-br from-gold/[.16] via-white to-white shadow-[0_18px_50px_rgba(191,137,42,.12)]":title==="Best time to visit"?"border-gold/25 bg-gold/[.08]":"border-transparent bg-white"}`}>{unesco&&<Star className="absolute -right-8 -top-8 size-36 fill-gold text-gold opacity-[.08]" aria-hidden="true"/>}<div className="relative"><div className="flex flex-wrap items-center justify-between gap-3"><p className="eyebrow">{title}</p>{unesco&&<UnescoBadge/>}</div><p className="mt-4 whitespace-pre-line leading-8 text-slate/65">{editorialCopy(copy)}</p></div></article>;})}</div>:null}
     {item.weather?<div className="mt-6"><DestinationWeather name={item.name} latitude={item.latitude} longitude={item.longitude} climate={item.weather}/></div>:null}
     <DestinationInsights item={item}/>
   </div></section>;

@@ -5,6 +5,7 @@ import {AnimatePresence,motion} from "motion/react";
 import {Check,ChevronLeft,ChevronRight,Download,MapPin,Sparkles,X} from "lucide-react";
 import {useMemo,useState} from "react";
 import {Button} from "@/components/ui/button";
+import {UnescoBadge} from "@/components/destinations/unesco-badge";
 import {SriLankaMap} from "@/components/map/sri-lanka-map";
 import {PricingPlanChoices,pricingPlanMeta} from "@/components/journey/pricing-plan-choices";
 import {ExperienceDiscovery} from "@/features/experiences/experience-editorial";
@@ -19,11 +20,11 @@ import {JourneyProvider,pricingPlanKey,useJourney,type JourneyInitialSelection} 
 import {QuotationModal} from "./quotation-modal";
 
 const steps=["Theme","Destination","Experience","Plan"] as const;
-type Card={id:string;name:string;hero_image_url:string|null;short_description:string|null;category?:string|null};
+type Card={id:string;name:string;hero_image_url:string|null;short_description:string|null;category?:string|null;unesco_information?:string|null};
 
 function ChoiceCard({item,selected,onClick}:{item:Card;selected:boolean;onClick:()=>void}){
   return <button onClick={onClick} className={cn("group overflow-hidden rounded-3xl border bg-white text-left transition",selected?"border-gold ring-2 ring-gold/25":"border-stone/15 hover:-translate-y-1")}>
-    <div className="relative aspect-[16/9] bg-sand">{item.hero_image_url&&<Image src={item.hero_image_url} alt={item.name} fill sizes="50vw" className="object-cover transition duration-700 group-hover:scale-105"/>}<span className={cn("absolute right-4 top-4 grid size-8 place-items-center rounded-full border backdrop-blur",selected?"border-gold bg-gold text-white":"border-white/50 bg-slate/30 text-white")}>{selected&&<Check className="size-4"/>}</span></div>
+    <div className="relative aspect-[16/9] bg-sand">{item.hero_image_url&&<Image src={item.hero_image_url} alt={item.name} fill sizes="50vw" className="object-cover transition duration-700 group-hover:scale-105"/>}{item.unesco_information&&<UnescoBadge className="absolute bottom-4 left-4"/>}<span className={cn("absolute right-4 top-4 grid size-8 place-items-center rounded-full border backdrop-blur",selected?"border-gold bg-gold text-white":"border-white/50 bg-slate/30 text-white")}>{selected&&<Check className="size-4"/>}</span></div>
     <div className="p-5">{item.category&&<p className="text-xs font-bold uppercase tracking-widest text-gold">{item.category}</p>}<h2 className="mt-2 font-serif text-2xl">{item.name}</h2><p className="mt-2 line-clamp-2 text-sm leading-6 text-slate/60">{item.short_description}</p></div>
   </button>;
 }
