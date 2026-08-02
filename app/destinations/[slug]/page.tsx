@@ -5,6 +5,7 @@ import {ArrowLeft,ArrowRight,MapPin} from "lucide-react";
 import {notFound} from "next/navigation";
 import {SriLankaMap} from "@/components/map/sri-lanka-map";
 import {Button} from "@/components/ui/button";
+import {DestinationWeather} from "@/components/weather/destination-weather";
 import {JourneyService} from "@/lib/journey/journey-service";
 import {getNearbyDestinations} from "@/lib/journey/route";
 import type {JourneyDestination} from "@/lib/types";
@@ -48,11 +49,11 @@ function DestinationStory({item}:{item:JourneyDestination}){
     ["UNESCO information",item.unesco_information],
     ["Nature & wildlife",item.nature_wildlife]
   ].filter((entry):entry is [string,string]=>Boolean(entry[1]));
-  const facts=[["Best time to visit",item.best_time_to_visit],["Weather",item.weather]].filter((entry):entry is [string,string]=>Boolean(entry[1]));
+  const facts=[["Best time to visit",item.best_time_to_visit]].filter((entry):entry is [string,string]=>Boolean(entry[1]));
   if(!stories.length&&!facts.length&&!item.local_highlights.length&&!item.nearby_attractions.length&&!item.travel_tips.length)return null;
-  return <section className="bg-sand-light py-20"><div className="shell">
+  return <section id="destination-story" className="bg-sand-light py-20"><div className="shell">
     {stories.length?<div className="grid gap-6 md:grid-cols-2">{stories.map(([title,copy])=><article key={title} className="rounded-3xl bg-white p-7"><p className="eyebrow">{title}</p><p className="mt-4 whitespace-pre-line leading-8 text-slate/65">{copy}</p></article>)}</div>:null}
-    {facts.length?<div className="mt-6 grid gap-6 md:grid-cols-2">{facts.map(([title,copy])=><article key={title} className="rounded-3xl bg-forest p-7 text-ivory"><p className="eyebrow text-gold-light">{title}</p><p className="mt-4 leading-7 text-ivory/70">{copy}</p></article>)}</div>:null}
+    {(facts.length||item.weather)?<div className="mt-6 grid gap-6 md:grid-cols-2">{facts.map(([title,copy])=><article key={title} className="rounded-3xl bg-forest p-7 text-ivory"><p className="eyebrow text-gold-light">{title}</p><p className="mt-4 leading-7 text-ivory/70">{copy}</p></article>)}<DestinationWeather name={item.name} latitude={item.latitude} longitude={item.longitude} climate={item.weather}/></div>:null}
     <div className="mt-10 grid gap-8 md:grid-cols-3">{[["Local highlights",item.local_highlights],["Nearby attractions",item.nearby_attractions],["Travel tips",item.travel_tips]].filter(([,values])=>(values as string[]).length).map(([title,values])=><div key={title as string}><h3 className="font-serif text-2xl">{title as string}</h3><div className="mt-5 grid gap-3">{(values as string[]).map(value=><p key={value} className="border-b border-stone/20 pb-3 text-sm leading-6 text-slate/65">{value}</p>)}</div></div>)}</div>
   </div></section>;
 }
