@@ -66,7 +66,7 @@ export class PackagePricingService{
       Boolean(selection.selectedGuideId)!==Boolean(guideResult.data);
     if(invalid)throw new PackagePricingError("INVALID_SELECTION","The quote contains unavailable or unpublished selections.");
 
-    const entityIds=[...selection.selectedDestinationIds,...selection.selectedExperienceIds,...selection.selectedStayIds,...(selection.selectedVehicleId?[selection.selectedVehicleId]:[]),...(selection.selectedGuideId?[selection.selectedGuideId]:[])];
+    const entityIds=[...selection.selectedExperienceIds,...selection.selectedStayIds,...(selection.selectedVehicleId?[selection.selectedVehicleId]:[]),...(selection.selectedGuideId?[selection.selectedGuideId]:[])];
     const costsResult=entityIds.length?await database.from("pricing_plans").select("*").in("entity_id",entityIds).order("sort_order"):{data:[],error:null};
     if(costsResult.error)throw new PackagePricingError("DATABASE",costsResult.error.message);
     const grouped=new Map<string,CostRow[]>();
@@ -86,7 +86,6 @@ export class PackagePricingService{
       if(requestedId&&!allPlans.some(row=>row.id===requestedId&&row.entity_type===type&&row.entity_id===id))throw new PackagePricingError("INVALID_SELECTION","A selected pricing plan does not belong to its journey resource.");
     }
     const selectedPlans=[
-      ...selection.selectedDestinationIds.flatMap(id=>grouped.get(`destination:${id}`)??[]),
       ...selectedEntities.flatMap(([type,id])=>{
         const rows=grouped.get(`${type}:${id}`)??[];
         const requestedId=selection.selectedPricingPlanIds[`${type}:${id}`];

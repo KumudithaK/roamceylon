@@ -71,19 +71,17 @@ test("DMC package price includes supplier, operational, overhead and margin cost
     {id:"2",entityType:"vehicle",entityId:"v1",category:"Vehicle rental",unit:"per_vehicle_day",amount:50,partnerCommissionPercent:null},
     {id:"3",entityType:"vehicle",entityId:"v1",category:"Vehicle distance",unit:"per_kilometre",amount:.5,partnerCommissionPercent:null},
     {id:"4",entityType:"guide",entityId:"g1",category:"Guide fee",unit:"per_guide_day",amount:30,partnerCommissionPercent:null},
-    {id:"5",entityType:"experience",entityId:"e1",category:"Experience",unit:"per_person",amount:20,partnerCommissionPercent:null},
-    {id:"6",entityType:"destination",entityId:"d1",category:"Entrance tickets",unit:"per_person",amount:10,partnerCommissionPercent:null}
+    {id:"5",entityType:"experience",entityId:"e1",category:"Experience",unit:"per_person",amount:20,partnerCommissionPercent:null}
   ];
   const quote=calculatePackageQuote({config,supplierCosts,selection,durationDays:2,distanceKm:100});
   assert.equal(quote.public.status,"ready");
-  assert.equal(quote.internalCost,1558.15);
-  assert.equal(quote.sellingPrice,2057.57);
-  assert.equal(quote.public.totalPackagePrice,2057.57);
-  assert.equal(quote.public.pricePerPerson,685.86);
-  assert.equal(quote.public.components?.reduce((total,item)=>total+item.amount,0),1330);
-  assert.deepEqual(quote.public.components?.map(item=>item.label),["Accommodation","Private transport","Experiences","Destination entry fees","Local guide"]);
+  assert.equal(quote.internalCost,1529.28);
+  assert.equal(quote.sellingPrice,2019.68);
+  assert.equal(quote.public.totalPackagePrice,2019.68);
+  assert.equal(quote.public.pricePerPerson,673.23);
+  assert.equal(quote.public.components?.reduce((total,item)=>total+item.amount,0),1305);
+  assert.deepEqual(quote.public.components?.map(item=>item.label),["Accommodation","Private transport","Experiences","Local guide"]);
   assert.equal(quote.public.components?.find(item=>item.category==="experiences")?.amount,50);
-  assert.equal(quote.public.components?.find(item=>item.category==="destination_fees")?.amount,25);
   assert(!JSON.stringify(quote.public).includes("Driver salary"));
   assert(!JSON.stringify(quote.public).includes("Profit"));
   assert(!quote.breakdown.some(line=>line.label==="Airport transfers"));
@@ -129,4 +127,17 @@ test("public experience total is the exact sum of every selected experience and 
   assert.equal(quote.public.components?.find(item=>item.category==="experiences")?.amount,260);
   assert(quote.public.totalPackagePrice!>260);
   assert(!quote.breakdown.some(line=>line.label==="Airport transfers"));
+});
+
+test("destination pricing records never charge a journey",()=>{
+  const config={currency:"USD",roomOccupancy:2,childCostFactor:1,routeDistanceBufferPercent:0,driverSalaryPerDay:null,fuelPricePerLitre:null,vehicleKmPerLitre:null,tollsPerJourney:null,parkingPerDay:null,guideAccommodationPerNight:null,airportTransferEachWay:0,administrationFixed:0,administrationPercent:0,contingencyPercent:0,serviceFeeFixed:0,serviceFeePercent:0,targetProfitMarginPercent:0};
+  const selection={selectedDestinationIds:["kandy"],selectedExperienceIds:["perahera"],selectedStayIds:[],selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds:{},travelDates:{start:"2026-08-01",end:"2026-08-02"},travellerCounts:{adults:2,children:0,infants:0},experienceParticipants:{perahera:{adults:2,children:0,infants:0}}};
+  const supplierCosts:SupplierCost[]=[
+    {id:"perahera-plan",entityType:"experience",entityId:"perahera",category:"Perahera tickets",unit:"per_person",amount:100,partnerCommissionPercent:null},
+    {id:"legacy-destination-fee",entityType:"destination",entityId:"kandy",category:"Destination entry fee",unit:"per_person",amount:53,partnerCommissionPercent:null}
+  ];
+  const quote=calculatePackageQuote({config,supplierCosts,selection,durationDays:1,distanceKm:0});
+  assert.equal(quote.public.totalPackagePrice,200);
+  assert.equal(quote.public.components?.find(item=>item.category==="experiences")?.amount,200);
+  assert(!quote.breakdown.some(line=>line.label==="Destination entry fee"));
 });
