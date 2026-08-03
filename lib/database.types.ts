@@ -40,7 +40,9 @@ export interface Database{
       pricing_plans:{Row:{id:string;entity_type:"accommodation"|"vehicle"|"guide"|"experience"|"destination";entity_id:string;name:string;description:string|null;price:number;currency:string;charging_method:string;minimum_quantity:number|null;maximum_quantity:number|null;image_url:string|null;notes:string|null;details:Json;seasonal_rules:Json;sort_order:number;active:boolean;created_at:string;updated_at:string;created_by:string|null;updated_by:string|null};Insert:Partial<Database["public"]["Tables"]["pricing_plans"]["Row"]>&{entity_type:"accommodation"|"vehicle"|"guide"|"experience"|"destination";entity_id:string;name:string;price:number;charging_method:string};Update:Partial<Database["public"]["Tables"]["pricing_plans"]["Row"]>;Relationships:[]};
     };
     Views:{[_ in never]:never};
-    Functions:{[_ in never]:never};
+    Functions:{
+      sync_content_relationships:{Args:{resource_type:string;resource_id:string;theme_ids:string[];destination_ids:string[];experience_ids:string[]};Returns:undefined};
+    };
     Enums:{content_status:Status};
     CompositeTypes:{[_ in never]:never};
   };

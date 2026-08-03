@@ -16,7 +16,7 @@ const methods:Record<PricingEntityType,Array<[string,string]>>={
   vehicle:[["per_day","Per day"],["per_trip","Per trip"],["per_airport_transfer","Per airport transfer"],["per_km","Per kilometre"]],
   guide:[["half_day","Half day"],["full_day","Full day"],["multi_day","Multi day"],["private_tour","Private tour"],["custom_rate","Custom rate"]],
   experience:[["per_person","Per person"],["private_tour","Private"],["per_trip","Per group"],["custom_rate","Custom rate"]],
-  destination:[["per_entry","Per entry"],["per_person","Per person"],["per_vehicle","Per vehicle"],["fixed","Fixed fee"]]
+  destination:[]
 };
 
 type ManagerProps={entityType:PricingEntityType;entityId:string;initialPlans:Plan[];title:string;intro:string;hideMethod?:boolean;hideQuantities?:boolean};
@@ -25,7 +25,6 @@ export function RoomRates(props:{entityId:string;initialPlans:Plan[]}){return <P
 export function RentalPlans(props:{entityId:string;initialPlans:Plan[]}){return <PricingPlanManager {...props} entityType="vehicle" title="Rental plans" intro="Add daily, trip, transfer and distance-based rental options."/>}
 export function GuideServiceRates(props:{entityId:string;initialPlans:Plan[]}){return <PricingPlanManager {...props} entityType="guide" title="Service rates" intro="Add half-day, full-day, multi-day and private guiding rates."/>}
 export function TicketTypes(props:{entityId:string;initialPlans:Plan[]}){return <PricingPlanManager {...props} entityType="experience" title="Ticket types" intro="Add adult, child, resident, visitor, private or group tickets."/>}
-export function DestinationFees(props:{entityId:string;initialPlans:Plan[]}){return <PricingPlanManager {...props} entityType="destination" title="Destination fees" intro="Add entry tickets, parking fees and local levies. All active fees are included." hideMethod hideQuantities/>}
 
 function PricingPlanManager({entityType,entityId,initialPlans,title,intro,hideMethod=false,hideQuantities=false}:ManagerProps){
   const [plans,setPlans]=useState(initialPlans.sort((a,b)=>a.sort_order-b.sort_order));
