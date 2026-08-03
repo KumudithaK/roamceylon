@@ -38,7 +38,7 @@ const formatDate=(value:string)=>{
 };
 
 export async function exportJourneyPdf(details:JourneyPdfDetails){
-  const logoBytes=await fetch("/assets/logo/roam-ceylon-elephant.png").then(response=>{
+  const logoBytes=await fetch("/assets/logo/roam-ceylon-elephant-transparent.png").then(response=>{
     if(!response.ok)throw new Error("Roam Ceylon logo could not be loaded.");
     return response.arrayBuffer();
   });
