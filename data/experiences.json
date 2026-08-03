@@ -1,0 +1,3269 @@
+[
+  {
+    "id": "kitulgala-white-water-rafting-on-the-kelani-river-grade-2-3-rapids",
+    "name": "White water rafting on the Kelani River (Grade 2 & 3 rapids)",
+    "category": "Adventure",
+    "destinationIds": [
+      "kitulgala"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/29366430/pexels-photo-29366430.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/29366430/pexels-photo-29366430.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover white water rafting on the kelani river (grade 2 & 3 rapids) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": "Moderate",
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Kitulgala",
+      "Adventure",
+      "adventure"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "kitulgala-prehistoric-beli-lena-cave-exploration-and-archaeological-trekking",
+    "name": "Prehistoric Beli Lena Cave exploration and archaeological trekking",
+    "category": "History",
+    "destinationIds": [
+      "kitulgala"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34128249/pexels-photo-34128249.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34128249/pexels-photo-34128249.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover prehistoric beli lena cave exploration and archaeological trekking through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Kitulgala",
+      "History",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kitulgala-sandun-ella-waterfall-abseiling-and-rappelling",
+    "name": "Sandun Ella waterfall abseiling and rappelling",
+    "category": "Beach",
+    "destinationIds": [
+      "kitulgala"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/11496554/pexels-photo-11496554.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/11496554/pexels-photo-11496554.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover sandun ella waterfall abseiling and rappelling through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Kitulgala",
+      "Beach",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kitulgala-canyoning-stream-tracking-and-confidence-cliff-jumping",
+    "name": "Canyoning, stream tracking, and confidence cliff jumping",
+    "category": "Adventure",
+    "destinationIds": [
+      "kitulgala"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/38102353/pexels-photo-38102353.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/38102353/pexels-photo-38102353.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover canyoning, stream tracking, and confidence cliff jumping through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Kitulgala",
+      "Adventure",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kitulgala-makandawa-rainforest-hiking-and-canopy-canopy-bird-watching",
+    "name": "Makandawa Rainforest hiking and canopy canopy bird watching",
+    "category": "Wildlife",
+    "destinationIds": [
+      "kitulgala"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/12910818/pexels-photo-12910818.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/12910818/pexels-photo-12910818.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover makandawa rainforest hiking and canopy canopy bird watching through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Kitulgala",
+      "Wildlife",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "belihuloya-bakers-bend-4x4-off-road-adventure-safari",
+    "name": "Baker's Bend 4x4 off-road adventure safari",
+    "category": "Wildlife",
+    "destinationIds": [
+      "belihuloya"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/33130315/pexels-photo-33130315.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/33130315/pexels-photo-33130315.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover baker's bend 4x4 off-road adventure safari through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Belihul Oya",
+      "Wildlife",
+      "adventure"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "belihuloya-canoeing-and-kayaking-across-samanalawewa-reservoir",
+    "name": "Canoeing and kayaking across Samanalawewa Reservoir",
+    "category": "Water Sports",
+    "destinationIds": [
+      "belihuloya"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover canoeing and kayaking across samanalawewa reservoir through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Belihul Oya",
+      "Water Sports",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "belihuloya-trekking-to-bambarakanda-falls-sri-lankas-tallest-waterfall-and-surathal",
+    "name": "Trekking to Bambarakanda Falls (Sri Lanka's tallest waterfall) and Surathali Falls",
+    "category": "Adventure",
+    "destinationIds": [
+      "belihuloya"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/37510113/pexels-photo-37510113.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/37510113/pexels-photo-37510113.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover trekking to bambarakanda falls (sri lanka's tallest waterfall) and surathali falls through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Belihul Oya",
+      "Adventure",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "belihuloya-cross-country-mountain-biking-across-tea-gardens-and-mountain-passes",
+    "name": "Cross-country mountain biking across tea gardens and mountain passes",
+    "category": "Adventure",
+    "destinationIds": [
+      "belihuloya"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/36791114/pexels-photo-36791114.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/36791114/pexels-photo-36791114.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover cross-country mountain biking across tea gardens and mountain passes through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Belihul Oya",
+      "Adventure",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "arugambay-world-class-point-break-surfing-main-point-elephant-rock-peanut-farm-whi",
+    "name": "World-class point break surfing (Main Point, Elephant Rock, Peanut Farm, Whiskey Point)",
+    "category": "Water Sports",
+    "destinationIds": [
+      "arugambay"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover world-class point break surfing (main point, elephant rock, peanut farm, whiskey point) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Arugam Bay",
+      "Water Sports",
+      "adventure"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "arugambay-kottukal-lagoon-motorboat-safari-and-kayak-expeditions",
+    "name": "Kottukal Lagoon motorboat safari and kayak expeditions",
+    "category": "Water Sports",
+    "destinationIds": [
+      "arugambay"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/11839537/pexels-photo-11839537.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/11839537/pexels-photo-11839537.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover kottukal lagoon motorboat safari and kayak expeditions through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Arugam Bay",
+      "Water Sports",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "arugambay-sand-dune-atv-quad-riding-and-coastal-camping",
+    "name": "Sand dune ATV quad riding and coastal camping",
+    "category": "Beach",
+    "destinationIds": [
+      "arugambay"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/16508233/pexels-photo-16508233.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/16508233/pexels-photo-16508233.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover sand dune atv quad riding and coastal camping through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Arugam Bay",
+      "Beach",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kalpitiya-kitesurfing-and-windsurfing-across-kalpitiya-lagoon",
+    "name": "Kitesurfing and windsurfing across Kalpitiya Lagoon",
+    "category": "Water Sports",
+    "destinationIds": [
+      "kalpitiya"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover kitesurfing and windsurfing across kalpitiya lagoon through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Kalpitiya",
+      "Water Sports",
+      "adventure"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "kalpitiya-scuba-diving-and-snorkeling-at-bar-reef-sri-lankas-largest-coral-reef-sy",
+    "name": "Scuba diving and snorkeling at Bar Reef (Sri Lanka's largest coral reef system)",
+    "category": "Water Sports",
+    "destinationIds": [
+      "kalpitiya"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover scuba diving and snorkeling at bar reef (sri lanka's largest coral reef system) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Kalpitiya",
+      "Water Sports",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kalpitiya-ocean-safaris-for-spinner-dolphin-pods-and-seasonal-whale-watching",
+    "name": "Ocean safaris for spinner dolphin pods and seasonal whale watching",
+    "category": "Wildlife",
+    "destinationIds": [
+      "kalpitiya"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover ocean safaris for spinner dolphin pods and seasonal whale watching through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": "Seasonal",
+    "priority": "Seasonal",
+    "tags": [
+      "Kalpitiya",
+      "Wildlife",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kalpitiya-deep-sea-sport-fishing",
+    "name": "Deep-sea sport fishing",
+    "category": "Water Sports",
+    "destinationIds": [
+      "kalpitiya"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/35269341/pexels-photo-35269341.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/35269341/pexels-photo-35269341.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover deep-sea sport fishing through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Kalpitiya",
+      "Water Sports",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "hikkaduwa-reef-break-surfing-for-beginners-to-advanced-surfers",
+    "name": "Reef break surfing for beginners to advanced surfers",
+    "category": "Water Sports",
+    "destinationIds": [
+      "hikkaduwa"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover reef break surfing for beginners to advanced surfers through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Hikkaduwa",
+      "Water Sports",
+      "adventure"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "hikkaduwa-shipwreck-scuba-diving-and-underwater-photography",
+    "name": "Shipwreck scuba diving and underwater photography",
+    "category": "Photography",
+    "destinationIds": [
+      "hikkaduwa"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34714748/pexels-photo-34714748.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34714748/pexels-photo-34714748.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover shipwreck scuba diving and underwater photography through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Hikkaduwa",
+      "Photography",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "hikkaduwa-glass-bottom-boat-tours-over-marine-sanctuaries",
+    "name": "Glass-bottom boat tours over marine sanctuaries",
+    "category": "Water Sports",
+    "destinationIds": [
+      "hikkaduwa"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover glass-bottom boat tours over marine sanctuaries through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Hikkaduwa",
+      "Water Sports",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "dambulla-hot-air-balloon-rides-offering-sunrise-aerial-views-of-sigiriya-rock-and",
+    "name": "Hot air balloon rides offering sunrise aerial views of Sigiriya Rock and lakes",
+    "category": "Photography",
+    "destinationIds": [
+      "dambulla"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/5838502/pexels-photo-5838502.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/5838502/pexels-photo-5838502.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover hot air balloon rides offering sunrise aerial views of sigiriya rock and lakes through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Dambulla",
+      "Photography",
+      "adventure"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "dambulla-atv-trail-rides-through-rugged-country-paths-and-dry-zone-forests",
+    "name": "ATV trail rides through rugged country paths and dry-zone forests",
+    "category": "Adventure",
+    "destinationIds": [
+      "dambulla"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/33454990/pexels-photo-33454990.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/33454990/pexels-photo-33454990.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover atv trail rides through rugged country paths and dry-zone forests through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Dambulla",
+      "Adventure",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "dambulla-trekking-in-jathika-namal-uyana-ironwood-forest-and-rose-quartz-mountain",
+    "name": "Trekking in Jathika Namal Uyana (Ironwood forest and rose quartz mountain)",
+    "category": "Adventure",
+    "destinationIds": [
+      "dambulla"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/16304344/pexels-photo-16304344.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/16304344/pexels-photo-16304344.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover trekking in jathika namal uyana (ironwood forest and rose quartz mountain) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Dambulla",
+      "Adventure",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "balapitiya-jet-skiing-and-speed-boating-along-madu-ganga-estuary",
+    "name": "Jet-skiing and speed boating along Madu Ganga Estuary",
+    "category": "Water Sports",
+    "destinationIds": [
+      "balapitiya"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover jet-skiing and speed boating along madu ganga estuary through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Balapitiya",
+      "Water Sports",
+      "adventure"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "balapitiya-kayaking-through-dense-mangrove-tunnels",
+    "name": "Kayaking through dense mangrove tunnels",
+    "category": "Water Sports",
+    "destinationIds": [
+      "balapitiya"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover kayaking through dense mangrove tunnels through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Balapitiya",
+      "Water Sports",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "balapitiya-island-hopping-cinnamon-island-and-local-artisan-communities",
+    "name": "Island hopping (Cinnamon Island and local artisan communities)",
+    "category": "Culture",
+    "destinationIds": [
+      "balapitiya"
+    ],
+    "themeIds": [
+      "adventure"
+    ],
+    "heroImage": "https://images.pexels.com/photos/36638324/pexels-photo-36638324.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/36638324/pexels-photo-36638324.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover island hopping (cinnamon island and local artisan communities) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Balapitiya",
+      "Culture",
+      "adventure"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "hikkaduwa-snorkeling-with-wild-sea-turtles-at-hikkaduwa-coral-sanctuary",
+    "name": "Snorkeling with wild sea turtles at Hikkaduwa Coral Sanctuary",
+    "category": "Water Sports",
+    "destinationIds": [
+      "hikkaduwa"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover snorkeling with wild sea turtles at hikkaduwa coral sanctuary through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Hikkaduwa",
+      "Water Sports",
+      "tropical"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "hikkaduwa-beach-club-dining-and-nightlife-along-the-sandy-strip",
+    "name": "Beach club dining and nightlife along the sandy strip",
+    "category": "Food",
+    "destinationIds": [
+      "hikkaduwa"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover beach club dining and nightlife along the sandy strip through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Hikkaduwa",
+      "Food",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "hikkaduwa-visiting-local-sea-turtle-hatcheries-and-conservation-centers",
+    "name": "Visiting local sea turtle hatcheries and conservation centers",
+    "category": "Wildlife",
+    "destinationIds": [
+      "hikkaduwa"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/32361093/pexels-photo-32361093.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/32361093/pexels-photo-32361093.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover visiting local sea turtle hatcheries and conservation centers through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Hikkaduwa",
+      "Wildlife",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "galle-swimming-and-stand-up-paddleboarding-at-unawatuna-bay",
+    "name": "Swimming and stand-up paddleboarding at Unawatuna Bay",
+    "category": "Water Sports",
+    "destinationIds": [
+      "galle"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/11839537/pexels-photo-11839537.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/11839537/pexels-photo-11839537.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover swimming and stand-up paddleboarding at unawatuna bay through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Galle",
+      "Water Sports",
+      "tropical"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "galle-exploring-hidden-coves-and-snorkeling-at-jungle-beach",
+    "name": "Exploring hidden coves and snorkeling at Jungle Beach",
+    "category": "Water Sports",
+    "destinationIds": [
+      "galle"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover exploring hidden coves and snorkeling at jungle beach through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Galle",
+      "Water Sports",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "galle-rope-swinging-and-photo-ops-at-dalawella-beach-palm-tree-swing",
+    "name": "Rope swinging and photo ops at Dalawella Beach palm tree swing",
+    "category": "Photography",
+    "destinationIds": [
+      "galle"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34128249/pexels-photo-34128249.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34128249/pexels-photo-34128249.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover rope swinging and photo ops at dalawella beach palm tree swing through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Galle",
+      "Photography",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "galle-sunset-walking-along-the-historic-galle-fort-ramparts-overlooking-the-oc",
+    "name": "Sunset walking along the historic Galle Fort ramparts overlooking the ocean",
+    "category": "Photography",
+    "destinationIds": [
+      "galle"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/32574367/pexels-photo-32574367.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/32574367/pexels-photo-32574367.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover sunset walking along the historic galle fort ramparts overlooking the ocean through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Galle",
+      "Photography",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "mirissa-panoramic-photography-from-coconut-tree-hill-and-secret-beach",
+    "name": "Panoramic photography from Coconut Tree Hill and Secret Beach",
+    "category": "Photography",
+    "destinationIds": [
+      "mirissa"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/16508233/pexels-photo-16508233.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/16508233/pexels-photo-16508233.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover panoramic photography from coconut tree hill and secret beach through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Mirissa",
+      "Photography",
+      "tropical"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "mirissa-ocean-whale-watching-safaris-from-mirissa-harbor",
+    "name": "Ocean whale watching safaris from Mirissa Harbor",
+    "category": "Wildlife",
+    "destinationIds": [
+      "mirissa"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover ocean whale watching safaris from mirissa harbor through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Mirissa",
+      "Wildlife",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "mirissa-beachfront-seafood-dining-under-starlit-palm-canopies",
+    "name": "Beachfront seafood dining under starlit palm canopies",
+    "category": "Food",
+    "destinationIds": [
+      "mirissa"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover beachfront seafood dining under starlit palm canopies through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Mirissa",
+      "Food",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "arugambay-relaxed-beach-lifestyle-yoga-on-the-beach-and-hammock-lounging",
+    "name": "Relaxed beach lifestyle, yoga on the beach, and hammock lounging",
+    "category": "Beach",
+    "destinationIds": [
+      "arugambay"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/11495843/pexels-photo-11495843.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/11495843/pexels-photo-11495843.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover relaxed beach lifestyle, yoga on the beach, and hammock lounging through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Arugam Bay",
+      "Beach",
+      "tropical"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "arugambay-sunset-viewing-over-elephant-rock-coastal-viewpoint",
+    "name": "Sunset viewing over Elephant Rock coastal viewpoint",
+    "category": "Photography",
+    "destinationIds": [
+      "arugambay"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/36386565/pexels-photo-36386565.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/36386565/pexels-photo-36386565.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover sunset viewing over elephant rock coastal viewpoint through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Arugam Bay",
+      "Photography",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "arugambay-nightly-beach-bonfires-and-live-acoustic-music-sessions",
+    "name": "Nightly beach bonfires and live acoustic music sessions",
+    "category": "Beach",
+    "destinationIds": [
+      "arugambay"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/12040931/pexels-photo-12040931.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/12040931/pexels-photo-12040931.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover nightly beach bonfires and live acoustic music sessions through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Arugam Bay",
+      "Beach",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "pasikudah-swimming-in-calm-shallow-crystal-clear-bay-waters-ideal-for-families",
+    "name": "Swimming in calm, shallow, crystal-clear bay waters (ideal for families)",
+    "category": "Beach",
+    "destinationIds": [
+      "pasikudah"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/14167560/pexels-photo-14167560.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/14167560/pexels-photo-14167560.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover swimming in calm, shallow, crystal-clear bay waters (ideal for families) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Pasikudah",
+      "Beach",
+      "tropical"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "pasikudah-windsurfing-sea-kayaking-and-jet-skiing-across-tranquil-seas",
+    "name": "Windsurfing, sea kayaking, and jet-skiing across tranquil seas",
+    "category": "Water Sports",
+    "destinationIds": [
+      "pasikudah"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover windsurfing, sea kayaking, and jet-skiing across tranquil seas through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Pasikudah",
+      "Water Sports",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "pasikudah-luxury-resort-beach-lounging-and-oceanfront-spa-treatments",
+    "name": "Luxury resort beach lounging and oceanfront spa treatments",
+    "category": "Beach",
+    "destinationIds": [
+      "pasikudah"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/11834557/pexels-photo-11834557.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/11834557/pexels-photo-11834557.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover luxury resort beach lounging and oceanfront spa treatments through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Pasikudah",
+      "Beach",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "trinco-swimming-and-sunbathing-at-marble-beach-with-tranquil-waters",
+    "name": "Swimming and sunbathing at Marble Beach with tranquil waters",
+    "category": "Beach",
+    "destinationIds": [
+      "trinco"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/26793366/pexels-photo-26793366.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/26793366/pexels-photo-26793366.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover swimming and sunbathing at marble beach with tranquil waters through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Trincomalee",
+      "Beach",
+      "tropical"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "trinco-uppuveli-beach-dining-and-beachfront-cafe-culture",
+    "name": "Uppuveli Beach dining and beachfront café culture",
+    "category": "Food",
+    "destinationIds": [
+      "trinco"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/958546/pexels-photo-958546.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/958546/pexels-photo-958546.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover uppuveli beach dining and beachfront café culture through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Trincomalee",
+      "Food",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "trinco-offshore-whale-watching-safaris-near-koneswaram-cliff",
+    "name": "Offshore whale watching safaris near Koneswaram cliff",
+    "category": "Wildlife",
+    "destinationIds": [
+      "trinco"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover offshore whale watching safaris near koneswaram cliff through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Trincomalee",
+      "Wildlife",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "nilaveli-boat-trips-to-pigeon-island-national-park-for-world-class-snorkeling",
+    "name": "Boat trips to Pigeon Island National Park for world-class snorkeling",
+    "category": "Water Sports",
+    "destinationIds": [
+      "nilaveli"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover boat trips to pigeon island national park for world-class snorkeling through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Nilaveli",
+      "Water Sports",
+      "tropical"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "nilaveli-snorkeling-among-blacktip-reef-sharks-sea-turtles-and-colorful-corals",
+    "name": "Snorkeling among blacktip reef sharks, sea turtles, and colorful corals",
+    "category": "Water Sports",
+    "destinationIds": [
+      "nilaveli"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover snorkeling among blacktip reef sharks, sea turtles, and colorful corals through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Nilaveli",
+      "Water Sports",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "nilaveli-unwinding-on-quiet-expansive-stretches-of-soft-white-sand",
+    "name": "Unwinding on quiet, expansive stretches of soft white sand",
+    "category": "Beach",
+    "destinationIds": [
+      "nilaveli"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/35251716/pexels-photo-35251716.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/35251716/pexels-photo-35251716.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover unwinding on quiet, expansive stretches of soft white sand through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Nilaveli",
+      "Beach",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "mountlavinia-sunset-beach-walks-and-coastal-promenade-dining-near-colombo",
+    "name": "Sunset beach walks and coastal promenade dining near Colombo",
+    "category": "Food",
+    "destinationIds": [
+      "mountlavinia"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/262959/pexels-photo-262959.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/262959/pexels-photo-262959.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover sunset beach walks and coastal promenade dining near colombo through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Mount Lavinia",
+      "Food",
+      "tropical"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "mountlavinia-colonial-heritage-dining-at-the-historic-mount-lavinia-hotel",
+    "name": "Colonial heritage dining at the historic Mount Lavinia Hotel",
+    "category": "Food",
+    "destinationIds": [
+      "mountlavinia"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover colonial heritage dining at the historic mount lavinia hotel through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Mount Lavinia",
+      "Food",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "mountlavinia-sampling-authentic-local-street-food-and-fresh-seafood-along-the-shore",
+    "name": "Sampling authentic local street food and fresh seafood along the shore",
+    "category": "Food",
+    "destinationIds": [
+      "mountlavinia"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover sampling authentic local street food and fresh seafood along the shore through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Mount Lavinia",
+      "Food",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "bentota-premier-water-sports-hub-parasailing-wakeboarding-banana-boats-jet-skis",
+    "name": "Premier water sports hub (parasailing, wakeboarding, banana boats, jet skis)",
+    "category": "Water Sports",
+    "destinationIds": [
+      "bentota"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover premier water sports hub (parasailing, wakeboarding, banana boats, jet skis) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Bentota (Benthara)",
+      "Water Sports",
+      "tropical"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "bentota-bentota-river-boat-safaris-through-mangrove-ecosystems",
+    "name": "Bentota River boat safaris through mangrove ecosystems",
+    "category": "Water Sports",
+    "destinationIds": [
+      "bentota"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover bentota river boat safaris through mangrove ecosystems through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Bentota (Benthara)",
+      "Water Sports",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "bentota-golden-sand-beach-lounging-and-luxury-resort-stays",
+    "name": "Golden sand beach lounging and luxury resort stays",
+    "category": "Beach",
+    "destinationIds": [
+      "bentota"
+    ],
+    "themeIds": [
+      "tropical"
+    ],
+    "heroImage": "https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover golden sand beach lounging and luxury resort stays through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Bentota (Benthara)",
+      "Beach",
+      "tropical"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "yala-morning-and-evening-4x4-jeep-safaris-in-block-1-world-renowned-leopard-d",
+    "name": "Morning and evening 4x4 jeep safaris in Block 1 (world-renowned leopard density)",
+    "category": "Wildlife",
+    "destinationIds": [
+      "yala"
+    ],
+    "themeIds": [
+      "wildlife"
+    ],
+    "heroImage": "https://images.pexels.com/photos/33130315/pexels-photo-33130315.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/33130315/pexels-photo-33130315.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover morning and evening 4x4 jeep safaris in block 1 (world-renowned leopard density) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Yala National Park",
+      "Wildlife",
+      "wildlife"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "yala-spotting-sloth-bears-wild-elephants-mugger-crocodiles-and-spotted-deer",
+    "name": "Spotting sloth bears, wild elephants, mugger crocodiles, and spotted deer",
+    "category": "Wildlife",
+    "destinationIds": [
+      "yala"
+    ],
+    "themeIds": [
+      "wildlife"
+    ],
+    "heroImage": "https://images.pexels.com/photos/1998436/pexels-photo-1998436.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/1998436/pexels-photo-1998436.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover spotting sloth bears, wild elephants, mugger crocodiles, and spotted deer through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Yala National Park",
+      "Wildlife",
+      "wildlife"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "yala-coastal-lagoon-birdwatching-at-palatupana",
+    "name": "Coastal lagoon birdwatching at Palatupana",
+    "category": "Wildlife",
+    "destinationIds": [
+      "yala"
+    ],
+    "themeIds": [
+      "wildlife"
+    ],
+    "heroImage": "https://images.pexels.com/photos/32361093/pexels-photo-32361093.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/32361093/pexels-photo-32361093.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover coastal lagoon birdwatching at palatupana through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Yala National Park",
+      "Wildlife",
+      "wildlife"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "minneriya-witnessing-the-elephant-gathering-hundreds-of-wild-elephants-congregate-",
+    "name": "Witnessing \"The Elephant Gathering\" (hundreds of wild elephants congregate from July to October)",
+    "category": "Wildlife",
+    "destinationIds": [
+      "minneriya"
+    ],
+    "themeIds": [
+      "wildlife"
+    ],
+    "heroImage": "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover witnessing \"the elephant gathering\" (hundreds of wild elephants congregate from july to october) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": "July–October",
+    "priority": "Seasonal",
+    "tags": [
+      "Minneriya National Park",
+      "Wildlife",
+      "wildlife"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "minneriya-open-top-jeep-safaris-around-minneriya-reservoir",
+    "name": "Open-top jeep safaris around Minneriya Reservoir",
+    "category": "Wildlife",
+    "destinationIds": [
+      "minneriya"
+    ],
+    "themeIds": [
+      "wildlife"
+    ],
+    "heroImage": "https://images.pexels.com/photos/12910818/pexels-photo-12910818.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/12910818/pexels-photo-12910818.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover open-top jeep safaris around minneriya reservoir through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Minneriya National Park",
+      "Wildlife",
+      "wildlife"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "minneriya-observing-large-flocks-of-waterbirds-including-painted-storks-and-pelica",
+    "name": "Observing large flocks of waterbirds including painted storks and pelicans",
+    "category": "Wildlife",
+    "destinationIds": [
+      "minneriya"
+    ],
+    "themeIds": [
+      "wildlife"
+    ],
+    "heroImage": "https://images.pexels.com/photos/33130315/pexels-photo-33130315.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/33130315/pexels-photo-33130315.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover observing large flocks of waterbirds including painted storks and pelicans through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Minneriya National Park",
+      "Wildlife",
+      "wildlife"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "udawalawe-guaranteed-year-round-wild-elephant-sightings-across-open-grasslands",
+    "name": "Guaranteed year-round wild elephant sightings across open grasslands",
+    "category": "Wildlife",
+    "destinationIds": [
+      "udawalawe"
+    ],
+    "themeIds": [
+      "wildlife"
+    ],
+    "heroImage": "https://images.pexels.com/photos/1998436/pexels-photo-1998436.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/1998436/pexels-photo-1998436.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover guaranteed year-round wild elephant sightings across open grasslands through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Udawalawe National Park",
+      "Wildlife",
+      "wildlife"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "udawalawe-visiting-the-udawalawe-elephant-transit-home-during-milk-feeding-session",
+    "name": "Visiting the Udawalawe Elephant Transit Home during milk-feeding sessions",
+    "category": "Wildlife",
+    "destinationIds": [
+      "udawalawe"
+    ],
+    "themeIds": [
+      "wildlife"
+    ],
+    "heroImage": "https://images.pexels.com/photos/32361093/pexels-photo-32361093.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/32361093/pexels-photo-32361093.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover visiting the udawalawe elephant transit home during milk-feeding sessions through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Udawalawe National Park",
+      "Wildlife",
+      "wildlife"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "udawalawe-raptor-watching-crested-serpent-eagles-changeable-hawk-eagles",
+    "name": "Raptor watching (crested serpent eagles, changeable hawk-eagles)",
+    "category": "Wildlife",
+    "destinationIds": [
+      "udawalawe"
+    ],
+    "themeIds": [
+      "wildlife"
+    ],
+    "heroImage": "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/22912065/pexels-photo-22912065.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover raptor watching (crested serpent eagles, changeable hawk-eagles) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Udawalawe National Park",
+      "Wildlife",
+      "wildlife"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "wilpattu-safari-drives-around-unique-natural-sand-rimmed-water-basins-villus",
+    "name": "Safari drives around unique natural sand-rimmed water basins (Villus)",
+    "category": "Wildlife",
+    "destinationIds": [
+      "wilpattu"
+    ],
+    "themeIds": [
+      "wildlife"
+    ],
+    "heroImage": "https://images.pexels.com/photos/12910818/pexels-photo-12910818.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/12910818/pexels-photo-12910818.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover safari drives around unique natural sand-rimmed water basins (villus) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Wilpattu National Park",
+      "Wildlife",
+      "wildlife"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "wilpattu-tracking-elusive-sri-lankan-leopards-sloth-bears-and-wild-boars-in-dense",
+    "name": "Tracking elusive Sri Lankan leopards, sloth bears, and wild boars in dense jungle cover",
+    "category": "Wildlife",
+    "destinationIds": [
+      "wilpattu"
+    ],
+    "themeIds": [
+      "wildlife"
+    ],
+    "heroImage": "https://images.pexels.com/photos/33130315/pexels-photo-33130315.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/33130315/pexels-photo-33130315.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover tracking elusive sri lankan leopards, sloth bears, and wild boars in dense jungle cover through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Wilpattu National Park",
+      "Wildlife",
+      "wildlife"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "wilpattu-exploring-ancient-historical-ruins-hidden-within-deep-forest-paths",
+    "name": "Exploring ancient historical ruins hidden within deep forest paths",
+    "category": "History",
+    "destinationIds": [
+      "wilpattu"
+    ],
+    "themeIds": [
+      "wildlife"
+    ],
+    "heroImage": "https://images.pexels.com/photos/30945058/pexels-photo-30945058.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/30945058/pexels-photo-30945058.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover exploring ancient historical ruins hidden within deep forest paths through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Wilpattu National Park",
+      "History",
+      "wildlife"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kandy-visiting-the-temple-of-the-sacred-tooth-relic-sri-dalada-maligawa",
+    "name": "Visiting the Temple of the Sacred Tooth Relic (Sri Dalada Maligawa)",
+    "category": "History",
+    "destinationIds": [
+      "kandy"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/33404364/pexels-photo-33404364.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/33404364/pexels-photo-33404364.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover visiting the temple of the sacred tooth relic (sri dalada maligawa) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Kandy",
+      "History",
+      "heritage"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "kandy-touring-the-kandy-royal-palace-complex-and-national-museum",
+    "name": "Touring the Kandy Royal Palace Complex and National Museum",
+    "category": "History",
+    "destinationIds": [
+      "kandy"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/32310272/pexels-photo-32310272.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/32310272/pexels-photo-32310272.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover touring the kandy royal palace complex and national museum through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Kandy",
+      "History",
+      "heritage"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kandy-scenic-walks-around-kandy-lake-and-visiting-the-british-garrison-cemeter",
+    "name": "Scenic walks around Kandy Lake and visiting the British Garrison Cemetery",
+    "category": "History",
+    "destinationIds": [
+      "kandy"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/19574565/pexels-photo-19574565.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/19574565/pexels-photo-19574565.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover scenic walks around kandy lake and visiting the british garrison cemetery through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Kandy",
+      "History",
+      "heritage"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "sigiriya-climbing-the-5th-century-sigiriya-rock-fortress-lion-rock",
+    "name": "Climbing the 5th-century Sigiriya Rock Fortress (Lion Rock)",
+    "category": "History",
+    "destinationIds": [
+      "sigiriya"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34128249/pexels-photo-34128249.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34128249/pexels-photo-34128249.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover climbing the 5th-century sigiriya rock fortress (lion rock) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Sigiriya",
+      "History",
+      "heritage"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "sigiriya-admiring-ancient-wall-paintings-frescoes-mirror-wall-inscriptions-and-ro",
+    "name": "Admiring ancient wall paintings (frescoes), Mirror Wall inscriptions, and Royal Water Gardens",
+    "category": "History",
+    "destinationIds": [
+      "sigiriya"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/32574367/pexels-photo-32574367.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/32574367/pexels-photo-32574367.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover admiring ancient wall paintings (frescoes), mirror wall inscriptions, and royal water gardens through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Sigiriya",
+      "History",
+      "heritage"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "sigiriya-hiking-pidurangala-rock-for-breathtaking-dawn-vistas-over-sigiriya-citad",
+    "name": "Hiking Pidurangala Rock for breathtaking dawn vistas over Sigiriya Citadel",
+    "category": "Photography",
+    "destinationIds": [
+      "sigiriya"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34714748/pexels-photo-34714748.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34714748/pexels-photo-34714748.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover hiking pidurangala rock for breathtaking dawn vistas over sigiriya citadel through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Sigiriya",
+      "Photography",
+      "heritage"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "anuradhapura-guided-bicycletuk-tuk-tours-through-the-ancient-capital-ruins",
+    "name": "Guided bicycle/tuk-tuk tours through the ancient capital ruins",
+    "category": "History",
+    "destinationIds": [
+      "anuradhapura"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/37546154/pexels-photo-37546154.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/37546154/pexels-photo-37546154.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover guided bicycle/tuk-tuk tours through the ancient capital ruins through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Anuradhapura",
+      "History",
+      "heritage"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "anuradhapura-marveling-at-monumental-stupas-ruwanwelisaya-abhayagiri-jetavanaramaya",
+    "name": "Marveling at monumental stupas (Ruwanwelisaya, Abhayagiri, Jetavanaramaya)",
+    "category": "History",
+    "destinationIds": [
+      "anuradhapura"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/31791361/pexels-photo-31791361.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/31791361/pexels-photo-31791361.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover marveling at monumental stupas (ruwanwelisaya, abhayagiri, jetavanaramaya) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Anuradhapura",
+      "History",
+      "heritage"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "anuradhapura-paying-homage-at-jaya-sri-maha-bodhi-the-worlds-oldest-historically-docu",
+    "name": "Paying homage at Jaya Sri Maha Bodhi (the world's oldest historically documented tree)",
+    "category": "History",
+    "destinationIds": [
+      "anuradhapura"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/33404364/pexels-photo-33404364.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/33404364/pexels-photo-33404364.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover paying homage at jaya sri maha bodhi (the world's oldest historically documented tree) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Anuradhapura",
+      "History",
+      "heritage"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "anuradhapura-viewing-kuttam-pokuna-twin-ponds-and-the-samadhi-buddha-statue",
+    "name": "Viewing Kuttam Pokuna (Twin Ponds) and the Samadhi Buddha Statue",
+    "category": "Photography",
+    "destinationIds": [
+      "anuradhapura"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/36847096/pexels-photo-36847096.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/36847096/pexels-photo-36847096.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover viewing kuttam pokuna (twin ponds) and the samadhi buddha statue through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Anuradhapura",
+      "Photography",
+      "heritage"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "polonnaruwa-exploring-the-12th-century-royal-palace-of-king-parakramabahu",
+    "name": "Exploring the 12th-century Royal Palace of King Parakramabahu",
+    "category": "History",
+    "destinationIds": [
+      "polonnaruwa"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/739409/pexels-photo-739409.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/739409/pexels-photo-739409.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover exploring the 12th-century royal palace of king parakramabahu through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Polonnaruwa",
+      "History",
+      "heritage"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "polonnaruwa-viewing-the-masterfully-carved-granite-buddha-statues-at-gal-vihara",
+    "name": "Viewing the masterfully carved granite Buddha statues at Gal Vihara",
+    "category": "Photography",
+    "destinationIds": [
+      "polonnaruwa"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34128249/pexels-photo-34128249.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34128249/pexels-photo-34128249.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover viewing the masterfully carved granite buddha statues at gal vihara through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Polonnaruwa",
+      "Photography",
+      "heritage"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "polonnaruwa-cycling-around-the-sacred-quadrangle-and-parakrama-samudra-reservoir",
+    "name": "Cycling around the Sacred Quadrangle and Parakrama Samudra reservoir",
+    "category": "History",
+    "destinationIds": [
+      "polonnaruwa"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/36369846/pexels-photo-36369846.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/36369846/pexels-photo-36369846.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover cycling around the sacred quadrangle and parakrama samudra reservoir through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Polonnaruwa",
+      "History",
+      "heritage"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "dambulla-climbing-dambulla-cave-temple-5-cave-sanctuaries-housing-150-buddha-stat",
+    "name": "Climbing Dambulla Cave Temple (5 cave sanctuaries housing 150+ Buddha statues and ancient murals)",
+    "category": "History",
+    "destinationIds": [
+      "dambulla"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/12047518/pexels-photo-12047518.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/12047518/pexels-photo-12047518.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover climbing dambulla cave temple (5 cave sanctuaries housing 150+ buddha statues and ancient murals) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Dambulla",
+      "History",
+      "heritage"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "dambulla-visiting-the-golden-temple-buddha-statue-at-the-foot-of-the-hill",
+    "name": "Visiting the Golden Temple Buddha Statue at the foot of the hill",
+    "category": "History",
+    "destinationIds": [
+      "dambulla"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34128249/pexels-photo-34128249.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34128249/pexels-photo-34128249.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover visiting the golden temple buddha statue at the foot of the hill through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Dambulla",
+      "History",
+      "heritage"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "galle-walking-tour-of-galle-dutch-fort-17th-century-unesco-fortified-living-ci",
+    "name": "Walking tour of Galle Dutch Fort (17th-century UNESCO fortified living city)",
+    "category": "History",
+    "destinationIds": [
+      "galle"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/30945058/pexels-photo-30945058.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/30945058/pexels-photo-30945058.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover walking tour of galle dutch fort (17th-century unesco fortified living city) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Galle",
+      "History",
+      "heritage"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "galle-exploring-the-old-dutch-hospital-galle-lighthouse-and-historic-churches",
+    "name": "Exploring the Old Dutch Hospital, Galle Lighthouse, and historic churches",
+    "category": "History",
+    "destinationIds": [
+      "galle"
+    ],
+    "themeIds": [
+      "heritage"
+    ],
+    "heroImage": "https://images.pexels.com/photos/35606849/pexels-photo-35606849.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/35606849/pexels-photo-35606849.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover exploring the old dutch hospital, galle lighthouse, and historic churches through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Galle",
+      "History",
+      "heritage"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kandy-attending-traditional-kandyan-dance-and-fire-walking-performances",
+    "name": "Attending traditional Kandyan dance and fire-walking performances",
+    "category": "Culture",
+    "destinationIds": [
+      "kandy"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/36638324/pexels-photo-36638324.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/36638324/pexels-photo-36638324.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover attending traditional kandyan dance and fire-walking performances through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Kandy",
+      "Culture",
+      "culture"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "kandy-experiencing-the-grand-annual-kandy-esala-perahera-festival-procession",
+    "name": "Experiencing the grand annual Kandy Esala Perahera festival procession",
+    "category": "Culture",
+    "destinationIds": [
+      "kandy"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/36638326/pexels-photo-36638326.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/36638326/pexels-photo-36638326.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover experiencing the grand annual kandy esala perahera festival procession through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": "Seasonal",
+    "priority": "Seasonal",
+    "tags": [
+      "Kandy",
+      "Culture",
+      "culture"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kandy-visiting-artisan-centers-for-woodcarving-brassware-and-batik-crafts",
+    "name": "Visiting artisan centers for woodcarving, brassware, and batik crafts",
+    "category": "Culture",
+    "destinationIds": [
+      "kandy"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/36496005/pexels-photo-36496005.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/36496005/pexels-photo-36496005.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover visiting artisan centers for woodcarving, brassware, and batik crafts through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Kandy",
+      "Culture",
+      "culture"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "colombo-exploring-gangaramaya-temple-and-seema-malaka-on-beira-lake",
+    "name": "Exploring Gangaramaya Temple and Seema Malaka on Beira Lake",
+    "category": "History",
+    "destinationIds": [
+      "colombo"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/32310272/pexels-photo-32310272.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/32310272/pexels-photo-32310272.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover exploring gangaramaya temple and seema malaka on beira lake through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Colombo",
+      "History",
+      "culture"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "colombo-guided-street-food-tours-through-pettah-market-and-red-mosque-jami-ul-al",
+    "name": "Guided street food tours through Pettah Market and Red Mosque (Jami Ul-Alfar)",
+    "category": "Food",
+    "destinationIds": [
+      "colombo"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/958546/pexels-photo-958546.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/958546/pexels-photo-958546.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover guided street food tours through pettah market and red mosque (jami ul-alfar) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Colombo",
+      "Food",
+      "culture"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "colombo-evening-walks-and-street-food-sampling-at-galle-face-green",
+    "name": "Evening walks and street food sampling at Galle Face Green",
+    "category": "Food",
+    "destinationIds": [
+      "colombo"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/262959/pexels-photo-262959.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/262959/pexels-photo-262959.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover evening walks and street food sampling at galle face green through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Colombo",
+      "Food",
+      "culture"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "colombo-touring-the-national-museum-of-colombo-and-art-galleries",
+    "name": "Touring the National Museum of Colombo and art galleries",
+    "category": "History",
+    "destinationIds": [
+      "colombo"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/19574565/pexels-photo-19574565.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/19574565/pexels-photo-19574565.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover touring the national museum of colombo and art galleries through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Colombo",
+      "History",
+      "culture"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "galle-observing-traditional-beeralu-lace-making-and-gem-cutting-workshops",
+    "name": "Observing traditional Beeralu lace-making and gem cutting workshops",
+    "category": "Culture",
+    "destinationIds": [
+      "galle"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/33404364/pexels-photo-33404364.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/33404364/pexels-photo-33404364.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover observing traditional beeralu lace-making and gem cutting workshops through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Galle",
+      "Culture",
+      "culture"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "galle-exploring-boutique-art-galleries-antique-shops-and-colonial-architecture",
+    "name": "Exploring boutique art galleries, antique shops, and colonial architecture",
+    "category": "Culture",
+    "destinationIds": [
+      "galle"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/32574367/pexels-photo-32574367.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/32574367/pexels-photo-32574367.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover exploring boutique art galleries, antique shops, and colonial architecture through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Galle",
+      "Culture",
+      "culture"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "jaffna-attending-sacred-puja-ceremonies-at-nallur-kandaswamy-kovil",
+    "name": "Attending sacred puja ceremonies at Nallur Kandaswamy Kovil",
+    "category": "Culture",
+    "destinationIds": [
+      "jaffna"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/36638324/pexels-photo-36638324.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/36638324/pexels-photo-36638324.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover attending sacred puja ceremonies at nallur kandaswamy kovil through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Jaffna",
+      "Culture",
+      "culture"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "jaffna-exploring-jaffna-fort-public-library-and-keerimalai-sacred-spring",
+    "name": "Exploring Jaffna Fort, Public Library, and Keerimalai Sacred Spring",
+    "category": "History",
+    "destinationIds": [
+      "jaffna"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/18727240/pexels-photo-18727240.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/18727240/pexels-photo-18727240.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover exploring jaffna fort, public library, and keerimalai sacred spring through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Jaffna",
+      "History",
+      "culture"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "jaffna-savoring-northern-tamil-culinary-specialties-jaffna-crab-curry-and-dosas",
+    "name": "Savoring northern Tamil culinary specialties (Jaffna Crab Curry and dosas)",
+    "category": "Food",
+    "destinationIds": [
+      "jaffna"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover savoring northern tamil culinary specialties (jaffna crab curry and dosas) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Jaffna",
+      "Food",
+      "culture"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "jaffna-boat-trips-to-nainativu-island-nagapooshani-amman-kovil-nagadeepa-vihara",
+    "name": "Boat trips to Nainativu Island (Nagapooshani Amman Kovil & Nagadeepa Vihara)",
+    "category": "Water Sports",
+    "destinationIds": [
+      "jaffna"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/26927362/pexels-photo-26927362.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover boat trips to nainativu island (nagapooshani amman kovil & nagadeepa vihara) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Jaffna",
+      "Water Sports",
+      "culture"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kataragama-participating-in-multi-faith-evening-rituals-at-kataragama-kovil",
+    "name": "Participating in multi-faith evening rituals at Kataragama Kovil",
+    "category": "Culture",
+    "destinationIds": [
+      "kataragama"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/18161079/pexels-photo-18161079.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/18161079/pexels-photo-18161079.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover participating in multi-faith evening rituals at kataragama kovil through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Kataragama",
+      "Culture",
+      "culture"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "kataragama-visiting-kirivehera-dagoba-stupa",
+    "name": "Visiting Kirivehera Dagoba stupa",
+    "category": "History",
+    "destinationIds": [
+      "kataragama"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/32574367/pexels-photo-32574367.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/32574367/pexels-photo-32574367.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover visiting kirivehera dagoba stupa through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Kataragama",
+      "History",
+      "culture"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kataragama-observing-traditional-spiritual-pilgrimages",
+    "name": "Observing traditional spiritual pilgrimages",
+    "category": "Culture",
+    "destinationIds": [
+      "kataragama"
+    ],
+    "themeIds": [
+      "culture"
+    ],
+    "heroImage": "https://images.pexels.com/photos/36638326/pexels-photo-36638326.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/36638326/pexels-photo-36638326.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover observing traditional spiritual pilgrimages through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Kataragama",
+      "Culture",
+      "culture"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "nuwaraeliya-guided-tea-plantation-and-factory-tours-with-formal-tea-tasting",
+    "name": "Guided tea plantation and factory tours with formal tea tasting",
+    "category": "Nature",
+    "destinationIds": [
+      "nuwaraeliya"
+    ],
+    "themeIds": [
+      "nature"
+    ],
+    "heroImage": "https://images.pexels.com/photos/36847096/pexels-photo-36847096.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/36847096/pexels-photo-36847096.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover guided tea plantation and factory tours with formal tea tasting through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Nuwara Eliya",
+      "Nature",
+      "nature"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "nuwaraeliya-hiking-in-horton-plains-national-park-to-worlds-end-precipice-and-bakers",
+    "name": "Hiking in Horton Plains National Park to World's End precipice and Baker's Falls",
+    "category": "Adventure",
+    "destinationIds": [
+      "nuwaraeliya"
+    ],
+    "themeIds": [
+      "nature"
+    ],
+    "heroImage": "https://images.pexels.com/photos/37097429/pexels-photo-37097429.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/37097429/pexels-photo-37097429.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover hiking in horton plains national park to world's end precipice and baker's falls through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Nuwara Eliya",
+      "Adventure",
+      "nature"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "nuwaraeliya-strolling-through-hakgala-botanical-garden-and-victoria-park",
+    "name": "Strolling through Hakgala Botanical Garden and Victoria Park",
+    "category": "Nature",
+    "destinationIds": [
+      "nuwaraeliya"
+    ],
+    "themeIds": [
+      "nature"
+    ],
+    "heroImage": "https://images.pexels.com/photos/30142202/pexels-photo-30142202.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/30142202/pexels-photo-30142202.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover strolling through hakgala botanical garden and victoria park through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Nuwara Eliya",
+      "Nature",
+      "nature"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "nuwaraeliya-boating-pony-riding-and-lakeside-walking-at-gregory-lake",
+    "name": "Boating, pony riding, and lakeside walking at Gregory Lake",
+    "category": "Water Sports",
+    "destinationIds": [
+      "nuwaraeliya"
+    ],
+    "themeIds": [
+      "nature"
+    ],
+    "heroImage": "https://images.pexels.com/photos/13272160/pexels-photo-13272160.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/13272160/pexels-photo-13272160.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover boating, pony riding, and lakeside walking at gregory lake through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Nuwara Eliya",
+      "Water Sports",
+      "nature"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "ella-photography-at-the-world-famous-nine-arches-railway-bridge",
+    "name": "Photography at the world-famous Nine Arches Railway Bridge",
+    "category": "Photography",
+    "destinationIds": [
+      "ella"
+    ],
+    "themeIds": [
+      "nature"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34714748/pexels-photo-34714748.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34714748/pexels-photo-34714748.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover photography at the world-famous nine arches railway bridge through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Ella",
+      "Photography",
+      "nature"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "ella-trekking-little-adams-peak-and-climbing-ella-rock-for-panoramic-views",
+    "name": "Trekking Little Adam's Peak and climbing Ella Rock for panoramic views",
+    "category": "Photography",
+    "destinationIds": [
+      "ella"
+    ],
+    "themeIds": [
+      "nature"
+    ],
+    "heroImage": "https://images.pexels.com/photos/16508233/pexels-photo-16508233.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/16508233/pexels-photo-16508233.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover trekking little adam's peak and climbing ella rock for panoramic views through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Ella",
+      "Photography",
+      "nature"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "ella-chasing-waterfalls-at-diyaluma-falls-ravana-falls-and-bambaragala",
+    "name": "Chasing waterfalls at Diyaluma Falls, Ravana Falls, and Bambaragala",
+    "category": "Nature",
+    "destinationIds": [
+      "ella"
+    ],
+    "themeIds": [
+      "nature"
+    ],
+    "heroImage": "https://images.pexels.com/photos/15242914/pexels-photo-15242914.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/15242914/pexels-photo-15242914.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover chasing waterfalls at diyaluma falls, ravana falls, and bambaragala through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Ella",
+      "Nature",
+      "nature"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "dambulla-nature-walks-through-pophams-arboretum-dry-zone-flora-and-fauna",
+    "name": "Nature walks through Popham's Arboretum (dry-zone flora and fauna)",
+    "category": "Nature",
+    "destinationIds": [
+      "dambulla"
+    ],
+    "themeIds": [
+      "nature"
+    ],
+    "heroImage": "https://images.pexels.com/photos/18175459/pexels-photo-18175459.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/18175459/pexels-photo-18175459.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover nature walks through popham's arboretum (dry-zone flora and fauna) through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Dambulla",
+      "Nature",
+      "nature"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "dambulla-bird-watching-and-sunset-boat-rides-on-kandalama-reservoir",
+    "name": "Bird watching and sunset boat rides on Kandalama Reservoir",
+    "category": "Photography",
+    "destinationIds": [
+      "dambulla"
+    ],
+    "themeIds": [
+      "nature"
+    ],
+    "heroImage": "https://images.pexels.com/photos/36386565/pexels-photo-36386565.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/36386565/pexels-photo-36386565.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover bird watching and sunset boat rides on kandalama reservoir through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Dambulla",
+      "Photography",
+      "nature"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "tangalle-luxury-beachfront-ayurvedic-wellness-retreats-with-abhyanga-oil-massages",
+    "name": "Luxury beachfront Ayurvedic wellness retreats with Abhyanga oil massages",
+    "category": "Beach",
+    "destinationIds": [
+      "tangalle"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/11496554/pexels-photo-11496554.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/11496554/pexels-photo-11496554.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover luxury beachfront ayurvedic wellness retreats with abhyanga oil massages through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Tangalle",
+      "Beach",
+      "wellness"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "tangalle-oceanfront-morning-yoga-and-sound-healing-workshops",
+    "name": "Oceanfront morning yoga and sound healing workshops",
+    "category": "Beach",
+    "destinationIds": [
+      "tangalle"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/16508233/pexels-photo-16508233.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/16508233/pexels-photo-16508233.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover oceanfront morning yoga and sound healing workshops through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Tangalle",
+      "Beach",
+      "wellness"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "tangalle-personalized-organic-wellness-dining-plans",
+    "name": "Personalized organic wellness dining plans",
+    "category": "Food",
+    "destinationIds": [
+      "tangalle"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover personalized organic wellness dining plans through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Tangalle",
+      "Food",
+      "wellness"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kalutara-comprehensive-multi-day-panchakarma-detox-programs",
+    "name": "Comprehensive multi-day Panchakarma detox programs",
+    "category": "Wellness",
+    "destinationIds": [
+      "kalutara"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/3822622/pexels-photo-3822622.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/3822622/pexels-photo-3822622.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover comprehensive multi-day panchakarma detox programs through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Kalutara",
+      "Wellness",
+      "wellness"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "kalutara-riverside-yoga-sessions-meditation-and-herbal-steam-baths",
+    "name": "Riverside yoga sessions, meditation, and herbal steam baths",
+    "category": "Wellness",
+    "destinationIds": [
+      "kalutara"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover riverside yoga sessions, meditation, and herbal steam baths through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Kalutara",
+      "Wellness",
+      "wellness"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kalutara-medical-consultations-with-certified-ayurvedic-doctors",
+    "name": "Medical consultations with certified Ayurvedic doctors",
+    "category": "Wellness",
+    "destinationIds": [
+      "kalutara"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/3865557/pexels-photo-3865557.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/3865557/pexels-photo-3865557.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover medical consultations with certified ayurvedic doctors through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Hidden Gem",
+    "tags": [
+      "Kalutara",
+      "Wellness",
+      "wellness"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "kandy-mountain-eco-resort-holistic-retreats-surrounded-by-rainforest-flora",
+    "name": "Mountain eco-resort holistic retreats surrounded by rainforest flora",
+    "category": "Wellness",
+    "destinationIds": [
+      "kandy"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/4056723/pexels-photo-4056723.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/4056723/pexels-photo-4056723.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover mountain eco-resort holistic retreats surrounded by rainforest flora through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Kandy",
+      "Wellness",
+      "wellness"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "kandy-herbal-bath-therapies-plant-body-wraps-and-meditation-workshops",
+    "name": "Herbal bath therapies, plant body wraps, and meditation workshops",
+    "category": "Wellness",
+    "destinationIds": [
+      "kandy"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/3764014/pexels-photo-3764014.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/3764014/pexels-photo-3764014.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover herbal bath therapies, plant body wraps, and meditation workshops through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Kandy",
+      "Wellness",
+      "wellness"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "weligama-combined-surfing-fitness-and-yoga-wellness-camps",
+    "name": "Combined surfing, fitness, and yoga wellness camps",
+    "category": "Water Sports",
+    "destinationIds": [
+      "weligama"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover combined surfing, fitness, and yoga wellness camps through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Weligama",
+      "Water Sports",
+      "wellness"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "weligama-beachfront-chakra-balancing-sound-therapy-and-wellness-cafes",
+    "name": "Beachfront chakra balancing, sound therapy, and wellness cafes",
+    "category": "Beach",
+    "destinationIds": [
+      "weligama"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/11495843/pexels-photo-11495843.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/11495843/pexels-photo-11495843.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover beachfront chakra balancing, sound therapy, and wellness cafes through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Weligama",
+      "Beach",
+      "wellness"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "ahungalla-specialized-herbal-therapy-and-shirodhara-head-treatments",
+    "name": "Specialized herbal therapy and Shirodhara head treatments",
+    "category": "Wellness",
+    "destinationIds": [
+      "ahungalla"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/3997983/pexels-photo-3997983.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/3997983/pexels-photo-3997983.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover specialized herbal therapy and shirodhara head treatments through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Ahungalla",
+      "Wellness",
+      "wellness"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "ahungalla-coastal-hydrotherapy-and-relaxation-spa-packages",
+    "name": "Coastal hydrotherapy and relaxation spa packages",
+    "category": "Beach",
+    "destinationIds": [
+      "ahungalla"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/12040931/pexels-photo-12040931.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/12040931/pexels-photo-12040931.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover coastal hydrotherapy and relaxation spa packages through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Ahungalla",
+      "Beach",
+      "wellness"
+    ],
+    "featured": false,
+    "comingSoon": false
+  },
+  {
+    "id": "sigiriya-eco-wellness-retreats-featuring-open-air-yoga-platforms-overlooking-lion",
+    "name": "Eco-wellness retreats featuring open-air yoga platforms overlooking Lion Rock",
+    "category": "Wellness",
+    "destinationIds": [
+      "sigiriya"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34128249/pexels-photo-34128249.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/34128249/pexels-photo-34128249.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover eco-wellness retreats featuring open-air yoga platforms overlooking lion rock through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Must Do",
+    "tags": [
+      "Sigiriya",
+      "Wellness",
+      "wellness"
+    ],
+    "featured": true,
+    "comingSoon": false
+  },
+  {
+    "id": "sigiriya-traditional-outdoor-herbal-saunas-and-herbal-bath-rituals",
+    "name": "Traditional outdoor herbal saunas and herbal bath rituals",
+    "category": "Wellness",
+    "destinationIds": [
+      "sigiriya"
+    ],
+    "themeIds": [
+      "wellness"
+    ],
+    "heroImage": "https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "gallery": [
+      "https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    ],
+    "shortDescription": "Discover traditional outdoor herbal saunas and herbal bath rituals through a thoughtfully paced experience shaped around your journey.",
+    "duration": null,
+    "difficulty": null,
+    "bestSeason": null,
+    "priority": "Popular",
+    "tags": [
+      "Sigiriya",
+      "Wellness",
+      "wellness"
+    ],
+    "featured": false,
+    "comingSoon": false
+  }
+]

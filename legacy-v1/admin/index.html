@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+  <title>Roam Ceylon Content Studio</title>
+  <link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="admin-page">
+  <div id="adminLoading" class="admin-loading">Checking your secure session…</div>
+  <main id="adminApp" class="admin-dashboard" hidden>
+    <aside class="admin-sidebar">
+      <a class="logo" href="/"><img src="/assets/logo/roam-ceylon-elephant.png" alt="Roam Ceylon"></a>
+      <p class="admin-user" id="adminUser"></p>
+      <nav id="adminNav" aria-label="Content types"></nav>
+      <button class="btn btn-outline" id="adminSignOut" type="button">Sign out</button>
+    </aside>
+    <section class="admin-workspace">
+      <header class="admin-toolbar">
+        <div><div class="eyebrow">Content studio</div><h1 id="adminTitle">Travel Themes</h1></div>
+        <button class="btn btn-coral" id="adminAdd" type="button">Add new</button>
+      </header>
+      <div class="admin-filters">
+        <input id="adminSearch" type="search" placeholder="Search content…" aria-label="Search content">
+        <select id="adminStatusFilter"><option value="">All statuses</option><option>draft</option><option>published</option><option>archived</option></select>
+        <select id="adminHealthFilter"><option value="">All content health</option><option value="needs_review">Needs review</option><option value="needs_image_review">Needs image review</option></select>
+        <select id="adminSort"><option value="updated_at">Recently updated</option><option value="created_at">Recently created</option><option value="name">Name</option><option value="display_order">Display order</option></select>
+      </div>
+      <div class="admin-bulk" id="adminBulk">
+        <label><input id="adminSelectAll" type="checkbox"> Select all</label>
+        <select id="adminBulkAction"><option value="">Bulk action…</option><option value="publish">Publish</option><option value="unpublish">Unpublish</option><option value="archive">Archive</option><option value="activate">Activate</option><option value="deactivate">Deactivate</option><option value="review">Mark for review</option></select>
+        <button class="btn btn-outline" id="adminApplyBulk" type="button">Apply</button>
+      </div>
+      <p id="adminMessage" class="admin-message" aria-live="polite"></p>
+      <div id="adminList" class="admin-content-list"></div>
+    </section>
+  </main>
+  <dialog id="adminEditor" class="admin-editor">
+    <form method="dialog" id="adminEditorForm">
+      <header><div><div class="eyebrow">Traveller-facing content</div><h2 id="editorTitle">Edit content</h2></div><button value="cancel" class="market-dialog-close" aria-label="Close">×</button></header>
+      <div class="admin-editor-grid">
+        <div id="editorFields" class="admin-fields"></div>
+        <aside><h3>Live card preview</h3><div id="adminPreview"></div><p id="imageWarning" class="admin-warning"></p></aside>
+      </div>
+      <footer><button value="cancel" class="btn btn-outline">Cancel</button><button id="editorSave" type="submit" value="default" class="btn btn-dark">Save changes</button></footer>
+    </form>
+  </dialog>
+  <script type="module" src="/js/admin-app.js"></script>
+</body>
+</html>

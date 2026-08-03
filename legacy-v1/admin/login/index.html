@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+  <title>Sign in — Roam Ceylon</title>
+  <link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="admin-page">
+  <main class="admin-shell">
+    <a class="logo" href="/"><img src="/assets/logo/roam-ceylon-elephant.png" alt="Roam Ceylon"></a>
+    <section class="admin-card">
+      <div class="eyebrow">Secure content studio</div><h1>Staff sign in</h1>
+      <p>Use the account issued by a Roam Ceylon administrator. Public sign-up is disabled.</p>
+      <form id="adminLogin" class="admin-login">
+        <div class="field"><label for="adminEmail">Email</label><input id="adminEmail" type="email" required autocomplete="username"></div>
+        <div class="field"><label for="adminPassword">Password</label><input id="adminPassword" type="password" required autocomplete="current-password"></div>
+        <button class="btn btn-dark" type="submit">Sign in</button>
+      </form>
+      <p id="loginMessage" class="admin-message" aria-live="polite"></p>
+    </section>
+  </main>
+  <script type="module" src="/js/admin-login.js"></script>
+</body>
+</html>

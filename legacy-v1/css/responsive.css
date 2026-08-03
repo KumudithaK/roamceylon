@@ -1,0 +1,50 @@
+@media (max-width: 900px) {
+  .nav { min-height: 72px; padding: 0 18px; }
+  .nav .logo img { width: 116px; height: 62px; }
+  .nav-toggle { display: block; margin-left: auto; z-index: 2; }
+  .nav-links {
+    position: absolute;
+    inset: 72px 0 auto;
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 12px 20px 24px;
+    background: var(--sand-hi);
+    border-bottom: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a { display: block; padding: 12px 8px; }
+  .nav-cta { display: none; }
+  .market-grid { grid-template-columns: 1fr 1fr; }
+  .partner-cta { align-items: flex-start; flex-direction: column; }
+}
+
+@media (max-width: 640px) {
+  .wrap { padding-inline: 18px; }
+  .hero { padding-top: 64px; }
+  .hero-actions { align-items: stretch; }
+  .hero-actions .btn { width: 100%; }
+  .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .hero-stat b { font-size: 1rem; }
+  .hero-stat span { font-size: .65rem; }
+  .tabs { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+  .tab { white-space: nowrap; }
+  .market-grid { grid-template-columns: 1fr; }
+  .admin-login { grid-template-columns: 1fr; }
+  .guide-options { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px){
+  .experience-grid{grid-template-columns:1fr;}
+  .experience-card:hover{transform:translateY(-3px);}
+  .journey-basics,.planner-grid{grid-template-columns:1fr;}
+  .marketplace-tabs{grid-template-columns:1fr;}
+  .planner-partner{align-items:flex-start;flex-direction:column;}
+}
+
+@media (max-width: 420px){
+  .experience-content{padding:16px;}
+  .experience-meta{gap:5px;}
+  .experience-title{font-size:1.02rem;}
+}

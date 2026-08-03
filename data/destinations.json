@@ -1,0 +1,476 @@
+[
+  {
+    "id": "ahungalla",
+    "name": "Ahungalla",
+    "province": "Southern",
+    "heroImage": "https://images.pexels.com/photos/26793366/pexels-photo-26793366.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "shortDescription": "A calm palm-lined coast known for restorative Ayurvedic stays.",
+    "coordinates": {
+      "lat": 6.315,
+      "lon": 80.036
+    },
+    "themeIds": [
+      "wellness"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "anuradhapura",
+    "name": "Anuradhapura",
+    "province": "North Central",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/6/65/Ruwanweli_Maha_Saaya.jpg",
+    "shortDescription": "Sri Lanka's first great capital, filled with sacred stupas and reservoirs.",
+    "coordinates": {
+      "lat": 8.3114,
+      "lon": 80.4037
+    },
+    "themeIds": [
+      "heritage"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "arugambay",
+    "name": "Arugam Bay",
+    "province": "Eastern",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Beach_of_Arugam_Bay.jpg",
+    "shortDescription": "A legendary point-break surf town with a relaxed beach rhythm.",
+    "coordinates": {
+      "lat": 6.84,
+      "lon": 81.836
+    },
+    "themeIds": [
+      "adventure",
+      "tropical"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "balapitiya",
+    "name": "Balapitiya",
+    "province": "Southern",
+    "heroImage": "https://images.pexels.com/photos/30288080/pexels-photo-30288080.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "shortDescription": "Mangrove waterways, river islands and active coastal exploration.",
+    "coordinates": {
+      "lat": 6.276,
+      "lon": 80.036
+    },
+    "themeIds": [
+      "adventure"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "belihuloya",
+    "name": "Belihul Oya",
+    "province": "Sabaragamuwa",
+    "heroImage": "https://images.pexels.com/photos/12343661/pexels-photo-12343661.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "shortDescription": "A highland river valley for kayaking, waterfalls and mountain trails.",
+    "coordinates": {
+      "lat": 6.6167,
+      "lon": 80.8167
+    },
+    "themeIds": [
+      "adventure"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "bentota",
+    "name": "Bentota",
+    "province": "Southern",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Sri_Lanka%2C_Bentota%2C_beach_%282%29.JPG",
+    "shortDescription": "Golden beaches and a river playground for polished coastal escapes.",
+    "coordinates": {
+      "lat": 6.4211,
+      "lon": 79.9989
+    },
+    "themeIds": [
+      "tropical"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "colombo",
+    "name": "Colombo",
+    "province": "Western",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/6/62/Colombo_city_skyline_at_night.png",
+    "shortDescription": "A cosmopolitan capital of markets, temples, galleries and modern dining.",
+    "coordinates": {
+      "lat": 6.9271,
+      "lon": 79.8612
+    },
+    "themeIds": [
+      "culture"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "dambulla",
+    "name": "Dambulla",
+    "province": "Central",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/1/14/Dambulla-outside.jpg",
+    "shortDescription": "Cave temples, dry-zone nature and sunrise adventures in the Cultural Triangle.",
+    "coordinates": {
+      "lat": 7.8675,
+      "lon": 80.6517
+    },
+    "themeIds": [
+      "adventure",
+      "heritage",
+      "nature"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "ella",
+    "name": "Ella",
+    "province": "Uva",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/4/47/Ella_railway_station.jpg",
+    "shortDescription": "Tea-covered hills, railway icons and rewarding panoramic hikes.",
+    "coordinates": {
+      "lat": 6.8667,
+      "lon": 81.0466
+    },
+    "themeIds": [
+      "nature"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "galle",
+    "name": "Galle",
+    "province": "Southern",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/7/77/Galle_Fort.jpg",
+    "shortDescription": "A living fort city where coastal beauty meets layered colonial history.",
+    "coordinates": {
+      "lat": 6.0535,
+      "lon": 80.221
+    },
+    "themeIds": [
+      "tropical",
+      "heritage",
+      "culture"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "hikkaduwa",
+    "name": "Hikkaduwa",
+    "province": "Southern",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/2/27/Hikkaduwa3.JPG",
+    "shortDescription": "Reef breaks, coral gardens and a lively, easy-going beach strip.",
+    "coordinates": {
+      "lat": 6.1408,
+      "lon": 80.1017
+    },
+    "themeIds": [
+      "adventure",
+      "tropical"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "jaffna",
+    "name": "Jaffna",
+    "province": "Northern",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/b/b9/Jaffna_montage.jpg",
+    "shortDescription": "A distinctive northern city of Tamil heritage, temples and island flavours.",
+    "coordinates": {
+      "lat": 9.6615,
+      "lon": 80.0255
+    },
+    "themeIds": [
+      "culture"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "kalpitiya",
+    "name": "Kalpitiya",
+    "province": "North Western",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/1/19/SL_Kalpitiya_asv2020-01_img4_Fishery_harbour.jpg",
+    "shortDescription": "A wind-swept peninsula for kitesurfing, dolphins and reef adventures.",
+    "coordinates": {
+      "lat": 8.2333,
+      "lon": 79.7667
+    },
+    "themeIds": [
+      "adventure"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "kalutara",
+    "name": "Kalutara",
+    "province": "Western",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/3/31/Aerial_view_of_Kalutara_City%2C_Sri_Lanka.jpg",
+    "shortDescription": "Riverside Ayurveda and peaceful wellness retreats near the coast.",
+    "coordinates": {
+      "lat": 6.5854,
+      "lon": 79.9607
+    },
+    "themeIds": [
+      "wellness"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "kandy",
+    "name": "Kandy",
+    "province": "Central",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/c/c2/SL_Kandy_asv2020-01_img04_Queens_Hotel.jpg",
+    "shortDescription": "Sri Lanka's sacred hill capital, alive with ritual, craft and green retreats.",
+    "coordinates": {
+      "lat": 7.2906,
+      "lon": 80.6337
+    },
+    "themeIds": [
+      "heritage",
+      "culture",
+      "wellness"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "kataragama",
+    "name": "Kataragama",
+    "province": "Uva",
+    "heroImage": "https://images.pexels.com/photos/32361093/pexels-photo-32361093.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "shortDescription": "A multi-faith pilgrimage town shaped by evening ritual and devotion.",
+    "coordinates": {
+      "lat": 6.4167,
+      "lon": 81.3333
+    },
+    "themeIds": [
+      "culture"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "kitulgala",
+    "name": "Kitulgala",
+    "province": "Sabaragamuwa",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/1/1c/SL01kitulgala.jpg",
+    "shortDescription": "Rainforest rapids, caves and canyon adventures along the Kelani River.",
+    "coordinates": {
+      "lat": 6.9897,
+      "lon": 80.4271
+    },
+    "themeIds": [
+      "adventure"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "minneriya",
+    "name": "Minneriya",
+    "province": "North Central",
+    "heroImage": "https://images.pexels.com/photos/1998436/pexels-photo-1998436.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "shortDescription": "Reservoir grasslands famous for the great seasonal elephant gathering.",
+    "coordinates": {
+      "lat": 8.0386,
+      "lon": 80.8993
+    },
+    "themeIds": [
+      "wildlife"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "mirissa",
+    "name": "Mirissa",
+    "province": "Southern",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/a/a5/Mirissa-Plage_%283%29.jpg",
+    "shortDescription": "A crescent beach town celebrated for whales, coves and seafood under palms.",
+    "coordinates": {
+      "lat": 5.9483,
+      "lon": 80.4589
+    },
+    "themeIds": [
+      "tropical"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "mountlavinia",
+    "name": "Mount Lavinia",
+    "province": "Western",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/3/31/Dehiwala-Mount_Lavania.jpg",
+    "shortDescription": "A heritage beach suburb for sunsets and seafood close to Colombo.",
+    "coordinates": {
+      "lat": 6.839,
+      "lon": 79.865
+    },
+    "themeIds": [
+      "tropical"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "nilaveli",
+    "name": "Nilaveli",
+    "province": "Eastern",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/3/39/Nillaveli_Beach.JPG",
+    "shortDescription": "Quiet white sand and clear-water access to Pigeon Island's reefs.",
+    "coordinates": {
+      "lat": 8.683,
+      "lon": 81.2
+    },
+    "themeIds": [
+      "tropical"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "nuwaraeliya",
+    "name": "Nuwara Eliya",
+    "province": "Central",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/c/c6/NuwaraEliya_from_top.jpg",
+    "shortDescription": "A cool hill station wrapped in tea estates, gardens and highland trails.",
+    "coordinates": {
+      "lat": 6.9497,
+      "lon": 80.7891
+    },
+    "themeIds": [
+      "nature"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "pasikudah",
+    "name": "Pasikudah",
+    "province": "Eastern",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/1/11/Pasikudah_beach.JPG",
+    "shortDescription": "A shallow turquoise bay made for gentle swimming and family beach days.",
+    "coordinates": {
+      "lat": 7.929,
+      "lon": 81.561
+    },
+    "themeIds": [
+      "tropical"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "polonnaruwa",
+    "name": "Polonnaruwa",
+    "province": "North Central",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/d/d1/Polonnaruwa_01.jpg",
+    "shortDescription": "A remarkably intact medieval capital best explored slowly by bicycle.",
+    "coordinates": {
+      "lat": 7.9403,
+      "lon": 81.0188
+    },
+    "themeIds": [
+      "heritage"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "sigiriya",
+    "name": "Sigiriya",
+    "province": "Central",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/e/e6/Sigiriya_%28141688197%29.jpeg",
+    "shortDescription": "An iconic rock citadel paired with dawn hikes and restorative nature stays.",
+    "coordinates": {
+      "lat": 7.957,
+      "lon": 80.7603
+    },
+    "themeIds": [
+      "heritage",
+      "wellness"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "tangalle",
+    "name": "Tangalle",
+    "province": "Southern",
+    "heroImage": "https://images.pexels.com/photos/16508233/pexels-photo-16508233.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "shortDescription": "Secluded southern beaches and oceanfront spaces for yoga and Ayurveda.",
+    "coordinates": {
+      "lat": 6.024,
+      "lon": 80.797
+    },
+    "themeIds": [
+      "wellness"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "trinco",
+    "name": "Trincomalee",
+    "province": "Eastern",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/0/0a/Bay_of_Trincomalee.jpg",
+    "shortDescription": "Natural harbours, cliff-top temples and warm east-coast beaches.",
+    "coordinates": {
+      "lat": 8.5874,
+      "lon": 81.2152
+    },
+    "themeIds": [
+      "tropical"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "udawalawe",
+    "name": "Udawalawe",
+    "province": "Sabaragamuwa",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Udawalawe_National_Park_%28Udawalawa_Reservoir%29.jpg",
+    "shortDescription": "Open grasslands with reliable elephant encounters throughout the year.",
+    "coordinates": {
+      "lat": 6.4746,
+      "lon": 80.8987
+    },
+    "themeIds": [
+      "wildlife"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "weligama",
+    "name": "Weligama",
+    "province": "Southern",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/d/da/Weligama_Beach_in_Sri_Lanka.jpg",
+    "shortDescription": "A broad bay combining beginner surf, movement and coastal wellness.",
+    "coordinates": {
+      "lat": 5.975,
+      "lon": 80.4297
+    },
+    "themeIds": [
+      "wellness"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "wilpattu",
+    "name": "Wilpattu",
+    "province": "North Western",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/9/99/WilpattuNationalPark-April2014_%283%29.JPG",
+    "shortDescription": "Sri Lanka's largest park, known for natural lakes, leopards and sloth bears.",
+    "coordinates": {
+      "lat": 8.4593,
+      "lon": 80.0463
+    },
+    "themeIds": [
+      "wildlife"
+    ],
+    "comingSoon": false
+  },
+  {
+    "id": "yala",
+    "name": "Yala",
+    "province": "Southern",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/7/77/Yala_Beach.jpg",
+    "shortDescription": "Diverse wild landscapes with celebrated leopard, elephant and birdlife.",
+    "coordinates": {
+      "lat": 6.3725,
+      "lon": 81.5185
+    },
+    "themeIds": [
+      "wildlife"
+    ],
+    "comingSoon": false
+  }
+]

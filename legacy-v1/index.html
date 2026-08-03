@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roam Ceylon — Build Your Sri Lanka</title>
+<meta name="description" content="Design a private, tailor-made Sri Lanka journey with local experts, handpicked stays, guides and transport.">
+<meta name="theme-color" content="#0C3F3A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/animations.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+
+<!-- ICON SPRITE -->
+<svg width="0" height="0" style="position:absolute">
+<symbol id="i-elephant" viewBox="0 0 24 24"><path d="M4 18c0-5 3-9 8-9s8 3 8 7c0 1.5-1 2-2 2v2M9 9V5a2 2 0 0 1 4 0v2M6 20l1-3M11 20l1-3M16 20v-3"/></symbol>
+<symbol id="i-wave" viewBox="0 0 24 24"><path d="M2 15c2-2 4-2 6 0s4 2 6 0 4-2 6 0M2 19c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M12 4v7"/></symbol>
+<symbol id="i-mountain" viewBox="0 0 24 24"><path d="M3 19l6-11 4 6 2-3 6 8H3z"/><circle cx="17" cy="5" r="1.6"/></symbol>
+<symbol id="i-leaf" viewBox="0 0 24 24"><path d="M20 4C10 4 4 10 4 18c8 0 14-6 14-14z"/><path d="M6 18c4-6 8-8 12-12"/></symbol>
+<symbol id="i-stupa" viewBox="0 0 24 24"><path d="M12 3v2M9 9a3 3 0 0 1 6 0c0 2-2 2-2 4H11c0-2-2-2-2-4z"/><path d="M6 20h12M8 16h8v4H8zM5 20h14"/></symbol>
+<symbol id="i-train" viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="12" rx="3"/><path d="M5 12h14M9 16l-2 4M15 16l2 4"/><circle cx="9" cy="8" r="1"/><circle cx="15" cy="8" r="1"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></symbol>
+<symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9l-2 6-6 2 2-6z"/></symbol>
+<symbol id="i-balloon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 1 6 6c0 3-2 5-4 6l-1 3h-2l-1-3c-2-1-4-3-4-6a6 6 0 0 1 6-6z"/><path d="M11 18h2l1 3H10z"/></symbol>
+<symbol id="i-whale" viewBox="0 0 24 24"><path d="M3 13c3-6 9-8 14-6 3 1 4 4 4 6s-2 3-4 2c-1 3-4 4-7 4-4 0-8-2-8-6z"/><path d="M17 8l3-3M2 13l3 3"/></symbol>
+<symbol id="i-drum" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v9a7 3 0 0 0 14 0V6"/><path d="M2 9l3 2M22 9l-3 2"/></symbol>
+<symbol id="i-kayak" viewBox="0 0 24 24"><path d="M2 16c4-8 16-8 20 0-4 4-16 4-20 0z"/><path d="M6 4l4 5M18 4l-4 5"/></symbol>
+<symbol id="i-bike" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17l4-9h4l3 9M10 8h4M14 8l3 4"/></symbol>
+<symbol id="i-lotus" viewBox="0 0 24 24"><path d="M12 20c-4 0-7-3-7-7 3 0 5 1 7 3 2-2 4-3 7-3 0 4-3 7-7 7z"/><path d="M12 20V9"/><path d="M12 9c-2-2-2-5 0-7 2 2 2 5 0 7z"/></symbol>
+<symbol id="i-camera" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="4"/><path d="M8 7l1.5-3h5L16 7"/></symbol>
+<symbol id="i-bird" viewBox="0 0 24 24"><path d="M3 13c4-6 8-7 12-4 2-3 5-4 6-3-1 3-2 4-4 5 1 3 0 6-3 8 1-2 0-4-2-5-3 1-6 0-9-1z"/></symbol>
+<symbol id="i-palm" viewBox="0 0 24 24"><path d="M12 22V11"/><path d="M12 11c-3-3-8-3-10-1 3 2 7 2 10 1zM12 11c3-3 8-3 10-1-3 2-7 2-10 1zM12 11c-2-4-1-8 2-9-1 3-1 6-2 9zM12 11c2-3 1-7-1-9 0 3 0 6 1 9z"/></symbol>
+<symbol id="i-fish" viewBox="0 0 24 24"><path d="M3 12c4-5 12-5 16 0-4 5-12 5-16 0z"/><path d="M19 12l3-3v6z"/><circle cx="8" cy="11" r=".6" fill="currentColor"/></symbol>
+<symbol id="i-tea" viewBox="0 0 24 24"><path d="M4 9h14v4a7 7 0 0 1-14 0z"/><path d="M18 10h1a3 3 0 0 1 0 6h-1"/><path d="M8 4c0 1-1 1-1 2M12 4c0 1-1 1-1 2"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4l6 2 5-2v14l-5 2-6-2-5 2V6z"/><path d="M9 4v14M15 6v14"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M12 3h6a2 2 0 0 1 2 2v6l-9 9-8-8z"/><circle cx="15" cy="8" r="1.4"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-8-4.5-8-11a5 5 0 0 1 8-4 5 5 0 0 1 8 4c0 6.5-8 11-8 11z"/></symbol>
+</svg>
+
+<header class="site" id="siteHeader">
+  <nav class="nav" aria-label="Primary navigation">
+    <a class="logo" href="#main-content" aria-label="Roam Ceylon home"><img src="assets/logo/roam-ceylon-elephant.png" alt="" width="1536" height="1024"></a>
+    <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span><span class="sr-only">Toggle navigation</span></button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#builder">Build a trip</a></li>
+      <li><a href="#marketplace">Marketplace</a></li>
+      <li><a href="#why">Why us</a></li>
+      <li><a href="#quotes">Traveller stories</a></li>
+    </ul>
+    <div class="nav-cta">
+      <span class="nav-phone">☎ <span>+94 71 307 7989</span></span>
+      <a href="#builder" class="btn btn-dark" style="padding:11px 20px;font-size:.85rem;">Start planning</a>
+    </div>
+  </nav>
+</header>
+
+<!-- HERO -->
+<main id="main-content">
+<section class="hero">
+  <video class="hero-video" id="heroVideo" autoplay muted loop playsinline
+    onerror="this.style.display='none'">
+    <source src="https://www.sltda.gov.lk/videos/new-banner-video.mp4" type="video/mp4">
+  </video>
+  <div class="hero-logo-flash" id="heroLogoFlash">
+    <img src="assets/logo/roam-ceylon-elephant.png" alt="Roam Ceylon" width="1536" height="1024">
+  </div>
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow" style="color:var(--gold-hi)">Private, tailor-made Sri Lanka journeys</div>
+      <h1>Stop browsing<br>itineraries. <em>Build yours.</em></h1>
+      <p class="lead">Pick the places that pull at you, the experiences you can't stop thinking about, and the little detours that make a trip yours. We'll turn it into a private, fully-guided journey — priced honestly, planned by people who live here.</p>
+      <div class="hero-actions">
+        <a href="#builder" class="btn btn-coral">Start building your trip ↓</a>
+        <a href="#how" class="btn btn-outline">See how it works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><b>1,200+</b><span>Journeys planned</span></div>
+        <div class="hero-stat"><b>4.9 / 5</b><span>Average rating</span></div>
+        <div class="hero-stat"><b>24 / 7</b><span>On-trip support</span></div>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="island-card">
+        <div class="cap">Your route, live</div>
+        <svg class="trip-map" viewBox="0 0 220 400" id="heroMap">
+          <path d="M198.4,270.3 L190.6,314.7 L175.7,335.1 L145.2,356.3 L121.7,364.6 L103.0,374.8 L88.9,376.7 L73.2,371.1 L53.7,346.2 L47.4,316.5 L39.6,282.3 L36.4,262.0 L34.1,224.0 L27.8,176.9 L38.0,145.4 L47.4,117.7 L45.8,104.7 L55.2,90.9 L59.9,76.1 L56.0,61.2 L63.0,47.4 L73.2,38.1 L67.0,24.2 L63.0,17.8 L78.7,24.2 L94.3,42.7 L86.5,52.0 L106.1,61.2 L120.2,79.7 L133.5,102.9 L145.2,126.0 L157.0,149.1 L164.8,176.9 L172.6,190.7 L184.3,213.9 L190.6,237.0 L198.4,270.3 Z"
+            fill="rgba(246,239,223,0.06)" stroke="rgba(246,239,223,0.35)" stroke-width="1.5"/>
+          <path id="heroRoute" d="M60,230 L130,120 L175,150" fill="none" stroke="var(--gold-hi)" stroke-width="1.6" class="route-anim" opacity="0.85"/>
+          <circle cx="60" cy="230" r="4" fill="var(--gold-hi)" class="pin-pulse"/>
+          <circle cx="130" cy="120" r="4" fill="var(--gold-hi)" class="pin-pulse" style="animation-delay:.4s"/>
+          <circle cx="175" cy="150" r="4" fill="var(--gold-hi)" class="pin-pulse" style="animation-delay:.8s"/>
+        </svg>
+        <p style="font-size:.78rem;color:rgba(246,239,223,.6);margin:0;">Colombo → Sigiriya → Trincomalee — sample route. Yours appears below as you choose.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">How it works</div>
+      <h2>Three steps to a trip that's actually yours</h2>
+    </div>
+    <div class="how-steps">
+      <div class="how-step reveal"><div class="num">1</div><h3>Pick freely</h3><p>Choose travel themes, matching destinations and experiences below — no packages to squeeze into, just what genuinely interests you.</p></div>
+      <div class="how-step reveal"><div class="num">2</div><h3>Watch it take shape</h3><p>Your trip card fills in live: route, nights, pace and a fair price range, updating with every choice.</p></div>
+      <div class="how-step reveal"><div class="num">3</div><h3>Talk to a real planner</h3><p>Send it through and a Sri Lanka–based consultant refines it with you into a confirmed, guided itinerary.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- BUILDER -->
+<section class="builder" id="builder">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">The builder</div>
+      <h2>Design your Sri Lanka, piece by piece</h2>
+      <p>Select as many as you like in each category. Nothing is booked yet — this simply shapes the proposal your consultant will send you.</p>
+    </div>
+
+    <div class="builder-layout">
+      <div>
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="tabs" id="tabs"></div>
+
+        <!-- STEP 1: THEMES -->
+        <div class="panel active" data-panel="themes">
+          <div class="panel-intro">
+            <h3>What kind of journey are you imagining?</h3>
+            <p>Start with a mood. You can mix themes and refine every detail as you go.</p>
+          </div>
+          <div class="card-grid" id="grid-themes"></div>
+          <div class="panel-nav"><span></span><button class="btn btn-coral" data-next="destinations">Choose destinations →</button></div>
+        </div>
+
+        <!-- STEP 1: DESTINATIONS -->
+        <div class="panel" data-panel="destinations">
+          <div class="panel-intro">
+            <h3>Where do you want to wake up?</h3>
+            <p>Choose the regions and towns you'd like as bases for your journey. We'll sequence them sensibly for you.</p>
+          </div>
+          <div class="card-grid" id="grid-destinations"></div>
+          <div class="panel-nav"><button class="btn btn-outline" data-prev="themes">← Themes</button><button class="btn btn-coral" data-next="experiences">Next: Experiences →</button></div>
+        </div>
+
+        <!-- STEP 2: EXPERIENCES -->
+        <div class="panel" data-panel="experiences">
+          <div class="panel-intro">
+            <h3>What do you want to feel?</h3>
+            <p>The signature moments — the things you'll actually tell people about afterwards.</p>
+          </div>
+          <div class="experience-grid" id="grid-experiences"></div>
+          <div class="panel-nav"><button class="btn btn-outline" data-prev="destinations">← Back</button><button class="btn btn-coral" data-next="planner">Plan your journey →</button></div>
+        </div>
+
+        <!-- STEP 4: PLAN YOUR JOURNEY -->
+        <div class="panel" data-panel="planner">
+          <div class="panel-intro">
+            <div class="eyebrow">Complete your holiday</div>
+            <h3>Plan Your Journey</h3>
+            <p>Your itinerary is taking shape. Now choose where you'll stay, how you'll get around, and whether you'd like a local guide.</p>
+          </div>
+          <div class="journey-basics">
+            <div class="cz-block">
+              <h4>How many nights?</h4>
+              <input type="range" id="nightsRange" min="5" max="28" value="14">
+              <div class="range-labels"><span>5</span><b id="nightsVal" style="color:var(--teal-deep)">14 nights</b><span>28</span></div>
+            </div>
+            <div class="cz-block">
+              <h4>Travellers</h4>
+              <div class="stepper">
+                <button type="button" id="travMinus">−</button>
+                <div class="val" id="travVal">2</div>
+                <button type="button" id="travPlus">+</button>
+              </div>
+            </div>
+            <div class="cz-block">
+              <h4>Pace</h4>
+              <div class="radio-cards" id="paceGroup">
+                <label class="radio-card"><span>Relaxed — long stays, few transfers</span><input type="radio" name="pace" value="relaxed"></label>
+                <label class="radio-card"><span>Balanced</span><input type="radio" name="pace" value="balanced" checked></label>
+                <label class="radio-card"><span>Action-packed — see it all</span><input type="radio" name="pace" value="active"></label>
+              </div>
+            </div>
+            <div class="cz-block">
+              <h4>Preferred travel month</h4>
+              <input class="month-input" type="month" id="travelMonth" aria-describedby="seasonHint">
+              <p id="seasonHint" class="field-hint">Your live estimate adjusts for seasonal demand.</p>
+            </div>
+          </div>
+
+          <div class="marketplace-tabs" id="marketplaceTabs" role="tablist" aria-label="Plan your journey">
+            <button type="button" class="marketplace-tab active" role="tab" aria-selected="true" data-market-tab="stay">🏨 <span>Stay</span></button>
+            <button type="button" class="marketplace-tab" role="tab" aria-selected="false" data-market-tab="transport">🚗 <span>Getting Around</span></button>
+            <button type="button" class="marketplace-tab" role="tab" aria-selected="false" data-market-tab="guides">🧑‍💼 <span>Local Guides</span></button>
+          </div>
+          <div class="marketplace-panel active" data-market-panel="stay"><div id="plannerStay"></div></div>
+          <div class="marketplace-panel" data-market-panel="transport"><div id="plannerTransport"></div></div>
+          <div class="marketplace-panel" data-market-panel="guides"><div id="plannerGuides"></div></div>
+          <div class="panel-nav"><button class="btn btn-outline" data-prev="experiences">← Experiences</button><button class="btn btn-coral" data-next="summary">Review trip →</button></div>
+        </div>
+
+        <!-- STEP 7: TRIP SUMMARY -->
+        <div class="panel" data-panel="summary">
+          <div class="panel-intro">
+            <h3>Review and send your trip</h3>
+            <p>A consultant will reply — usually within a day — with a refined itinerary and confirmed pricing.</p>
+          </div>
+          <form id="enquireForm">
+            <div class="form-grid">
+              <div class="field"><label>Full name*</label><input required type="text" name="name"></div>
+              <div class="field"><label>Email*</label><input required type="email" name="email"></div>
+              <div class="field"><label>Nationality</label><input type="text" name="nationality"></div>
+              <div class="field"><label>Phone / WhatsApp</label><input type="tel" name="phone"></div>
+              <div class="field"><label>Preferred travel month</label><input type="text" name="dates" placeholder="e.g. February 2027"></div>
+              <div class="field"><label>Budget comfort level</label>
+                <select name="budget"><option>Flexible / not sure yet</option><option>Value-conscious</option><option>Mid-range comfort</option><option>Premium / no upper limit</option></select>
+              </div>
+              <div class="field full"><label>Anything else we should know?</label><textarea name="notes" rows="3" placeholder="Dietary needs, mobility considerations, special occasions..."></textarea></div>
+            </div>
+            <div class="panel-nav">
+              <button type="button" class="btn btn-outline" data-prev="planner">← Plan Your Journey</button>
+              <button type="submit" class="btn btn-coral">Send my trip request →</button>
+            </div>
+          </form>
+          <div id="confirmBox" style="display:none;" class="confirm-box">
+            <h3>Your trip is on its way ✈</h3>
+            <p id="confirmSummary">We've put together your request.</p>
+            <div class="confirm-actions">
+              <a href="#" id="mailtoBtn" class="btn btn-coral">Open in email</a>
+              <button type="button" id="copyBtn" class="btn btn-outline">Copy summary</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STICKY TRIP CARD -->
+      <aside class="trip-card reveal">
+        <h3>Your Journey <svg width="18" height="18" style="stroke:var(--gold-hi);fill:none;stroke-width:1.6"><use href="#i-map"/></svg></h3>
+        <svg class="trip-map" viewBox="0 0 220 400" id="tripMap">
+          <path d="M198.4,270.3 L190.6,314.7 L175.7,335.1 L145.2,356.3 L121.7,364.6 L103.0,374.8 L88.9,376.7 L73.2,371.1 L53.7,346.2 L47.4,316.5 L39.6,282.3 L36.4,262.0 L34.1,224.0 L27.8,176.9 L38.0,145.4 L47.4,117.7 L45.8,104.7 L55.2,90.9 L59.9,76.1 L56.0,61.2 L63.0,47.4 L73.2,38.1 L67.0,24.2 L63.0,17.8 L78.7,24.2 L94.3,42.7 L86.5,52.0 L106.1,61.2 L120.2,79.7 L133.5,102.9 L145.2,126.0 L157.0,149.1 L164.8,176.9 L172.6,190.7 L184.3,213.9 L190.6,237.0 L198.4,270.3 Z"
+            fill="rgba(246,239,223,0.05)" stroke="rgba(246,239,223,0.3)" stroke-width="1.4"/>
+          <path id="tripRoute" fill="none" stroke="var(--gold-hi)" stroke-width="1.6" class="route-anim" opacity="0.9"/>
+          <g id="tripPins"></g>
+        </svg>
+        <div id="tripEmpty" class="trip-empty">Pick a destination to start your route</div>
+        <div id="tripBody" style="display:none;">
+          <div class="trip-section"><div class="lbl">Travel Themes</div><div class="chip-list" id="chipsTheme"></div></div>
+          <div class="trip-section"><div class="lbl">Destinations</div><div class="chip-list" id="chipsDest"></div></div>
+          <div class="trip-section"><div class="lbl">Experiences</div><div class="chip-list" id="chipsExp"></div></div>
+          <div class="trip-section"><div class="lbl">Stay</div><div class="chip-list" id="chipsStay"><span style="opacity:.5;font-size:.78rem">None yet</span></div></div>
+          <div class="trip-section"><div class="lbl">Getting Around</div><div class="chip-list" id="chipsVehicle"><span style="opacity:.5;font-size:.78rem">None yet</span></div></div>
+          <div class="trip-section"><div class="lbl">Local Guide</div><div class="chip-list" id="chipsGuide"><span style="opacity:.5;font-size:.78rem">Optional</span></div></div>
+          <div class="trip-divider"></div>
+          <div class="trip-row"><span>Nights</span><span id="sumNights">14</span></div>
+          <div class="trip-row"><span>Travellers</span><span id="sumTrav">2</span></div>
+          <div class="trip-row"><span>Vehicle</span><span id="sumVehicle">Van</span></div>
+          <div class="trip-row"><span>Stay estimate</span><span id="sumAccommodation">$0</span></div>
+          <div class="trip-row"><span>Experiences</span><span id="sumActivities">$0</span></div>
+          <div class="trip-row"><span>Transport (by route)</span><span id="sumTransport">$0</span></div>
+          <div class="trip-row"><span>Season</span><span id="sumSeason">Shoulder season × 1</span></div>
+          <div class="trip-total"><span>Est. from</span><b id="sumPrice">$0</b></div>
+          <div class="trip-note">Ballpark estimate only — your consultant confirms final pricing.</div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section class="why" id="why">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <div class="eyebrow" style="justify-content:center">Why travellers choose us</div>
+      <h2>Local expertise, honest planning</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-item reveal"><div class="ic"><svg><use href="#i-tag"/></svg></div><h4>Fair, transparent pricing</h4><p>One quote, clearly broken down — no inflated "package" mark-ups.</p></div>
+      <div class="why-item reveal"><div class="ic"><svg><use href="#i-compass"/></svg></div><h4>Planned by locals</h4><p>Our consultants and guides grew up on this island. It shows in the details.</p></div>
+      <div class="why-item reveal"><div class="ic"><svg><use href="#i-heart"/></svg></div><h4>A named consultant</h4><p>One person, not a call centre, who knows your trip from first message to landing.</p></div>
+      <div class="why-item reveal"><div class="ic"><svg><use href="#i-clock"/></svg></div><h4>24-hour support</h4><p>A real number to call if anything changes while you're on the road.</p></div>
+      <div class="why-item reveal"><div class="ic"><svg><use href="#i-shield"/></svg></div><h4>Flexible &amp; fair terms</h4><p>Sensible rebooking and cancellation terms — we explain them upfront, in plain English.</p></div>
+      <div class="why-item reveal"><div class="ic"><svg><use href="#i-check"/></svg></div><h4>Secure booking</h4><p>Encrypted payments and a written itinerary before a cent changes hands.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="quotes" id="quotes">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Traveller stories</div>
+      <h2>What it's like once you land</h2>
+    </div>
+    <div class="quote-track">
+      <div class="quote-card reveal"><div class="stars">★★★★★</div><p>We changed our minds twice mid-trip and our guide simply rerouted us — nothing felt like an imposition. It felt like travelling with a friend who happened to know everything.</p><div class="who">Marta &amp; Jonas — Hamburg</div></div>
+      <div class="quote-card reveal"><div class="stars">★★★★★</div><p>The tea country leg was the highlight of eleven countries this year. Our driver knew every viewpoint the buses don't stop at.</p><div class="who">Alicia R. — Austin, TX</div></div>
+      <div class="quote-card reveal"><div class="stars">★★★★★</div><p>Booked for a honeymoon, ended up wishing we'd added another week. The pace they suggested was exactly right for us, even though we couldn't picture it beforehand.</p><div class="who">Tom &amp; Priya — London</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="marketplace" id="marketplace">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Curated marketplace</div>
+      <h2>Exceptional stays, vehicles and local experts</h2>
+      <p>Browse a preview of the partners our journey designers can weave into your private itinerary.</p>
+    </div>
+    <div class="market-group"><div class="market-heading"><h3>Handpicked stays</h3><span>Personally reviewed</span></div><div class="market-grid" id="market-hotels"></div></div>
+    <div class="market-group"><div class="market-heading"><h3>Private transport</h3><span>Chauffeur-driven</span></div><div class="market-grid" id="market-vehicles"></div></div>
+    <div class="market-group"><div class="market-heading"><h3>Local guides</h3><span>Licensed specialists</span></div><div class="market-grid" id="market-guides"></div></div>
+    <div class="partner-cta">
+      <div><span class="market-tag">Partner network</span><h3>Bring your Sri Lankan hospitality business to Roam Ceylon</h3><p>Partner registration is opening soon. Join the early-access list for onboarding.</p></div>
+      <a class="btn btn-dark" href="mailto:partners@roamceylon.com?subject=Roam%20Ceylon%20partner%20interest">Register interest</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA STRIP -->
+<section style="padding:70px 0;background:var(--sand-hi);">
+  <div class="wrap" style="text-align:center;">
+    <h2 style="font-size:clamp(1.6rem,3vw,2.2rem);">Ready to see your trip take shape?</h2>
+    <p style="max-width:480px;margin:0 auto 26px;">It takes about four minutes to build, and there's no obligation to book.</p>
+    <a href="#builder" class="btn btn-coral">Start building your trip</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="logo footer-logo"><img src="assets/logo/roam-ceylon-elephant.png" alt="Roam Ceylon" width="1536" height="1024"></div>
+        <p style="color:rgba(246,239,223,.65);font-size:.88rem;max-width:280px;">Private, tailor-made journeys across Sri Lanka — planned by a local team who'd rather build you one good trip than sell you ten packages.</p>
+      </div>
+      <div>
+        <h5>Explore</h5>
+        <ul><li><a href="#how">How it works</a></li><li><a href="#builder">Build a trip</a></li><li><a href="#why">Why us</a></li><li><a href="#quotes">Traveller stories</a></li></ul>
+      </div>
+      <div>
+        <h5>Company</h5>
+        <ul><li><a href="#">About us</a></li><li><a href="#">Our guides</a></li><li><a href="#">Sustainability</a></li><li><a href="#">Careers</a></li></ul>
+      </div>
+      <div>
+        <h5>Get in touch</h5>
+        <ul><li>hello@roamceylon.com</li><li>+94 71 307 7989</li><li>Colombo, Sri Lanka</li></ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Roam Ceylon. All rights reserved.</span>
+      <span>Terms · Privacy · Cookies</span>
+    </div>
+  </div>
+</footer>
+
+  <script type="module" src="/js/bootstrap.js"></script>
+</body>
+</html>

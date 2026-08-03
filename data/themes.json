@@ -1,0 +1,105 @@
+[
+  {
+    "id": "adventure",
+    "name": "Thrill & Adventure",
+    "icon": "i-mountain",
+    "description": "Rapids, surf breaks, highland trails and active journeys for curious explorers.",
+    "destinations": [
+      "kitulgala",
+      "belihuloya",
+      "arugambay",
+      "kalpitiya",
+      "hikkaduwa",
+      "dambulla",
+      "balapitiya"
+    ],
+    "heroImage": "https://images.pexels.com/photos/29366430/pexels-photo-29366430.jpeg?auto=compress&cs=tinysrgb&w=1400"
+  },
+  {
+    "id": "tropical",
+    "name": "Tropical Paradise",
+    "icon": "i-wave",
+    "description": "Palm-fringed bays, warm seas and unhurried coastal escapes.",
+    "destinations": [
+      "hikkaduwa",
+      "galle",
+      "mirissa",
+      "arugambay",
+      "pasikudah",
+      "trinco",
+      "nilaveli",
+      "mountlavinia",
+      "bentota"
+    ],
+    "heroImage": "https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1400"
+  },
+  {
+    "id": "wildlife",
+    "name": "Wild Encounters",
+    "icon": "i-elephant",
+    "description": "Leopards, elephants, birds and biodiverse landscapes with specialist naturalists.",
+    "destinations": [
+      "yala",
+      "minneriya",
+      "udawalawe",
+      "wilpattu"
+    ],
+    "heroImage": "https://images.pexels.com/photos/33130315/pexels-photo-33130315.jpeg?auto=compress&cs=tinysrgb&w=1400"
+  },
+  {
+    "id": "heritage",
+    "name": "Timeless Heritage",
+    "icon": "i-stupa",
+    "description": "Ancient kingdoms, sacred monuments and UNESCO-listed living history.",
+    "destinations": [
+      "kandy",
+      "sigiriya",
+      "anuradhapura",
+      "polonnaruwa",
+      "dambulla",
+      "galle"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34128249/pexels-photo-34128249.jpeg?auto=compress&cs=tinysrgb&w=1400"
+  },
+  {
+    "id": "culture",
+    "name": "Vibrant Culture",
+    "icon": "i-drum",
+    "description": "Food, festivals, craft and the island's multi-ethnic living traditions.",
+    "destinations": [
+      "kandy",
+      "colombo",
+      "galle",
+      "jaffna",
+      "kataragama"
+    ],
+    "heroImage": "https://images.pexels.com/photos/36638324/pexels-photo-36638324.jpeg?auto=compress&cs=tinysrgb&w=1400"
+  },
+  {
+    "id": "nature",
+    "name": "Breathtaking Nature",
+    "icon": "i-leaf",
+    "description": "Tea gardens, waterfalls, mountain air and scenic highland walks.",
+    "destinations": [
+      "nuwaraeliya",
+      "ella",
+      "dambulla"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34714748/pexels-photo-34714748.jpeg?auto=compress&cs=tinysrgb&w=1400"
+  },
+  {
+    "id": "wellness",
+    "name": "Holistic Wellness",
+    "icon": "i-lotus",
+    "description": "Ayurveda, yoga and restorative stays rooted in Sri Lankan healing traditions.",
+    "destinations": [
+      "tangalle",
+      "kalutara",
+      "kandy",
+      "weligama",
+      "ahungalla",
+      "sigiriya"
+    ],
+    "heroImage": "https://images.pexels.com/photos/3822622/pexels-photo-3822622.jpeg?auto=compress&cs=tinysrgb&w=1400"
+  }
+]

@@ -1,0 +1,36 @@
+@keyframes navIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes destinationIn {
+  from { opacity: 0; transform: translateY(14px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.filter-enter { animation: destinationIn .32s ease-out both; }
+.filter-enter:nth-child(2n) { animation-delay: .035s; }
+.filter-enter:nth-child(3n) { animation-delay: .07s; }
+.experience-card.filter-enter{animation:experienceIn .48s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--stagger,0ms);}
+@keyframes experienceIn{
+  from{opacity:0;transform:translateY(18px) scale(.975);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .experience-card.filter-enter{animation:none;}
+  .experience-card,.experience-media img{transition:none;}
+}
+
+@media (max-width: 900px) {
+  .nav-links.open { animation: navIn .2s ease-out; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
