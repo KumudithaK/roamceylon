@@ -66,7 +66,7 @@ export function ExperienceHero({experience,onClose}:{experience:JourneyExperienc
 export function ExperienceGallery({experience}:{experience:JourneyExperience}){
   const images=[experience.hero_image_url,...experience.gallery].filter((value,index,values):value is string=>Boolean(value)&&values.indexOf(value)===index);
   if(images.length<2)return null;
-  return <section className="shell py-16 md:py-24"><p className="eyebrow mb-5">In pictures</p><div className="grid auto-rows-[210px] gap-4 md:grid-cols-12 md:auto-rows-[260px]">{images.slice(0,5).map((image,index)=><div key={image} className={cn("relative overflow-hidden rounded-[1.75rem] bg-sand",index===0?"md:col-span-7 md:row-span-2":"md:col-span-5")}><Image src={image} alt={`${experience.name} — view ${index+1}`} fill sizes={index===0?"60vw":"40vw"} className="object-cover transition duration-700 hover:scale-[1.03]"/></div>)}</div></section>;
+  return <section className="shell py-16 md:py-24"><p className="eyebrow mb-5">In pictures</p><div className="grid auto-rows-[210px] gap-4 md:grid-cols-12 md:auto-rows-[260px]">{images.slice(0,5).map((image,index)=><div key={image} className={cn("relative overflow-hidden rounded-[1.75rem] bg-sand",index===0?"md:col-span-7 md:row-span-2":"md:col-span-5")}><Image src={image} alt={`${experience.name} — view ${index+1}`} fill sizes={index===0?"60vw":"40vw"} className="object-cover transition duration-700 hover:scale-[1.03]"/></div>)}</div>{experience.image_credit&&<p className="mt-4 max-w-5xl text-xs leading-5 text-stone/70">Image credits: {experience.image_credit}</p>}</section>;
 }
 
 function EditorialSection({eyebrow,title,copy,items}:{eyebrow:string;title:string;copy?:string|null;items?:string[]}){

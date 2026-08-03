@@ -136,27 +136,33 @@
   },
   {
     "id": "belihuloya-bakers-bend-4x4-off-road-adventure-safari",
-    "name": "Baker's Bend 4x4 off-road adventure safari",
-    "category": "Wildlife",
+    "name": "Baker's Bend 4x4 Off-Road Adventure Safari",
+    "category": "Adventure",
     "destinationIds": [
       "belihuloya"
     ],
     "themeIds": [
-      "adventure"
+      "adventure",
+      "nature"
     ],
-    "heroImage": "https://images.pexels.com/photos/33130315/pexels-photo-33130315.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/The_Bakers_Bend.jpg/1280px-The_Bakers_Bend.jpg",
     "gallery": [
-      "https://images.pexels.com/photos/33130315/pexels-photo-33130315.jpeg?auto=compress&cs=tinysrgb&w=1400"
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/The_Bakers_Bend.jpg/1280px-The_Bakers_Bend.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Belihuloya_mountain_range.jpg/1280px-Belihuloya_mountain_range.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Sri_Lanka_Belihuloya.jpg/1280px-Sri_Lanka_Belihuloya.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Belihuloya_Waterfall%2C_SriLanka.jpg/1280px-Belihuloya_Waterfall%2C_SriLanka.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Lanka_ella%2C_Belihuloya%2C_SriLanka.jpg/1280px-Lanka_ella%2C_Belihuloya%2C_SriLanka.jpg"
     ],
-    "shortDescription": "Discover baker's bend 4x4 off-road adventure safari through a thoughtfully paced experience shaped around your journey.",
-    "duration": null,
-    "difficulty": null,
-    "bestSeason": null,
-    "priority": "Must Do",
+    "shortDescription": "Climb through Nonpareil Estate by private 4x4 to Baker's Bend, a horseshoe-shaped highland viewpoint above Belihul Oya with immense valley and reservoir views.",
+    "duration": "Half day; final timing depends on estate access",
+    "difficulty": "Moderate — rough 4x4 road and uneven viewpoints",
+    "bestSeason": "Drier periods; access is weather-dependent",
+    "priority": "Hidden Gem",
     "tags": [
       "Belihul Oya",
-      "Wildlife",
-      "adventure"
+      "Adventure",
+      "nature",
+      "Photography Spot"
     ],
     "featured": true,
     "comingSoon": false
@@ -2242,29 +2248,35 @@
   },
   {
     "id": "kandy-experiencing-the-grand-annual-kandy-esala-perahera-festival-procession",
-    "name": "Experiencing the grand annual Kandy Esala Perahera festival procession",
+    "name": "Experiencing the Grand Annual Kandy Esala Perahera Festival Procession",
     "category": "Culture",
     "destinationIds": [
       "kandy"
     ],
     "themeIds": [
-      "culture"
+      "culture",
+      "heritage"
     ],
-    "heroImage": "https://images.pexels.com/photos/36638326/pexels-photo-36638326.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Elephants_of_Kandy_Esala_Perahera.jpg/1280px-Elephants_of_Kandy_Esala_Perahera.jpg",
     "gallery": [
-      "https://images.pexels.com/photos/36638326/pexels-photo-36638326.jpeg?auto=compress&cs=tinysrgb&w=1400"
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Elephants_of_Kandy_Esala_Perahera.jpg/1280px-Elephants_of_Kandy_Esala_Perahera.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Fire_spinning_show_at_Kandy_Esala_Perahera_in_Sri_Lanka.jpg/1280px-Fire_spinning_show_at_Kandy_Esala_Perahera_in_Sri_Lanka.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Fire_spirals_was_captured_at_Kandy_Esala_Perahera_in_Sri_Lanka.jpg/1280px-Fire_spirals_was_captured_at_Kandy_Esala_Perahera_in_Sri_Lanka.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Wheel_on_Fire_at_Kandy_Esala_Perahera.jpg/1280px-Wheel_on_Fire_at_Kandy_Esala_Perahera.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Pere_hare_festival_-_panoramio.jpg/1280px-Pere_hare_festival_-_panoramio.jpg"
     ],
-    "shortDescription": "Discover experiencing the grand annual kandy esala perahera festival procession through a thoughtfully paced experience shaped around your journey.",
-    "duration": null,
-    "difficulty": null,
-    "bestSeason": "Seasonal",
+    "shortDescription": "Witness Kandy's sacred annual procession from a carefully arranged vantage point as drummers, dancers, torchbearers and ceremonial traditions move through the historic city.",
+    "duration": "Evening experience; duration varies by procession night",
+    "difficulty": "Easy physically, with long evening hours and dense crowds",
+    "bestSeason": "Seasonal — official dates vary annually in July or August",
     "priority": "Seasonal",
     "tags": [
       "Kandy",
       "Culture",
-      "culture"
+      "heritage",
+      "Seasonal"
     ],
-    "featured": false,
+    "featured": true,
     "comingSoon": false
   },
   {
@@ -2863,29 +2875,35 @@
   },
   {
     "id": "dambulla-bird-watching-and-sunset-boat-rides-on-kandalama-reservoir",
-    "name": "Bird watching and sunset boat rides on Kandalama Reservoir",
-    "category": "Photography",
+    "name": "Bird Watching & Sunset Boat Ride on Kandalama Reservoir",
+    "category": "Nature",
     "destinationIds": [
       "dambulla"
     ],
     "themeIds": [
-      "nature"
+      "nature",
+      "wildlife"
     ],
-    "heroImage": "https://images.pexels.com/photos/36386565/pexels-photo-36386565.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Sun_setting_over_Kandalama_Lake%2C_Sri_Lanka.jpg/1280px-Sun_setting_over_Kandalama_Lake%2C_Sri_Lanka.jpg",
     "gallery": [
-      "https://images.pexels.com/photos/36386565/pexels-photo-36386565.jpeg?auto=compress&cs=tinysrgb&w=1400"
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Sun_setting_over_Kandalama_Lake%2C_Sri_Lanka.jpg/1280px-Sun_setting_over_Kandalama_Lake%2C_Sri_Lanka.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Kandalama_Lake.jpg/1280px-Kandalama_Lake.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Kandalama_Lake_in_Dambulla_DSC496.jpg/1280px-Kandalama_Lake_in_Dambulla_DSC496.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Kandalama_Lake%2C_Sri_Lanka.jpg/1280px-Kandalama_Lake%2C_Sri_Lanka.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Male_Purple-rumped_sunbird_in_sri_lanka.jpg/1280px-Male_Purple-rumped_sunbird_in_sri_lanka.jpg"
     ],
-    "shortDescription": "Discover bird watching and sunset boat rides on kandalama reservoir through a thoughtfully paced experience shaped around your journey.",
-    "duration": null,
-    "difficulty": null,
-    "bestSeason": null,
+    "shortDescription": "A quiet, low-impact boat journey across Kandalama Reservoir, timed for evening light and interpreted through the lake's resident and migratory birdlife.",
+    "duration": "Approximately 1–2 hours; operator and water level dependent",
+    "difficulty": "Easy — seated boat experience",
+    "bestSeason": "Year-round for residents; November to April for migratory birdlife",
     "priority": "Popular",
     "tags": [
       "Dambulla",
-      "Photography",
-      "nature"
+      "Nature",
+      "wildlife",
+      "Sunset Experience"
     ],
-    "featured": false,
+    "featured": true,
     "comingSoon": false
   },
   {
