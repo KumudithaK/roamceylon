@@ -68,7 +68,7 @@ export type PublicPackageQuote={
   pricePerPerson:number|null;
   estimatedDailyCost:number|null;
   components?:Array<{
-    category:"accommodation"|"transport"|"experiences"|"guide";
+    category:"accommodation"|"transport"|"experiences"|"destination_fees"|"guide";
     label:string;
     amount:number;
   }>;

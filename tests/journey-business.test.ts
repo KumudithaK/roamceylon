@@ -76,14 +76,17 @@ test("DMC package price includes supplier, operational, overhead and margin cost
   ];
   const quote=calculatePackageQuote({config,supplierCosts,selection,durationDays:2,distanceKm:100});
   assert.equal(quote.public.status,"ready");
-  assert.equal(quote.internalCost,1627.45);
-  assert.equal(quote.sellingPrice,2148.53);
-  assert.equal(quote.public.totalPackagePrice,2148.53);
-  assert.equal(quote.public.pricePerPerson,716.18);
-  assert.equal(quote.public.components?.reduce((total,item)=>total+item.amount,0),quote.public.totalPackagePrice);
-  assert.deepEqual(quote.public.components?.map(item=>item.label),["Accommodation","Private transport","Experiences & entry fees","Local guide"]);
+  assert.equal(quote.internalCost,1558.15);
+  assert.equal(quote.sellingPrice,2057.57);
+  assert.equal(quote.public.totalPackagePrice,2057.57);
+  assert.equal(quote.public.pricePerPerson,685.86);
+  assert.equal(quote.public.components?.reduce((total,item)=>total+item.amount,0),1330);
+  assert.deepEqual(quote.public.components?.map(item=>item.label),["Accommodation","Private transport","Experiences","Destination entry fees","Local guide"]);
+  assert.equal(quote.public.components?.find(item=>item.category==="experiences")?.amount,50);
+  assert.equal(quote.public.components?.find(item=>item.category==="destination_fees")?.amount,25);
   assert(!JSON.stringify(quote.public).includes("Driver salary"));
   assert(!JSON.stringify(quote.public).includes("Profit"));
+  assert(!quote.breakdown.some(line=>line.label==="Airport transfers"));
   assert(quote.breakdown.some(line=>line.label==="Fuel"));
   assert(quote.breakdown.some(line=>line.label==="Roam Ceylon service fee"));
   const buffered=calculatePackageQuote({config:{...config,routeDistanceBufferPercent:30},supplierCosts,selection,durationDays:2,distanceKm:100});
@@ -111,4 +114,19 @@ test("experience pricing uses that experience's participants, not the whole jour
   const updated=calculatePackageQuote({config,supplierCosts,selection:{...selection,experienceParticipants:{e1:{adults:1,children:0,infants:0}}},durationDays:1,distanceKm:0});
   assert.equal(updated.breakdown.find(line=>line.label==="Experience")?.amount,25);
   assert.equal(updated.public.totalPackagePrice,25);
+});
+
+test("public experience total is the exact sum of every selected experience and its participants",()=>{
+  const config={currency:"USD",roomOccupancy:2,childCostFactor:.5,routeDistanceBufferPercent:0,driverSalaryPerDay:null,fuelPricePerLitre:null,vehicleKmPerLitre:null,tollsPerJourney:null,parkingPerDay:null,guideAccommodationPerNight:null,airportTransferEachWay:30,administrationFixed:20,administrationPercent:5,contingencyPercent:10,serviceFeeFixed:10,serviceFeePercent:5,targetProfitMarginPercent:20};
+  const selection={selectedDestinationIds:[],selectedExperienceIds:["perahera","boat"],selectedStayIds:[],selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds:{},travelDates:{start:"2026-08-01",end:"2026-08-02"},travellerCounts:{adults:4,children:1,infants:0},experienceParticipants:{perahera:{adults:2,children:0,infants:0},boat:{adults:1,children:1,infants:0}}};
+  const supplierCosts:SupplierCost[]=[
+    {id:"perahera-plan",entityType:"experience",entityId:"perahera",category:"Perahera tickets",unit:"per_person",amount:100,partnerCommissionPercent:null},
+    {id:"boat-plan",entityType:"experience",entityId:"boat",category:"Boat tickets",unit:"per_person",amount:40,partnerCommissionPercent:null}
+  ];
+  const quote=calculatePackageQuote({config,supplierCosts,selection,durationDays:1,distanceKm:0});
+  assert.equal(quote.breakdown.find(line=>line.label==="Perahera tickets")?.amount,200);
+  assert.equal(quote.breakdown.find(line=>line.label==="Boat tickets")?.amount,60);
+  assert.equal(quote.public.components?.find(item=>item.category==="experiences")?.amount,260);
+  assert(quote.public.totalPackagePrice!>260);
+  assert(!quote.breakdown.some(line=>line.label==="Airport transfers"));
 });
