@@ -17,12 +17,7 @@ const emptyCounts:ParticipantCounts={adults:0,children:0,infants:0};
 const total=(counts:ParticipantCounts)=>counts.adults+counts.children+counts.infants;
 const withinTrip=(participants:ParticipantCounts,travellers:ParticipantCounts)=>participants.adults<=travellers.adults&&participants.children<=travellers.children&&participants.infants<=travellers.infants;
 const teaser=(value:string|null)=>value?.split(/[.!?]\s/)[0]?.trim()||"A remarkable Sri Lankan moment, thoughtfully discovered.";
-const experienceBadges=(experience:JourneyExperience)=>[
-  ...experience.badges,
-  ...(experience.family_friendly||experience.suitable_for_children?["Family friendly"]:[]),
-  ...(experience.private_option?["Private"]:[]),
-  ...(experience.featured?["Signature experience"]:[])
-].filter((value,index,values)=>value&&values.indexOf(value)===index).slice(0,3);
+const experienceBadges=(experience:JourneyExperience)=>experience.badges.filter((value,index,values)=>value&&values.indexOf(value)===index).slice(0,3);
 
 export function ExperienceCard({experience,onOpen,onRemove,compact=false,selected=false}:{experience:JourneyExperience;onOpen:()=>void;onRemove?:()=>void;compact?:boolean;selected?:boolean}){
   return <motion.article layout whileHover={{y:-6}} className={cn("group overflow-hidden rounded-[2rem] border-2 bg-white text-left transition",selected?"border-gold shadow-[0_24px_70px_rgba(193,140,45,.2)]":"border-transparent shadow-[0_24px_70px_rgba(26,40,35,.09)] hover:shadow-[0_30px_90px_rgba(26,40,35,.16)]")}>
@@ -66,7 +61,7 @@ export function ExperienceHero({experience,onClose}:{experience:JourneyExperienc
 export function ExperienceGallery({experience}:{experience:JourneyExperience}){
   const images=[experience.hero_image_url,...experience.gallery].filter((value,index,values):value is string=>Boolean(value)&&values.indexOf(value)===index);
   if(images.length<2)return null;
-  return <section className="shell py-16 md:py-24"><p className="eyebrow mb-5">In pictures</p><div className="grid auto-rows-[210px] gap-4 md:grid-cols-12 md:auto-rows-[260px]">{images.slice(0,5).map((image,index)=><div key={image} className={cn("relative overflow-hidden rounded-[1.75rem] bg-sand",index===0?"md:col-span-7 md:row-span-2":"md:col-span-5")}><Image src={image} alt={`${experience.name} — view ${index+1}`} fill sizes={index===0?"60vw":"40vw"} className="object-cover transition duration-700 hover:scale-[1.03]"/></div>)}</div>{experience.image_credit&&<p className="mt-4 max-w-5xl text-xs leading-5 text-stone/70">Image credits: {experience.image_credit}</p>}</section>;
+  return <section className="shell py-16 md:py-24"><p className="eyebrow mb-5">In pictures</p><div className="grid auto-rows-[210px] gap-4 md:grid-cols-12 md:auto-rows-[260px]">{images.slice(0,5).map((image,index)=><div key={image} className={cn("relative overflow-hidden rounded-[1.75rem] bg-sand",index===0?"md:col-span-7 md:row-span-2":"md:col-span-5")}><Image src={image} alt={experience.gallery_alt_texts[index]||`${experience.name} — view ${index+1}`} fill sizes={index===0?"60vw":"40vw"} className="object-cover transition duration-700 hover:scale-[1.03]"/></div>)}</div>{experience.image_credit&&<p className="mt-4 max-w-5xl text-xs leading-5 text-stone/70">Image credits: {experience.image_credit}</p>}</section>;
 }
 
 function EditorialSection({eyebrow,title,copy,items}:{eyebrow:string;title:string;copy?:string|null;items?:string[]}){
