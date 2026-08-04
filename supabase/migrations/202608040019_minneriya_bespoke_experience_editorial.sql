@@ -3,7 +3,7 @@ begin;
 create temporary table minneriya_editorial as
 select * from jsonb_to_recordset($content$[
   {
-    "slug":"minneriya-witnessing-the-elephant-gathering-hundreds-of-wild-elephants-congregate-",
+    "slug":"minneriya-witnessing-the-elephant-gathering-hundreds-of-wild-elephants-congregate",
     "name":"Minneriya Elephant Gathering Safari",
     "category":"Wildlife",
     "short":"Enter Minneriya with a responsible private jeep team to search for wild elephants around the ancient reservoir, treating the celebrated Gathering as a seasonal possibility—not a guaranteed spectacle.",
