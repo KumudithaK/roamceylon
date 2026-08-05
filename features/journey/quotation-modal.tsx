@@ -2,7 +2,7 @@
 
 import {zodResolver} from "@hookform/resolvers/zod";
 import {CheckCircle2,X} from "lucide-react";
-import {useEffect,useState} from "react";
+import {useEffect,useRef,useState} from "react";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {Button} from "@/components/ui/button";
@@ -22,14 +22,15 @@ const schema=z.object({
 }).refine(values=>!values.arrival||!values.departure||values.departure>=values.arrival,{message:"Departure must be after arrival.",path:["departure"]});
 type FormData=z.infer<typeof schema>;
 
-export function QuotationModal({open,onClose,state,quote}:{open:boolean;onClose:()=>void;state:JourneyState;quote:PublicPackageQuote|null}){
+export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:boolean;onClose:()=>void;onSubmitted:()=>void;state:JourneyState;quote:PublicPackageQuote|null}){
   const [sent,setSent]=useState(false);
   const [submitError,setSubmitError]=useState("");
+  const wasOpen=useRef(false);
   const {register,handleSubmit,reset,formState:{errors,isSubmitting}}=useForm<FormData>({
     resolver:zodResolver(schema),
     defaultValues:{arrival:state.travelDates.start,departure:state.travelDates.end}
   });
-  useEffect(()=>{if(open){setSent(false);setSubmitError("");reset({name:"",phone:"",email:"",country:"",arrival:state.travelDates.start,departure:state.travelDates.end,notes:""});}},[open,reset,state.travelDates.end,state.travelDates.start]);
+  useEffect(()=>{const justOpened=open&&!wasOpen.current;wasOpen.current=open;if(justOpened){setSent(false);setSubmitError("");reset({name:"",phone:"",email:"",country:"",arrival:state.travelDates.start,departure:state.travelDates.end,notes:""});}},[open,reset,state.travelDates.end,state.travelDates.start]);
   useEffect(()=>{
     if(!open)return;
     const close=(event:KeyboardEvent)=>{if(event.key==="Escape")onClose();};
@@ -64,12 +65,13 @@ export function QuotationModal({open,onClose,state,quote}:{open:boolean;onClose:
       selected_guide:submittedState.selectedGuideId
     });
     if(error){setSubmitError("We could not send your journey request. Please try again.");return}
+    onSubmitted();
     setSent(true);
   };
   return <div role="dialog" aria-modal="true" aria-labelledby="quotation-title" className="fixed inset-0 z-[100] grid place-items-center overflow-y-auto bg-slate/70 p-4 backdrop-blur-sm" onMouseDown={event=>{if(event.target===event.currentTarget)onClose();}}>
     <div className="relative my-6 w-full max-w-3xl overflow-hidden rounded-[2rem] bg-ivory shadow-2xl">
       <button onClick={onClose} aria-label="Close quotation form" className="absolute right-5 top-5 z-10 grid size-10 place-items-center rounded-full bg-white/90 text-slate shadow"><X className="size-5"/></button>
-      {sent?<div className="grid min-h-[430px] place-items-center p-10 text-center"><div><CheckCircle2 className="mx-auto size-14 text-gold"/><p className="eyebrow mt-6">Request received</p><h2 id="quotation-title" className="mt-3 font-serif text-4xl">Your journey designer is on it.</h2><p className="mx-auto mt-4 max-w-lg text-slate/60">We’ve received your journey details. Your dedicated Roam Ceylon journey designer will be in touch within 24 hours to begin shaping your proposal.</p><Button className="mt-8" onClick={onClose}>Return to my journey</Button></div></div>:
+      {sent?<div className="grid min-h-[430px] place-items-center p-10 text-center"><div><CheckCircle2 className="mx-auto size-14 text-gold"/><p className="eyebrow mt-6">Request received</p><h2 id="quotation-title" className="mt-3 font-serif text-4xl">Your journey designer is on it.</h2><p className="mx-auto mt-4 max-w-lg text-slate/60">We’ve received your journey details. Your dedicated Roam Ceylon journey designer will be in touch within 24 hours to begin shaping your proposal. Your builder is now ready for a fresh journey.</p><Button className="mt-8" onClick={onClose}>Start a new journey</Button></div></div>:
       <form onSubmit={handleSubmit(submit)}>
         <div className="bg-forest px-7 py-8 pr-20 text-ivory md:px-10"><p className="eyebrow text-gold-light">Private, tailor-made travel</p><h2 id="quotation-title" className="mt-2 font-serif text-3xl md:text-4xl">Request your journey proposal.</h2><p className="mt-3 max-w-xl text-sm leading-6 text-ivory/65">Share a few details and your Roam Ceylon journey designer will personally review every part of your trip.</p></div>
         <div className="grid gap-5 p-7 md:grid-cols-2 md:p-10">

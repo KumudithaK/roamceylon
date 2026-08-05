@@ -16,7 +16,7 @@ import {getRouteEstimate} from "@/lib/journey/route";
 import {usePackageQuote} from "@/lib/pricing/use-package-quote";
 import type {JourneyGuide,JourneyStay,JourneyVehicle,ParticipantCounts} from "@/lib/types";
 import {cn} from "@/lib/utils";
-import {JourneyProvider,pricingPlanKey,useJourney,type JourneyInitialSelection} from "./journey-store";
+import {emptyJourneyState,JourneyProvider,pricingPlanKey,useJourney,type JourneyInitialSelection} from "./journey-store";
 import {QuotationModal} from "./quotation-modal";
 
 const steps=["Theme","Destination","Experience","Plan"] as const;
@@ -118,7 +118,7 @@ function Builder({data}:{data:JourneyBootstrap}){
       </motion.div></AnimatePresence>
     </section>
     <Summary data={data} quoteState={packageQuote} onQuotation={()=>setQuotationOpen(true)}/>
-  </div><QuotationModal open={quotationOpen} onClose={()=>setQuotationOpen(false)} state={state} quote={packageQuote.quote}/></>;
+  </div><QuotationModal open={quotationOpen} onClose={()=>setQuotationOpen(false)} onSubmitted={()=>dispatch({type:"hydrate",state:emptyJourneyState})} state={state} quote={packageQuote.quote}/></>;
 }
 
 function Empty({text}:{text:string}){return <div className="rounded-2xl border border-dashed border-stone/30 p-8 text-sm text-stone">{text}</div>}
