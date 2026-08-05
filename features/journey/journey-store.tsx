@@ -146,8 +146,8 @@ export function JourneyProvider({data,initialSelection,children}:{data:JourneyBo
     const restore=()=>{
       const saved=readJourneyState();
       if(!saved)return;
-      const hasLaunchSelection=Boolean(initialSelection?.themeId||initialSelection?.themeIds?.length||initialSelection?.destinationIds?.length||initialSelection?.experienceId);
-      dispatch({type:"hydrate",state:hasLaunchSelection?{
+      const hasLaunchParameters=Boolean(initialSelection?.themeId||initialSelection?.themeIds?.length||initialSelection?.destinationIds?.length||initialSelection?.experienceId||initialSelection?.step!==undefined);
+      dispatch({type:"hydrate",state:hasLaunchParameters?{
         ...saved,
         selectedThemeIds:[...new Set([...saved.selectedThemeIds,...startingState.selectedThemeIds])],
         selectedDestinationIds:[...new Set([...saved.selectedDestinationIds,...startingState.selectedDestinationIds])],
