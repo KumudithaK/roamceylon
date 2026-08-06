@@ -11,7 +11,7 @@
       "kalpitiya",
       "hikkaduwa",
       "dambulla",
-      "balapitiya"
+      "ahungalla"
     ],
     "heroImage": "https://images.pexels.com/photos/29366430/pexels-photo-29366430.jpeg?auto=compress&cs=tinysrgb&w=1400"
   },
@@ -27,8 +27,7 @@
       "arugambay",
       "pasikudah",
       "trinco",
-      "nilaveli",
-      "mountlavinia",
+      "colombo",
       "bentota"
     ],
     "heroImage": "https://images.pexels.com/photos/1450360/pexels-photo-1450360.jpeg?auto=compress&cs=tinysrgb&w=1400"
@@ -101,5 +100,30 @@
       "sigiriya"
     ],
     "heroImage": "https://images.pexels.com/photos/3822622/pexels-photo-3822622.jpeg?auto=compress&cs=tinysrgb&w=1400"
+  },
+  {
+    "id": "sporting",
+    "name": "Sporting Sri Lanka",
+    "icon": "i-trophy",
+    "description": "Cricket occasions, golf, surf, diving, paddling and active island journeys for travellers who come to watch or participate.",
+    "destinations": [
+      "colombo",
+      "galle",
+      "kandy",
+      "dambulla",
+      "arugambay",
+      "weligama",
+      "hikkaduwa",
+      "kalpitiya",
+      "kitulgala",
+      "belihuloya",
+      "pasikudah",
+      "trinco",
+      "bentota",
+      "nuwaraeliya",
+      "ella",
+      "ahungalla"
+    ],
+    "heroImage": "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400"
   }
 ]
