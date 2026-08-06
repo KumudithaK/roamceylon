@@ -1,2 +1,51 @@
-import {EditorialPage} from "@/components/site/editorial-page";
-export default function Page(){return <EditorialPage eyebrow="Our point of view" title="A better way to experience Sri Lanka." intro="Roam Ceylon connects thoughtful travellers with the places, people and experiences that make this island extraordinary."><h2 className="heading">Built here. Designed around you.</h2><p>We believe a remarkable journey starts with listening. Our platform helps you discover freely, then brings local intelligence into every route, stay and introduction.</p><p>We choose depth over volume, clarity over sales pressure and trusted human relationships over anonymous packages.</p></EditorialPage>}
+import type {Metadata} from "next";
+import {AboutPage} from "@/features/about/about-page";
+import {createPublicClient} from "@/lib/supabase/server";
+
+const siteUrl=(process.env.NEXT_PUBLIC_SITE_URL||"https://roamceylon.com").replace(/\/$/,"");
+
+export const metadata:Metadata={
+  title:"About Roam Ceylon — Sri Lanka Destination Management Company",
+  description:"Meet Roam Ceylon, a Sri Lanka Destination Management Company creating tailor-made, personalised journeys through local expertise, thoughtful design and human care.",
+  alternates:{canonical:"/about"},
+  openGraph:{
+    title:"About Roam Ceylon — Journeys thoughtfully designed",
+    description:"Local knowledge, thoughtful design and modern technology for personalised journeys across Sri Lanka.",
+    url:"/about",
+    images:[{url:"/og.png",width:1200,height:630,alt:"Roam Ceylon — tailor-made journeys across Sri Lanka"}]
+  },
+  twitter:{card:"summary_large_image",title:"About Roam Ceylon",description:"Journeys thoughtfully designed. Sri Lanka deeply understood.",images:["/og.png"]}
+};
+
+async function companyDetails(){
+  const fallback={email:"hello@roamceylon.com",telephone:"+94 71 307 7989"};
+  const supabase=createPublicClient();
+  if(!supabase)return fallback;
+  const {data,error}=await supabase.from("website_settings").select("enquiry_email,contact_phone").limit(1).maybeSingle();
+  if(error){
+    console.error(`[about:website-settings] ${error.code}: ${error.message}`);
+    return fallback;
+  }
+  return {email:data?.enquiry_email||fallback.email,telephone:data?.contact_phone||fallback.telephone};
+}
+
+export default async function Page(){
+  const company=await companyDetails();
+  const organisation={
+    "@context":"https://schema.org",
+    "@type":["Organization","TravelAgency"],
+    name:"Roam Ceylon",
+    legalName:"Roam Ceylon Atelier (Private) Limited",
+    url:siteUrl,
+    logo:`${siteUrl}/assets/logo/roam-ceylon-elephant-transparent.png`,
+    email:company.email,
+    telephone:company.telephone,
+    address:{"@type":"PostalAddress",addressCountry:"LK",addressLocality:"Colombo"},
+    areaServed:{"@type":"Country",name:"Sri Lanka"},
+    description:"A technology-enabled Destination Management Company designing and coordinating personalised journeys across Sri Lanka."
+  };
+  return <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(organisation).replace(/</g,"\\u003c")}}/>
+    <AboutPage siteUrl={siteUrl} email={company.email} telephone={company.telephone}/>
+  </>;
+}
