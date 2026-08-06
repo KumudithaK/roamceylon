@@ -155,6 +155,21 @@
     "comingSoon": false
   },
   {
+    "id": "hambantota",
+    "name": "Hambantota",
+    "province": "Southern",
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/c/ca/Mahinda_Rajapaksa_International_Cricket_Stadium.jpg",
+    "shortDescription": "A deep-south sporting gateway for international cricket and coastal resort golf.",
+    "coordinates": {
+      "lat": 6.1241,
+      "lon": 81.1185
+    },
+    "themeIds": [
+      "sporting"
+    ],
+    "comingSoon": false
+  },
+  {
     "id": "hikkaduwa",
     "name": "Hikkaduwa",
     "province": "Southern",

@@ -31,7 +31,7 @@ export class PricingPlanOptionRepository{
 }
 
 export class ThemeRepository{
-  async getPublished():Promise<Theme[]>{const rows=ensure("Read published themes",await client().from("themes").select("*").eq("status","published").eq("active",true).order("display_order").order("name"));return rows.map(row=>({...row,why_choose:asStrings(row.why_choose),suggested_itinerary:asStrings(row.suggested_itinerary),gallery:asStrings(row.gallery)}))}
+  async getPublished():Promise<Theme[]>{const rows=ensure("Read published themes",await client().from("themes").select("*").eq("status","published").eq("active",true).order("display_order").order("name"));return rows.map(row=>({...row,highlights:asStrings(row.highlights),badges:asStrings(row.badges),why_choose:asStrings(row.why_choose),suggested_itinerary:asStrings(row.suggested_itinerary),gallery:asStrings(row.gallery)}))}
   async getWithDestinations():Promise<JourneyTheme[]>{const themes=await this.getPublished();const ids=themes.map(x=>x.id);if(!ids.length)return[];const links=ensure("Read theme destination relationships",await client().from("theme_destinations").select("*").in("theme_id",ids));return themes.map(theme=>({...theme,destinationIds:links.filter(x=>x.theme_id===theme.id).map(x=>x.destination_id)}))}
 }
 export class DestinationRepository{

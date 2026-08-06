@@ -105,25 +105,14 @@
     "id": "sporting",
     "name": "Sporting Sri Lanka",
     "icon": "i-trophy",
-    "description": "Cricket occasions, golf, surf, diving, paddling and active island journeys for travellers who come to watch or participate.",
+    "description": "Experience Sri Lanka through its rich sporting culture, iconic venues and world-class sporting experiences.",
     "destinations": [
       "colombo",
-      "galle",
       "kandy",
-      "dambulla",
-      "arugambay",
-      "weligama",
-      "hikkaduwa",
-      "kalpitiya",
-      "kitulgala",
-      "belihuloya",
-      "pasikudah",
-      "trinco",
-      "bentota",
-      "nuwaraeliya",
-      "ella",
-      "ahungalla"
+      "galle",
+      "hambantota",
+      "nuwaraeliya"
     ],
-    "heroImage": "https://images.pexels.com/photos/34714750/pexels-photo-34714750.jpeg?auto=compress&cs=tinysrgb&w=1400"
+    "heroImage": "https://upload.wikimedia.org/wikipedia/commons/0/00/Floodlighted_RPS_International_Cricket_Stadium.jpg"
   }
 ]
