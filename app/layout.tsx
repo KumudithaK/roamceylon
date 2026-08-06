@@ -8,7 +8,7 @@ const manrope=Manrope({subsets:["latin"],variable:"--font-manrope",display:"swap
 const playfair=Playfair_Display({subsets:["latin"],variable:"--font-playfair",display:"swap"});
 
 export const metadata:Metadata={
-  metadataBase:new URL(process.env.NEXT_PUBLIC_SITE_URL||"https://roamceylon.com"),
+  metadataBase:new URL(process.env.NEXT_PUBLIC_SITE_URL||"https://theroamceylon.com"),
   title:{default:"Roam Ceylon — Journeys that connect",template:"%s | Roam Ceylon"},
   description:"Design a private Sri Lankan journey through remarkable places, experiences and trusted local partners.",
   alternates:{canonical:"/"},

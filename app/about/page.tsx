@@ -2,7 +2,7 @@ import type {Metadata} from "next";
 import {AboutPage} from "@/features/about/about-page";
 import {createPublicClient} from "@/lib/supabase/server";
 
-const siteUrl=(process.env.NEXT_PUBLIC_SITE_URL||"https://roamceylon.com").replace(/\/$/,"");
+const siteUrl=(process.env.NEXT_PUBLIC_SITE_URL||"https://theroamceylon.com").replace(/\/$/,"");
 
 export const metadata:Metadata={
   title:"About Roam Ceylon — Sri Lanka Destination Management Company",
@@ -10,7 +10,7 @@ export const metadata:Metadata={
   alternates:{canonical:"/about"},
   openGraph:{
     title:"About Roam Ceylon — Journeys thoughtfully designed",
-    description:"Local knowledge, thoughtful design and modern technology for personalised journeys across Sri Lanka.",
+    description:"Local knowledge, thoughtful design and deeply personal journeys, composed with care across Sri Lanka.",
     url:"/about",
     images:[{url:"/og.png",width:1200,height:630,alt:"Roam Ceylon — tailor-made journeys across Sri Lanka"}]
   },
@@ -42,10 +42,10 @@ export default async function Page(){
     telephone:company.telephone,
     address:{"@type":"PostalAddress",addressCountry:"LK",addressLocality:"Colombo"},
     areaServed:{"@type":"Country",name:"Sri Lanka"},
-    description:"A technology-enabled Destination Management Company designing and coordinating personalised journeys across Sri Lanka."
+    description:"A Sri Lankan journey atelier creating and coordinating deeply personal, tailor-made journeys across the island."
   };
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(organisation).replace(/</g,"\\u003c")}}/>
-    <AboutPage siteUrl={siteUrl} email={company.email} telephone={company.telephone}/>
+    <AboutPage email={company.email} telephone={company.telephone}/>
   </>;
 }
