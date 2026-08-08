@@ -48,3 +48,11 @@ test("admin journey lifecycle exposes the canonical DMC workflow",()=>{
     assert.match(workflow,new RegExp(label));
   }
 });
+
+test("allocation editors initialise complete controlled drafts before matching saved rates",()=>{
+  const workspace=read("../features/admin/journey-lifecycle-workspace.tsx");
+  assert.match(workspace,/const base=current\[key\]\?\?\(scope\?draftFromScope\(scope\):emptyDraft/);
+  assert.match(workspace,/plan\.entity_type===draft\.type&&plan\.entity_id===draft\.resourceId/);
+  assert.match(workspace,/value=\{draft\.providerName\?\?""\}/);
+  assert.match(workspace,/value=\{draft\.currency\?\?"USD"\}/);
+});
