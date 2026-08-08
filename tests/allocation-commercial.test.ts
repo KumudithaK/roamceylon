@@ -21,10 +21,25 @@ test("manual traveller subtotals are a floor and are not marked up again",()=>{
   assert.ok(result.breakdown.some(line=>line.category==="commercial_floor"));
 });
 
+test("journey overrides can remove operations and replace administration and contingency",()=>{
+  const result=calculateAllocationCommercials([{type:"vehicle",supplierCost:100,sellingPrice:null,pricingPlanSnapshot:{details:{driverIncluded:false,fuelIncluded:false}},serviceDetails:{},confirmationStatus:"confirmed"}],config,{days:2,nights:1,distanceKm:100},{driverOperations:0,fuel:20,tolls:0,parking:0,administration:12,contingency:0});
+  assert.equal(result.operationsCost,20);
+  assert.equal(result.administrationFee,12);
+  assert.equal(result.contingency,0);
+  assert.equal(result.internalCost,132);
+  assert.ok(!result.breakdown.some(line=>line.key==="driver-salary"));
+  assert.ok(result.breakdown.some(line=>line.key==="fuel"&&line.amount===20));
+});
+
 test("proposal wording describes a per-person accommodation rate clearly",()=>{
   const line=proposalLinePresentation({type:"accommodation",resourceName:"Anuradhapura Heritage Villa",serviceName:"Heritage stay",destinationName:"Anuradhapura",pricingPlanSnapshot:{chargingMethod:"per_person"},serviceDetails:{guests:4,nights:2}});
   assert.equal(line.title,"Anuradhapura Heritage Villa");
   assert.equal(line.subtitle,"Heritage stay · 4 guests × 2 nights · Anuradhapura");
+});
+
+test("legacy per-person proposal snapshots never describe guests as rooms",()=>{
+  const line=proposalLinePresentation({type:"accommodation",resourceName:"Anuradhapura Heritage Villa",serviceName:"Per Person",quantityLabel:"guest nights",destinationName:"Anuradhapura",pricingPlanSnapshot:{},serviceDetails:{guests:4,rooms:3,nights:2}});
+  assert.equal(line.subtitle,"Per Person · 4 guests × 2 nights · Anuradhapura");
 });
 
 test("per-person accommodation rates multiply guests by nights",()=>{

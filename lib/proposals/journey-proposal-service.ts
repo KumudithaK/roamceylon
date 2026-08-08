@@ -1,6 +1,7 @@
 import "server-only";
 import {createAdminClient} from "@/lib/supabase/admin";
 import {allocationCommercialSnapshot} from "@/lib/accounting/allocation-accounting";
+import type {AllocationCommercialOverrides} from "@/lib/pricing/allocation-commercial";
 import {experienceAllocationKey,hasOwnJourneyGuideSnapshot,journeyAllocationScopes,journeyGuideAllocationKey} from "@/lib/admin/journey-allocations";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import type {Database,Json} from "@/lib/database.types";
@@ -16,7 +17,7 @@ export class ProposalError extends Error{
   constructor(public code:"NOT_FOUND"|"INCOMPLETE"|"DATABASE",message:string){super(message);this.name="ProposalError"}
 }
 
-export async function generateJourneyProposal(enquiryId:string,userId:string,details:{introduction?:string;terms?:string;validUntil?:string}){
+export async function generateJourneyProposal(enquiryId:string,userId:string,details:{introduction?:string;terms?:string;validUntil?:string;commercialOverrides?:AllocationCommercialOverrides}){
   const database=createAdminClient();
   if(!database)throw new ProposalError("DATABASE","Supabase server credentials are unavailable.");
   const {data:enquiry,error}=await database.from("enquiries").select("*").eq("id",enquiryId).maybeSingle();
@@ -39,7 +40,7 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
     journeyGuidePreference:hasGlobalGuide?handoff?.state.journeyGuidePreference:undefined,
     specialistGuidePreferencesByDestination:hasGlobalGuide&&destinationPreferences?Object.fromEntries(destinationIds.map(id=>[id,destinationPreferences[id]?.specialistGuidePreference??"none"])):undefined
   });
-  const commercial=await allocationCommercialSnapshot(enquiryId);
+  const commercial=await allocationCommercialSnapshot(enquiryId,details.commercialOverrides);
   const active=commercial.allocations.filter(row=>row.confirmation_status!=="cancelled");
   const available=new Set(active.map(allocationKey));
   const missing=required.filter(scope=>!available.has(scope.key));

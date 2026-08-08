@@ -7,7 +7,9 @@ const plural=(value:number,one:string,many=`${one}s`)=>`${value} ${value===1?one
 
 export function proposalLinePresentation(line:Record<string,Json>){
   const type=text(line.type),details=record(line.serviceDetails),plan=record(line.pricingPlanSnapshot);
-  const method=text(plan.chargingMethod),service=text(line.serviceName)||text(line.resourceName);
+  const service=text(line.serviceName)||text(line.resourceName),quantityLabel=text(line.quantityLabel).toLowerCase();
+  const storedMethod=text(plan.chargingMethod)||text(plan.charging_method);
+  const method=storedMethod||(/per person/i.test(service)||quantityLabel.includes("guest")?"per_person":"");
   const destination=text(line.destinationName),from=text(line.fromDestinationName),to=text(line.toDestinationName);
   if(type==="accommodation"){
     const guests=number(details.guests),rooms=number(details.rooms),nights=number(details.nights);

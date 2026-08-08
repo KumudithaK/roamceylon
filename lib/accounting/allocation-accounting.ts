@@ -1,7 +1,7 @@
 import "server-only";
 import {createAdminClient} from "@/lib/supabase/admin";
 import {getRouteEstimate} from "@/lib/journey/route";
-import {calculateAllocationCommercials,type AllocationCommercialConfig} from "@/lib/pricing/allocation-commercial";
+import {calculateAllocationCommercials,type AllocationCommercialConfig,type AllocationCommercialOverrides} from "@/lib/pricing/allocation-commercial";
 import type {Database,Json} from "@/lib/database.types";
 
 type Allocation=Database["public"]["Tables"]["journey_supplier_allocations"]["Row"];
@@ -40,7 +40,7 @@ export type AllocationSnapshotLine={
 const asJson=(value:unknown)=>JSON.parse(JSON.stringify(value)) as Json;
 const resourceId=(row:Allocation)=>row.accommodation_id??row.guide_id??row.vehicle_id??row.experience_id;
 
-export async function allocationCommercialSnapshot(enquiryId:string){
+export async function allocationCommercialSnapshot(enquiryId:string,overrides:AllocationCommercialOverrides={}){
   const database=createAdminClient();
   if(!database)throw new Error("Supabase server credentials are unavailable.");
   const [{data:rows,error},{data:enquiry,error:enquiryError},{data:config,error:configError}]=await Promise.all([
@@ -101,8 +101,8 @@ export async function allocationCommercialSnapshot(enquiryId:string){
     serviceFeeFixed:Number(config.service_fee_fixed??0),serviceFeePercent:Number(config.service_fee_percent??0),targetProfitMarginPercent:Number(config.target_profit_margin_percent??0),
     routeDistanceBufferPercent:Number(config.route_distance_buffer_percent??0)
   };
-  const summary=calculateAllocationCommercials(allocations.map(row=>({type:row.allocation_type,supplierCost:row.supplier_cost===null?null:Number(row.supplier_cost),sellingPrice:row.selling_price===null?null:Number(row.selling_price),pricingPlanSnapshot:row.pricing_plan_snapshot,serviceDetails:row.service_details,confirmationStatus:row.confirmation_status})),pricingConfig,{days,nights:Math.max(0,days-1),distanceKm:route.estimatedDistance});
-  return {allocations,snapshot,summary,commercialContext:{days,nights:Math.max(0,days-1),distanceKm:route.estimatedDistance,config:pricingConfig}};
+  const summary=calculateAllocationCommercials(allocations.map(row=>({type:row.allocation_type,supplierCost:row.supplier_cost===null?null:Number(row.supplier_cost),sellingPrice:row.selling_price===null?null:Number(row.selling_price),pricingPlanSnapshot:row.pricing_plan_snapshot,serviceDetails:row.service_details,confirmationStatus:row.confirmation_status})),pricingConfig,{days,nights:Math.max(0,days-1),distanceKm:route.estimatedDistance},overrides);
+  return {allocations,snapshot,summary,commercialContext:{days,nights:Math.max(0,days-1),distanceKm:route.estimatedDistance,config:pricingConfig,overrides}};
 }
 
 const isAllocationAccount=(account:Account)=>{
@@ -159,7 +159,8 @@ export async function syncAllocationAccounting(enquiryId:string,userId?:string){
       :await database.from("journey_settlements").insert(payload);
     if(result.error)throw new Error(result.error.message);
   }
-  const operationLines=commercial.summary.breakdown.filter(line=>line.category==="operations"&&line.amount>0);
+  const approvedBreakdown=approvedSummary&&Array.isArray(approvedSummary.breakdown)?approvedSummary.breakdown as unknown as typeof commercial.summary.breakdown:null;
+  const operationLines=(approvedBreakdown??commercial.summary.breakdown).filter(line=>line.category==="operations"&&line.amount>0);
   for(const line of operationLines){
     const sourceKey=`business-operation:${line.key}`;
     const existing=settlements.find(item=>item.source_key===sourceKey);
