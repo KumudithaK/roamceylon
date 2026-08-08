@@ -1,10 +1,40 @@
 import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
 import test from "node:test";
 import {availableDestinations,availableExperiences} from "../lib/journey/journey-selectors.ts";
 import {calculatePackageQuote} from "../lib/pricing/package-engine.ts";
 import type {SupplierCost} from "../lib/pricing/package-types.ts";
 import {getNearbyDestinations,getRouteEstimate} from "../lib/journey/route.ts";
 import {includeExperienceSelection,removeExperienceSelection} from "../lib/journey/journey-selection.ts";
+import {guidePreferenceOptions,normaliseDestinationPreferences,stayPreferenceOptions} from "../lib/journey/journey-preferences.ts";
+
+test("public builder follows the six-step preference flow without stay or guide supplier selectors",()=>{
+  const source=readFileSync(new URL("../features/journey/journey-builder.tsx",import.meta.url),"utf8");
+  assert.match(source,/\["Theme","Destination","Experience","Journey Preferences","Journey Details","Review"\]/);
+  assert.match(source,/selectedStayIds:\[\]/);
+  assert.match(source,/selectedGuideId:null/);
+  assert.doesNotMatch(source,/availableStays\(|data\.guides\.(?:map|filter)|Local Guides/);
+});
+
+test("destination journey preferences expose the approved stay and guide choices",()=>{
+  assert.deepEqual(stayPreferenceOptions.map(([,label])=>label),[
+    "5-Star Class Resorts","4-Star Class Resorts","Boutique Hotels & Villas","Guest Houses","Homestays","Bungalows","Eco-Lodges & Tented Camps","Wellness Retreats","Let Roam Ceylon Recommend"
+  ]);
+  assert.deepEqual(guidePreferenceOptions.map(([,label])=>label),[
+    "National Tourist Guide","Chauffeur Tourist Guide","Area Tourist Guide","Site Tourist Guide","Wildlife Tracker / Safari Guide","Adventure / Trekking Guide","No Guide","Let Roam Ceylon Recommend"
+  ]);
+});
+
+test("destination journey preferences persist independently and follow selected destinations",()=>{
+  const preferences=normaliseDestinationPreferences({
+    kandy:{stayPreference:"boutique_hotels_villas",guidePreference:"national_tourist_guide",notes:"Quiet room, please."},
+    galle:{stayPreference:"not-a-valid-choice",guidePreference:"not-a-valid-choice",notes:42},
+    removed:{stayPreference:"homestays",guidePreference:"no_guide",notes:"Should be pruned."}
+  },["kandy","galle"]);
+  assert.deepEqual(preferences.kandy,{stayPreference:"boutique_hotels_villas",guidePreference:"national_tourist_guide",notes:"Quiet room, please."});
+  assert.deepEqual(preferences.galle,{stayPreference:"recommend",guidePreference:"recommend",notes:""});
+  assert.equal(preferences.removed,undefined);
+});
 
 test("external experience selection maps its parent theme and destination",()=>{
   const state={selectedThemeIds:["wellness"],selectedDestinationIds:[],selectedExperienceIds:[],selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds:{},travelDates:{start:"",end:""},travellerCounts:{adults:0,children:0,infants:0},experienceParticipants:{},budgetPreference:"flexible"};

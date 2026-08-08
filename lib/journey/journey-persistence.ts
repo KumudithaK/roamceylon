@@ -1,6 +1,7 @@
 "use client";
 
 import type {JourneyState} from "@/features/journey/journey-store";
+import {normaliseDestinationPreferences} from "@/lib/journey/journey-preferences";
 
 export const journeyStorageKey="roam-ceylon-journey-v3";
 export const journeyStateEvent="roam-ceylon:journey-state";
@@ -14,14 +15,15 @@ export function readJourneyState():JourneyState|null{
     const parsed=JSON.parse(raw) as Partial<JourneyState>;
     if(!Array.isArray(parsed.selectedThemeIds)||!Array.isArray(parsed.selectedDestinationIds)||!Array.isArray(parsed.selectedExperienceIds))return null;
     return {
-      currentStep:Math.min(3,Math.max(0,Number(parsed.currentStep)||0)),
+      currentStep:Math.min(5,Math.max(0,Number(parsed.currentStep)||0)),
       selectedThemeIds:parsed.selectedThemeIds,
       selectedDestinationIds:parsed.selectedDestinationIds,
       selectedExperienceIds:parsed.selectedExperienceIds,
-      selectedStayIdsByDestination:parsed.selectedStayIdsByDestination??{},
+      destinationPreferences:normaliseDestinationPreferences(parsed.destinationPreferences,parsed.selectedDestinationIds),
+      selectedStayIdsByDestination:{},
       selectedVehicleId:parsed.selectedVehicleId??null,
-      selectedGuideId:parsed.selectedGuideId??null,
-      selectedPricingPlanIds:parsed.selectedPricingPlanIds??{},
+      selectedGuideId:null,
+      selectedPricingPlanIds:Object.fromEntries(Object.entries(parsed.selectedPricingPlanIds??{}).filter(([key])=>!key.startsWith("accommodation:")&&!key.startsWith("guide:"))),
       travelDates:parsed.travelDates??{start:"",end:""},
       travellerCounts:{adults:Number(parsed.travellerCounts?.adults)||0,children:Number(parsed.travellerCounts?.children)||0,infants:Number(parsed.travellerCounts?.infants)||0},
       experienceParticipants:parsed.experienceParticipants??{},
