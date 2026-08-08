@@ -3,26 +3,21 @@
 import {FormEvent,useEffect,useMemo,useState} from "react";
 import {useRouter} from "next/navigation";
 import Link from "next/link";
-import {Building2,CalendarDays,CarFront,CreditCard,ExternalLink,FileText,FolderOpen,Handshake,History,Mail,MapPin,Phone,Save,UserRoundCheck,Users,WalletCards,X} from "lucide-react";
+import {CalendarDays,Mail,MapPin,Phone,Users,WalletCards,X} from "lucide-react";
 import {AdminShell} from "./admin-shell";
 import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
 import {enquiryWorkflow} from "@/lib/enquiries/enquiry-workflow";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import {pricingPlanKey} from "@/features/journey/journey-store";
-import {guidePreferenceLabel,stayPreferenceLabel} from "@/lib/journey/journey-preferences";
-import {journeyLegKey,travelPreferenceLabel} from "@/lib/journey/travel-preferences";
-import {destinationAllocationKey,hasOwnPreferenceSnapshot,journeyAllocationScopes,vehicleAllocationKey} from "@/lib/admin/journey-allocations";
+import {JourneyLifecycleWorkspace} from "./journey-lifecycle-workspace";
 import type {Database,EnquiryStatus,Json} from "@/lib/database.types";
 import type {ParticipantCounts} from "@/lib/types";
 
 type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
 type Account=Database["public"]["Tables"]["journey_accounts"]["Row"];
-type SupplierAllocation=Database["public"]["Tables"]["journey_supplier_allocations"]["Row"];
 type Named={id:string;name:string};
 type SelectionNames={themes:Named[];destinations:Named[];experiences:Named[];stays:Named[];vehicle:string|null;guide:string|null};
-type SupplierOption={id:string;name:string;status:string;active:boolean;nationwide:boolean;destinationIds:string[]};
-type SupplierDirectory={accommodations:SupplierOption[];guides:SupplierOption[];vehicles:SupplierOption[]};
 const accountStatusLabels:Record<Account["status"],string>={pending_deposit:"Pending Deposit",active:"Active",review_required:"Review Required",part_paid:"Part Paid",fully_paid:"Fully Paid",cancelled:"Cancelled",refund_pending:"Refund Pending",refunded:"Refunded",closed:"Closed"};
 const ids=(value:Json)=>Array.isArray(value)?value.filter((item):item is string=>typeof item==="string"):[];
 const participantMap=(value:Json):Record<string,ParticipantCounts>=>{
@@ -34,12 +29,6 @@ const participantMap=(value:Json):Record<string,ParticipantCounts>=>{
   }));
 };
 const emptyNames:SelectionNames={themes:[],destinations:[],experiences:[],stays:[],vehicle:null,guide:null};
-const emptySuppliers:SupplierDirectory={accommodations:[],guides:[],vehicles:[]};
-
-const allocationRowKey=(row:SupplierAllocation)=>row.allocation_type==="vehicle"&&row.from_destination_id&&row.to_destination_id
-  ?vehicleAllocationKey(row.from_destination_id,row.to_destination_id)
-  :row.destination_id?destinationAllocationKey(row.allocation_type as "accommodation"|"guide",row.destination_id):"";
-const allocatedSupplierId=(row:SupplierAllocation)=>row.accommodation_id??row.guide_id??row.vehicle_id??"";
 
 export function EnquiryReview({id}:{id:string}){
   const router=useRouter();
@@ -48,11 +37,6 @@ export function EnquiryReview({id}:{id:string}){
   const [selectionNames,setSelectionNames]=useState<SelectionNames>(emptyNames);
   const [pricingPlanNames,setPricingPlanNames]=useState<Record<string,string>>({});
   const [experienceDestinations,setExperienceDestinations]=useState<Record<string,string[]>>({});
-  const [suppliers,setSuppliers]=useState<SupplierDirectory>(emptySuppliers);
-  const [allocations,setAllocations]=useState<SupplierAllocation[]>([]);
-  const [allocationDrafts,setAllocationDrafts]=useState<Record<string,string>>({});
-  const [allocationSaving,setAllocationSaving]=useState(false);
-  const [allocationMessage,setAllocationMessage]=useState("");
   const [notes,setNotes]=useState("");
   const [message,setMessage]=useState("");
   const [saving,setSaving]=useState(false);
@@ -67,7 +51,7 @@ export function EnquiryReview({id}:{id:string}){
     const themeIds=ids(row.selected_themes);const destinationIds=ids(row.selected_destinations);const experienceIds=ids(row.selected_experiences);const stayIds=ids(row.selected_stays);
     const handoff=parseJourneyHandoff(row.trip_state);
     const selectedPlanIds=Object.values(handoff?.state.selectedPricingPlanIds??{});
-    const [themes,destinations,experiences,stays,vehicle,guide,pricingPlans,accountResult,allocationResult,accommodationOptions,guideOptions,vehicleOptions,experienceLinks,guideLinks,vehicleLinks]=await Promise.all([
+    const [themes,destinations,experiences,stays,vehicle,guide,pricingPlans,accountResult,experienceLinks]=await Promise.all([
       themeIds.length?database.from("themes").select("id,name").in("id",themeIds):Promise.resolve({data:[]}),
       destinationIds.length?database.from("destinations").select("id,name").in("id",destinationIds):Promise.resolve({data:[]}),
       experienceIds.length?database.from("experiences").select("id,name").in("id",experienceIds):Promise.resolve({data:[]}),
@@ -76,13 +60,7 @@ export function EnquiryReview({id}:{id:string}){
       row.selected_guide?database.from("guides").select("name").eq("id",row.selected_guide).maybeSingle():Promise.resolve({data:null}),
       selectedPlanIds.length?database.from("pricing_plans").select("id,name").in("id",selectedPlanIds):Promise.resolve({data:[]}),
       database.from("journey_accounts").select("*").eq("enquiry_id",id).maybeSingle(),
-      database.from("journey_supplier_allocations").select("*").eq("enquiry_id",id),
-      database.from("accommodations").select("id,name,destination_id,status,active,is_sample").neq("status","archived").eq("is_sample",false).order("name"),
-      database.from("guides").select("id,name,status,active,nationwide,is_sample").neq("status","archived").eq("is_sample",false).order("name"),
-      database.from("vehicles").select("id,listing_title,status,active,nationwide,is_sample").neq("status","archived").eq("is_sample",false).order("listing_title"),
-      experienceIds.length?database.from("experience_destinations").select("experience_id,destination_id").in("experience_id",experienceIds):Promise.resolve({data:[]}),
-      database.from("guide_destinations").select("guide_id,destination_id"),
-      database.from("vehicle_destinations").select("vehicle_id,destination_id")
+      experienceIds.length?database.from("experience_destinations").select("experience_id,destination_id").in("experience_id",experienceIds):Promise.resolve({data:[]})
     ]);
     const order=(values:Named[]|null,orderedIds:string[])=>orderedIds.map(value=>values?.find(item=>item.id===value)).filter((item):item is Named=>Boolean(item));
     setSelectionNames({
@@ -95,56 +73,12 @@ export function EnquiryReview({id}:{id:string}){
     });
     setPricingPlanNames(Object.fromEntries((pricingPlans.data??[]).map(plan=>[plan.id,plan.name])));
     setAccount(accountResult.data??null);
-    const allocationRows=(allocationResult.data??[]) as SupplierAllocation[];
-    setAllocations(allocationRows);
-    setAllocationDrafts(Object.fromEntries(allocationRows.map(item=>[allocationRowKey(item),allocatedSupplierId(item)])));
     setExperienceDestinations(Object.fromEntries(experienceIds.map(experienceId=>[
       experienceId,(experienceLinks.data??[]).filter(item=>item.experience_id===experienceId).map(item=>item.destination_id)
     ])));
-    const guideDestinationIds=(guideId:string)=>(guideLinks.data??[]).filter(item=>item.guide_id===guideId).map(item=>item.destination_id);
-    const vehicleDestinationIds=(vehicleId:string)=>(vehicleLinks.data??[]).filter(item=>item.vehicle_id===vehicleId).map(item=>item.destination_id);
-    setSuppliers({
-      accommodations:(accommodationOptions.data??[]).map(item=>({id:item.id,name:item.name,status:item.status,active:item.active,nationwide:false,destinationIds:item.destination_id?[item.destination_id]:[]})),
-      guides:(guideOptions.data??[]).map(item=>({id:item.id,name:item.name,status:item.status,active:item.active,nationwide:item.nationwide,destinationIds:guideDestinationIds(item.id)})),
-      vehicles:(vehicleOptions.data??[]).map(item=>({id:item.id,name:item.listing_title,status:item.status,active:item.active,nationwide:item.nationwide,destinationIds:vehicleDestinationIds(item.id)}))
-    });
   })()},[id,router]);
   const handoff=useMemo(()=>enquiry?parseJourneyHandoff(enquiry.trip_state):null,[enquiry]);
   const quote=handoff?.quote??null;
-  const hasDestinationPreferences=hasOwnPreferenceSnapshot(enquiry?.trip_state,"destinationPreferences");
-  const hasTravelPreferences=hasOwnPreferenceSnapshot(enquiry?.trip_state,"travelPreferencesByLeg");
-  const destinationIds=selectionNames.destinations.map(item=>item.id);
-  const saveAllocations=async()=>{
-    setAllocationSaving(true);setAllocationMessage("");
-    const database=createClient();
-    for(const scope of journeyAllocationScopes(destinationIds)){
-      const selectedId=allocationDrafts[scope.key]??"";
-      const existing=allocations.find(item=>allocationRowKey(item)===scope.key);
-      if(!selectedId&&existing){
-        const {error}=await database.from("journey_supplier_allocations").delete().eq("id",existing.id);
-        if(error){setAllocationSaving(false);setAllocationMessage(error.message);return}
-        continue;
-      }
-      if(!selectedId)continue;
-      const payload={
-        enquiry_id:id,allocation_type:scope.type,destination_id:scope.destinationId,
-        from_destination_id:scope.fromDestinationId,to_destination_id:scope.toDestinationId,
-        accommodation_id:scope.type==="accommodation"?selectedId:null,
-        guide_id:scope.type==="guide"?selectedId:null,
-        vehicle_id:scope.type==="vehicle"?selectedId:null,
-        updated_at:new Date().toISOString()
-      };
-      const result=existing
-        ?await database.from("journey_supplier_allocations").update(payload).eq("id",existing.id)
-        :await database.from("journey_supplier_allocations").insert(payload);
-      if(result.error){setAllocationSaving(false);setAllocationMessage(result.error.message);return}
-    }
-    const {data,error}=await database.from("journey_supplier_allocations").select("*").eq("enquiry_id",id);
-    setAllocationSaving(false);
-    if(error){setAllocationMessage(error.message);return}
-    setAllocations((data??[]) as SupplierAllocation[]);
-    setAllocationMessage("Roam Ceylon allocations saved. Traveller preferences were not changed.");
-  };
   const save=async(status:EnquiryStatus|undefined=enquiry?.status)=>{
     if(!enquiry||!status)return;
     if(status==="deposit_paid"&&(!account||account.amount_received<=0)){setDepositOpen(true);return}
@@ -193,35 +127,12 @@ export function EnquiryReview({id}:{id:string}){
     <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]"><div className="grid gap-6">
       <Section title="Journey at a glance"><div className="grid gap-4 sm:grid-cols-3"><Metric icon={Users} label="Travellers" value={`${travellers}`} detail={`${travellerCounts.adults} adults · ${travellerCounts.children} children · ${travellerCounts.infants} infants`}/><Metric icon={CalendarDays} label="Travel dates" value={enquiry.travel_start_date||"Flexible"} detail={enquiry.travel_end_date?`to ${enquiry.travel_end_date}`:"Departure not selected"}/><Metric icon={MapPin} label="Destinations" value={`${selectionNames.destinations.length}`} detail={selectionNames.destinations.map(item=>item.name).join(" · ")||"Not selected"}/></div></Section>
       <Section title="Selected journey"><Selection label="Themes" values={selectionNames.themes.map(item=>item.name)}/><Selection label="Destinations and route order" values={selectionNames.destinations.map((item,index)=>`${index+1}. ${item.name}`)}/><Selection label="Experiences" values={selectionNames.experiences.map(item=>{const counts=experienceParticipants[item.id];const count=counts?counts.adults+counts.children+counts.infants:0;const plan=planName("experience",item.id);return `${item.name}${count?` · ${count} participant${count===1?"":"s"}`:""}${plan?` · ${plan}`:""}`})}/><Selection label="Accommodation" values={selectionNames.stays.map(item=>`${item.name}${planName("accommodation",item.id)?` · ${planName("accommodation",item.id)}`:""}`)}/><Selection label="Transport" values={selectionNames.vehicle?[`${selectionNames.vehicle}${enquiry.selected_vehicle&&planName("vehicle",enquiry.selected_vehicle)?` · ${planName("vehicle",enquiry.selected_vehicle)}`:""}`]:[]}/><Selection label="Local guide" values={selectionNames.guide?[`${selectionNames.guide}${enquiry.selected_guide&&planName("guide",enquiry.selected_guide)?` · ${planName("guide",enquiry.selected_guide)}`:""}`]:[]}/></Section>
-      <Section title="Traveller preferences & supplier allocation"><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="max-w-2xl text-sm leading-6 text-stone">The left side is the traveller&apos;s original request. The internal allocation remains separate and can be refined without changing what the traveller asked for.</p></div><Button onClick={()=>void saveAllocations()} disabled={allocationSaving||!selectionNames.destinations.length}><Save className="size-4"/>{allocationSaving?"Saving…":"Save allocations"}</Button></div>
-        {allocationMessage&&<p className={`mt-4 rounded-xl p-3 text-sm ${allocationMessage.startsWith("Roam")?"bg-forest/10 text-forest":"bg-red-50 text-red-800"}`}>{allocationMessage}</p>}
-        {(selectionNames.stays.length||selectionNames.vehicle||selectionNames.guide)&&<div className="mt-6 rounded-2xl border border-gold/25 bg-gold/5 p-5"><p className="text-xs font-bold uppercase tracking-widest text-gold">Existing direct selections · preserved</p><p className="mt-2 text-sm leading-6 text-slate/70">This enquiry predates destination-level allocation or contains earlier direct choices. They remain intact: {[...selectionNames.stays.map(item=>item.name),selectionNames.vehicle,selectionNames.guide].filter(Boolean).join(" · ")}.</p></div>}
-        <div className="mt-7 grid gap-6">{selectionNames.destinations.length?selectionNames.destinations.map((destination,index)=>{
-          const preference=handoff?.state.destinationPreferences?.[destination.id];
-          const nextDestination=selectionNames.destinations[index+1]??null;
-          const leg=nextDestination?handoff?.state.travelPreferencesByLeg?.[journeyLegKey(destination.id,nextDestination.id)]:null;
-          return <DestinationAllocationCard key={destination.id}
-            index={index} destination={destination} nextDestination={nextDestination}
-            stayPreference={hasDestinationPreferences&&preference?stayPreferenceLabel(preference.stayPreference):null}
-            guidePreference={hasDestinationPreferences&&preference?guidePreferenceLabel(preference.guidePreference):null}
-            notes={hasDestinationPreferences?preference?.notes??"":null}
-            travelPreference={hasTravelPreferences&&leg?travelPreferenceLabel(leg.travelPreference):null}
-            experiences={selectionNames.experiences.filter(item=>experienceDestinations[item.id]?.includes(destination.id)).map(item=>item.name)}
-            accommodationOptions={suppliers.accommodations} guideOptions={suppliers.guides} vehicleOptions={suppliers.vehicles}
-            accommodationValue={allocationDrafts[destinationAllocationKey("accommodation",destination.id)]??""}
-            guideValue={allocationDrafts[destinationAllocationKey("guide",destination.id)]??""}
-            vehicleValue={nextDestination?allocationDrafts[vehicleAllocationKey(destination.id,nextDestination.id)]??"":""}
-            onAccommodationChange={value=>setAllocationDrafts(current=>({...current,[destinationAllocationKey("accommodation",destination.id)]:value}))}
-            onGuideChange={value=>setAllocationDrafts(current=>({...current,[destinationAllocationKey("guide",destination.id)]:value}))}
-            onVehicleChange={value=>nextDestination&&setAllocationDrafts(current=>({...current,[vehicleAllocationKey(destination.id,nextDestination.id)]:value}))}/>
-        }):<p className="rounded-2xl border border-dashed border-stone/25 p-8 text-center text-sm text-stone">No destinations were selected for this enquiry.</p>}</div>
-      </Section>
+      <JourneyLifecycleWorkspace enquiry={enquiry} handoff={handoff} destinations={selectionNames.destinations} experiences={selectionNames.experiences} experienceDestinations={experienceDestinations} legacySelections={[...selectionNames.stays.map(item=>item.name),selectionNames.vehicle,selectionNames.guide].filter((value):value is string=>Boolean(value))} account={account}/>
       <Section title="Traveller notes"><p className="whitespace-pre-wrap text-sm leading-7 text-slate/70">{enquiry.traveller_notes||enquiry.summary||"No additional notes were supplied."}</p></Section>
       <Section title="Customer package estimate">{quote?.status==="ready"?<div><div className="grid gap-4 sm:grid-cols-3"><Price label="Total package" value={`${quote.currency} ${quote.totalPackagePrice?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/><Price label="Per person" value={`${quote.currency} ${quote.pricePerPerson?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/><Price label="Daily estimate" value={`${quote.currency} ${quote.estimatedDailyCost?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/></div>{quote.components?.length?<div className="mt-6 divide-y divide-stone/15">{quote.components.map(item=><div key={item.category} className="flex justify-between py-3 text-sm"><span>{item.label}</span><strong>{quote.currency} {item.amount.toFixed(2)}</strong></div>)}</div>:null}</div>:<p className="text-sm text-stone">A personal quotation is required. No automated estimate was stored with this enquiry.</p>}</Section>
-      <Section title="Journey workflow"><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5"><WorkflowPlaceholder icon={FileText} label="Journey Proposal"/><WorkflowPlaceholder icon={CreditCard} label="Payments"/><WorkflowPlaceholder icon={FolderOpen} label="Journey Documents"/><WorkflowPlaceholder icon={Handshake} label="Supplier Management"/><WorkflowPlaceholder icon={History} label="Timeline"/></div></Section>
     </div><aside className="grid h-fit gap-6">
       <Section title="Contact"><div className="grid gap-3 text-sm"><a href={`mailto:${enquiry.email}`} className="flex items-center gap-2 text-forest"><Mail className="size-4"/>{enquiry.email}</a>{enquiry.phone&&<a href={`tel:${enquiry.phone}`} className="flex items-center gap-2 text-forest"><Phone className="size-4"/>{enquiry.phone}</a>}<span className="text-stone">{enquiry.nationality||"Nationality not provided"}</span></div></Section>
-      <Section title="Accounting">{account?<div className="grid gap-4"><div className="flex items-center justify-between gap-4"><span className="flex items-center gap-2 text-sm"><WalletCards className="size-4 text-gold"/>Accounting {account.active?"active":"inactive"}</span><strong className={`rounded-full px-3 py-1 text-xs ${account.status==="review_required"?"bg-red-100 text-red-800":"bg-sand-light text-forest"}`}>{accountStatusLabels[account.status]}</strong></div><div className="grid gap-3 rounded-2xl bg-sand-light p-4 text-sm"><PaymentSummary label="Customer payments" value={grossCustomerPayments} currency={account.currency}/>{account.amount_refunded>0&&<PaymentSummary label="Refunds paid" value={account.amount_refunded} currency={account.currency} negative/>}<div className="border-t border-stone/15 pt-3"><PaymentSummary label="Net customer funds" value={account.amount_received} currency={account.currency} emphasized/></div></div>{account.review_reason&&<p className="rounded-xl bg-red-50 p-3 text-xs leading-5 text-red-800">{account.review_reason}</p>}<Link href={`/admin/accounting/${account.id}`} className="text-sm font-semibold text-forest">Open Accounting account →</Link></div>:<div><p className="text-sm leading-6 text-stone">Accounting has not been activated. Select <strong>Deposit Paid</strong> when the traveller payment is received.</p><p className="mt-3 rounded-xl bg-sand-light p-3 text-xs text-stone">Customer payment: Not recorded</p></div>}</Section>
+      <Section title="Accounting">{account?<div className="grid gap-4"><div className="flex items-center justify-between gap-4"><span className="flex items-center gap-2 text-sm"><WalletCards className="size-4 text-gold"/>Accounting {account.active?"active":"inactive"}</span><strong className={`rounded-full px-3 py-1 text-xs ${account.status==="review_required"?"bg-red-100 text-red-800":"bg-sand-light text-forest"}`}>{accountStatusLabels[account.status]}</strong></div><div className="grid gap-3 rounded-2xl bg-sand-light p-4 text-sm"><PaymentSummary label="Customer payments" value={grossCustomerPayments} currency={account.currency}/>{account.amount_refunded>0&&<PaymentSummary label="Refunds paid" value={account.amount_refunded} currency={account.currency} negative/>}<div className="border-t border-stone/15 pt-3"><PaymentSummary label="Net customer funds" value={account.amount_received} currency={account.currency} emphasized/></div></div>{account.review_reason&&<p className="rounded-xl bg-red-50 p-3 text-xs leading-5 text-red-800">{account.review_reason}</p>}<Link href={`/admin/accounting/${account.id}`} className="text-sm font-semibold text-forest">Open Accounting account →</Link></div>:<div><p className="text-sm leading-6 text-stone">Accounting has not been activated. Select <strong>Deposit Received</strong> when the traveller payment is received.</p><p className="mt-3 rounded-xl bg-sand-light p-3 text-xs text-stone">Customer payment: Not recorded</p></div>}</Section>
       <Section title="Internal follow-up notes"><textarea rows={10} value={notes} onChange={event=>setNotes(event.target.value)} placeholder="Record calls, supplier checks, preferences and next actions…" className="w-full rounded-xl border border-stone/25 p-4 text-sm outline-none focus:border-gold"/><Button disabled={saving} className="mt-3 w-full" onClick={()=>void save()}>{saving?"Saving…":"Save enquiry"}</Button></Section>
     </aside></div>
   </div>{depositOpen&&<div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-slate/65 p-4 backdrop-blur-sm"><form onSubmit={activateAccounting} className="relative my-6 w-full max-w-lg rounded-3xl bg-ivory p-7 shadow-2xl"><button type="button" aria-label="Close deposit form" onClick={()=>setDepositOpen(false)} className="absolute right-5 top-5 grid size-9 place-items-center rounded-full bg-white"><X className="size-4"/></button><p className="eyebrow mb-2">Accounting activation</p><h2 className="font-serif text-3xl">Record traveller deposit</h2><p className="mt-3 text-sm leading-6 text-stone">This creates or activates the account for {enquiry.journey_reference} and records one customer receipt.</p><div className="mt-6 grid gap-4"><label className="grid gap-2 text-sm font-semibold">Deposit amount ({quote?.currency??"USD"})<input required name="depositAmount" type="number" min=".01" step=".01" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Payment date<input required name="paymentDate" type="date" defaultValue={new Date().toISOString().slice(0,10)} className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Payment method<select name="paymentMethod" className="rounded-xl border border-stone/25 px-4 py-3"><option>Bank transfer</option><option>Card</option><option>Cash</option><option>Online payment</option><option>Other</option></select></label><label className="grid gap-2 text-sm font-semibold">Reference<input name="reference" placeholder="Bank reference or receipt number" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Notes<textarea name="notes" rows={3} className="rounded-xl border border-stone/25 px-4 py-3"/></label><div className="flex justify-end gap-3"><Button type="button" variant="ghost" onClick={()=>setDepositOpen(false)}>Cancel</Button><Button disabled={saving} type="submit">{saving?"Recording…":"Record deposit & activate"}</Button></div></div></form></div>}</AdminShell>;
@@ -232,44 +143,3 @@ function Selection({label,values}:{label:string;values:string[]}){return <div cl
 function Metric({icon:Icon,label,value,detail}:{icon:typeof Users;label:string;value:string;detail:string}){return <div className="rounded-2xl bg-sand-light p-5"><Icon className="size-5 text-gold"/><span className="mt-4 block text-xs font-bold uppercase tracking-widest text-stone">{label}</span><strong className="mt-1 block font-serif text-3xl">{value}</strong><small className="mt-1 block text-stone">{detail}</small></div>}
 function Price({label,value}:{label:string;value:string}){return <div className="rounded-2xl bg-forest p-5 text-ivory"><span className="text-xs text-ivory/55">{label}</span><strong className="mt-2 block font-serif text-2xl">{value}</strong></div>}
 function PaymentSummary({label,value,currency,negative=false,emphasized=false}:{label:string;value:number;currency:string;negative?:boolean;emphasized?:boolean}){return <div className="flex items-baseline justify-between gap-4"><span className="text-xs text-stone">{label}</span><strong className={emphasized?"text-base":"text-sm"}>{negative?"− ":""}{currency} {value.toFixed(2)}</strong></div>}
-function WorkflowPlaceholder({icon:Icon,label}:{icon:typeof FileText;label:string}){return <div className="rounded-2xl border border-dashed border-stone/25 bg-sand-light p-4"><Icon className="size-5 text-gold"/><strong className="mt-3 block text-sm">{label}</strong><span className="mt-1 block text-xs text-stone">Reserved for the next workflow phase.</span></div>}
-
-type DestinationAllocationCardProps={
-  index:number;destination:Named;nextDestination:Named|null;
-  stayPreference:string|null;guidePreference:string|null;notes:string|null;travelPreference:string|null;experiences:string[];
-  accommodationOptions:SupplierOption[];guideOptions:SupplierOption[];vehicleOptions:SupplierOption[];
-  accommodationValue:string;guideValue:string;vehicleValue:string;
-  onAccommodationChange:(value:string)=>void;onGuideChange:(value:string)=>void;onVehicleChange:(value:string)=>void;
-};
-
-function DestinationAllocationCard(props:DestinationAllocationCardProps){
-  const {destination,nextDestination}=props;
-  const accommodationMatches=(option:SupplierOption)=>option.destinationIds.includes(destination.id);
-  const guideMatches=(option:SupplierOption)=>option.nationwide||option.destinationIds.includes(destination.id);
-  const vehicleMatches=(option:SupplierOption)=>option.nationwide||Boolean(nextDestination&&option.destinationIds.includes(destination.id)&&option.destinationIds.includes(nextDestination.id));
-  return <article className="overflow-hidden rounded-3xl border border-stone/15 bg-sand-light/55">
-    <header className="flex items-center gap-4 border-b border-stone/15 bg-forest px-6 py-5 text-ivory"><span className="grid size-9 place-items-center rounded-full bg-gold font-serif text-lg text-forest">{props.index+1}</span><div><p className="text-[.62rem] font-bold uppercase tracking-[.22em] text-gold">Destination</p><h3 className="font-serif text-2xl">{destination.name}</h3></div></header>
-    <div className="grid lg:grid-cols-2">
-      <div className="border-b border-stone/15 p-6 lg:border-b-0 lg:border-r"><p className="text-xs font-bold uppercase tracking-widest text-gold">Traveller preferences</p><div className="mt-5 grid gap-4">
-        <PreferenceLine icon={Building2} label="Stay" value={props.stayPreference??"Not captured — legacy enquiry"}/>
-        <PreferenceLine icon={UserRoundCheck} label="Guide" value={props.guidePreference??"Not captured — legacy enquiry"}/>
-        <PreferenceLine icon={MapPin} label="Experiences" value={props.experiences.join(" · ")||"None selected for this destination"}/>
-        <PreferenceLine icon={FileText} label="Notes" value={props.notes===null?"Not captured — legacy enquiry":props.notes||"No destination notes"}/>
-        {nextDestination&&<PreferenceLine icon={CarFront} label={`Travel to ${nextDestination.name}`} value={props.travelPreference??"Not captured — legacy enquiry"}/>}
-      </div></div>
-      <div className="bg-white p-6"><p className="text-xs font-bold uppercase tracking-widest text-forest">Internal · Roam Ceylon allocation</p><p className="mt-2 text-xs leading-5 text-stone">Only the team can see these proposed partners.</p><div className="mt-5 grid gap-5">
-        <SupplierSelect icon={Building2} label="Accommodation partner" value={props.accommodationValue} options={props.accommodationOptions} matches={accommodationMatches} matchedLabel={`Partners in ${destination.name}`} onChange={props.onAccommodationChange} addHref="/admin/resources/stays" addLabel="Add new accommodation partner"/>
-        <SupplierSelect icon={UserRoundCheck} label="Guide partner" value={props.guideValue} options={props.guideOptions} matches={guideMatches} matchedLabel={`Guides covering ${destination.name}`} onChange={props.onGuideChange} addHref="/admin/resources/guides" addLabel="Add new guide partner"/>
-        {nextDestination&&<SupplierSelect icon={CarFront} label={`Transport · ${destination.name} to ${nextDestination.name}`} value={props.vehicleValue} options={props.vehicleOptions} matches={vehicleMatches} matchedLabel="Suitable route coverage" onChange={props.onVehicleChange} addHref="/admin/resources/vehicles" addLabel="Add new transport partner / vehicle"/>}
-      </div></div>
-    </div>
-  </article>;
-}
-
-function PreferenceLine({icon:Icon,label,value}:{icon:typeof Building2;label:string;value:string}){return <div className="grid grid-cols-[1.5rem_1fr] gap-3"><Icon className="mt-0.5 size-4 text-gold"/><div><span className="block text-[.62rem] font-bold uppercase tracking-widest text-stone">{label}</span><strong className="mt-1 block text-sm font-semibold leading-6 text-slate">{value}</strong></div></div>}
-
-function SupplierSelect({icon:Icon,label,value,options,matches,matchedLabel,onChange,addHref,addLabel}:{icon:typeof Building2;label:string;value:string;options:SupplierOption[];matches:(option:SupplierOption)=>boolean;matchedLabel:string;onChange:(value:string)=>void;addHref:string;addLabel:string}){
-  const matched=options.filter(matches);const others=options.filter(option=>!matches(option));
-  const optionLabel=(option:SupplierOption)=>`${option.name}${option.status==="published"&&option.active?"":` · ${option.status.replaceAll("_"," ")}`}`;
-  return <label className="grid gap-2 text-sm font-semibold"><span className="flex items-center gap-2"><Icon className="size-4 text-gold"/>{label}</span><select value={value} onChange={event=>onChange(event.target.value)} className="w-full rounded-xl border border-stone/25 bg-white px-4 py-3 font-normal outline-none focus:border-gold"><option value="">Not allocated yet</option>{matched.length?<optgroup label={matchedLabel}>{matched.map(option=><option key={option.id} value={option.id}>{optionLabel(option)}</option>)}</optgroup>:null}{others.length?<optgroup label="Other supplier records">{others.map(option=><option key={option.id} value={option.id}>{optionLabel(option)}</option>)}</optgroup>:null}</select><Link href={addHref} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs font-semibold text-gold">{addLabel}<ExternalLink className="size-3"/></Link></label>;
-}

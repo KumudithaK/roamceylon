@@ -74,7 +74,7 @@ export function AdminDashboard(){
   const draftContent=resources.reduce((total,item)=>total+item.draft,0);
   const missingImages=resources.reduce((total,item)=>total+item.missingImage,0);
   const readiness=totalContent?Math.round((publishedContent/totalContent)*100):0;
-  const pipelineValue=enquiries.filter(row=>!["completed","cancelled"].includes(row.status)).reduce((total,row)=>{
+  const pipelineValue=enquiries.filter(row=>!["completed","cancelled","archived"].includes(row.status)).reduce((total,row)=>{
     const quote=parseJourneyHandoff(row.trip_state)?.quote;
     return total+(quote?.status==="ready"&&quote.totalPackagePrice?quote.totalPackagePrice:0);
   },0);

@@ -1,0 +1,79 @@
+import "server-only";
+import {createAdminClient} from "@/lib/supabase/admin";
+import {allocationCommercialSnapshot} from "@/lib/accounting/allocation-accounting";
+import {experienceAllocationKey,journeyAllocationScopes} from "@/lib/admin/journey-allocations";
+import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
+import type {Database,Json} from "@/lib/database.types";
+
+type Proposal=Database["public"]["Tables"]["journey_proposals"]["Row"];
+const ids=(value:Json)=>Array.isArray(value)?value.filter((item):item is string=>typeof item==="string"):[];
+const asJson=(value:unknown)=>JSON.parse(JSON.stringify(value)) as Json;
+const allocationKey=(row:Database["public"]["Tables"]["journey_supplier_allocations"]["Row"])=>row.allocation_type==="vehicle"
+  ?`vehicle:${row.from_destination_id}:${row.to_destination_id}`
+  :row.allocation_type==="experience"&&row.experience_id?experienceAllocationKey(row.experience_id):`${row.allocation_type}:${row.destination_id}`;
+
+export class ProposalError extends Error{
+  constructor(public code:"NOT_FOUND"|"INCOMPLETE"|"DATABASE",message:string){super(message);this.name="ProposalError"}
+}
+
+export async function generateJourneyProposal(enquiryId:string,userId:string,details:{introduction?:string;terms?:string;validUntil?:string}){
+  const database=createAdminClient();
+  if(!database)throw new ProposalError("DATABASE","Supabase server credentials are unavailable.");
+  const {data:enquiry,error}=await database.from("enquiries").select("*").eq("id",enquiryId).maybeSingle();
+  if(error)throw new ProposalError("DATABASE",error.message);
+  if(!enquiry)throw new ProposalError("NOT_FOUND","Traveller enquiry not found.");
+  const destinationIds=ids(enquiry.selected_destinations);const experienceIds=ids(enquiry.selected_experiences);
+  const {data:experienceLinks,error:linkError}=experienceIds.length?await database.from("experience_destinations").select("experience_id,destination_id").in("experience_id",experienceIds):{data:[],error:null};
+  if(linkError)throw new ProposalError("DATABASE",linkError.message);
+  const experienceScopes=experienceIds.flatMap(experienceId=>{
+    const destinationId=destinationIds.find(id=>experienceLinks?.some(link=>link.experience_id===experienceId&&link.destination_id===id));
+    return destinationId?[{experienceId,destinationId}]:[];
+  });
+  if(experienceScopes.length!==experienceIds.length)throw new ProposalError("INCOMPLETE","Every selected experience must have a selected destination relationship before a proposal can be generated.");
+  const handoff=parseJourneyHandoff(enquiry.trip_state);
+  const required=journeyAllocationScopes(destinationIds,experienceScopes).filter(scope=>scope.type!=="guide"||handoff?.state.destinationPreferences?.[scope.destinationId??""]?.guidePreference!=="no_guide");
+  const commercial=await allocationCommercialSnapshot(enquiryId);
+  const active=commercial.allocations.filter(row=>row.confirmation_status!=="cancelled");
+  const available=new Set(active.map(allocationKey));
+  const missing=required.filter(scope=>!available.has(scope.key));
+  if(missing.length)throw new ProposalError("INCOMPLETE",`Allocate every required stay, route, guide, and experience provider first. ${missing.length} allocation${missing.length===1?" is":"s are"} missing.`);
+  if(commercial.summary.incompleteLines)throw new ProposalError("INCOMPLETE","Complete supplier cost and selling price for every active allocation before generating the proposal.");
+  const currencies=new Set(commercial.snapshot.filter(line=>line.confirmationStatus!=="cancelled").map(line=>line.currency));
+  if(currencies.size>1)throw new ProposalError("INCOMPLETE","All proposal allocations must use the same currency.");
+  const {data:last,error:lastError}=await database.from("journey_proposals").select("version").eq("enquiry_id",enquiryId).order("version",{ascending:false}).limit(1).maybeSingle();
+  if(lastError)throw new ProposalError("DATABASE",lastError.message);
+  const version=(last?.version??0)+1;
+  const reference=`${enquiry.journey_reference}-P${version}`;
+  const {error:supersedeError}=await database.from("journey_proposals").update({status:"superseded"}).eq("enquiry_id",enquiryId).in("status",["ready","sent"]);
+  if(supersedeError)throw new ProposalError("DATABASE",supersedeError.message);
+  const activeSnapshot=commercial.snapshot.filter(line=>line.confirmationStatus!=="cancelled");
+  const {data:proposal,error:proposalError}=await database.from("journey_proposals").insert({
+    enquiry_id:enquiryId,version,proposal_reference:reference,status:"ready",
+    currency:activeSnapshot[0]?.currency??"USD",total_supplier_cost:commercial.summary.totalSupplierCost,
+    total_selling_price:commercial.summary.totalSellingPrice,gross_profit:commercial.summary.grossProfit,
+    profit_margin:commercial.summary.profitMargin,introduction:details.introduction||null,
+    terms:details.terms||null,valid_until:details.validUntil||null,
+    allocation_snapshot:asJson(activeSnapshot),created_by:userId
+  }).select("*").single();
+  if(proposalError||!proposal)throw new ProposalError("DATABASE",proposalError?.message??"The proposal could not be generated.");
+  const {error:statusError}=await database.from("enquiries").update({status:"preparing_proposal"}).eq("id",enquiryId);
+  if(statusError)throw new ProposalError("DATABASE",statusError.message);
+  return proposal;
+}
+
+export async function transitionJourneyProposal(proposalId:string,action:"sent"|"approved"){
+  const database=createAdminClient();
+  if(!database)throw new ProposalError("DATABASE","Supabase server credentials are unavailable.");
+  const {data:proposal,error}=await database.from("journey_proposals").select("*").eq("id",proposalId).maybeSingle();
+  if(error)throw new ProposalError("DATABASE",error.message);
+  if(!proposal)throw new ProposalError("NOT_FOUND","Journey proposal not found.");
+  if(action==="sent"&&proposal.status!=="ready")throw new ProposalError("INCOMPLETE","Only a ready proposal can be marked sent.");
+  if(action==="approved"&&proposal.status!=="sent")throw new ProposalError("INCOMPLETE","Mark the proposal as sent before recording traveller approval.");
+  const now=new Date().toISOString();
+  const changes=action==="sent"?{status:"sent" as const,sent_at:now}:{status:"approved" as const,approved_at:now};
+  const {data:updated,error:updateError}=await database.from("journey_proposals").update(changes).eq("id",proposalId).select("*").single();
+  if(updateError||!updated)throw new ProposalError("DATABASE",updateError?.message??"Proposal status could not be changed.");
+  const {error:statusError}=await database.from("enquiries").update({status:action==="sent"?"proposal_sent":"proposal_accepted"}).eq("id",proposal.enquiry_id);
+  if(statusError)throw new ProposalError("DATABASE",statusError.message);
+  return updated as Proposal;
+}

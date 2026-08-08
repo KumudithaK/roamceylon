@@ -4,6 +4,7 @@ import {PackagePricingService} from "@/lib/pricing/package-service";
 import type {AdminPackageQuote,PackageQuoteRequest,SupplierEntityType} from "@/lib/pricing/package-types";
 import type {Database,Json} from "@/lib/database.types";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
+import {allocationCommercialSnapshot,syncAllocationAccounting} from "@/lib/accounting/allocation-accounting";
 import type {ParticipantCounts} from "@/lib/types";
 
 type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
@@ -124,17 +125,35 @@ export async function activateJourneyAccount(enquiryId:string,userId:string,depo
   const {data:enquiry,error:enquiryError}=await database.from("enquiries").select("*").eq("id",enquiryId).maybeSingle();
   if(enquiryError)throw new AccountingPostError("DATABASE",enquiryError.message);
   if(!enquiry)throw new AccountingPostError("NOT_FOUND","The traveller enquiry could not be found.");
-  let {data:account,error:accountLookupError}=await database.from("journey_accounts").select("*").eq("enquiry_id",enquiryId).maybeSingle();
+  const {data:existingAccount,error:accountLookupError}=await database.from("journey_accounts").select("*").eq("enquiry_id",enquiryId).maybeSingle();
+  let account=existingAccount;
   if(accountLookupError)throw new AccountingPostError("DATABASE",accountLookupError.message);
   let created=false;
   if(!account){
-    let quote:AdminPackageQuote;
-    try{quote=await new PackagePricingService().quote(selectionFrom(enquiry))}
-    catch(error){throw new AccountingPostError("PRICING",error instanceof Error?error.message:"The package could not be priced.")}
-    if(quote.public.status!=="ready"||quote.sellingPrice===null||quote.internalCost===null||quote.grossProfit===null||quote.profitMargin===null){
-      throw new AccountingPostError("PRICING","Complete all journey supplier rates and DMC pricing settings before recording the deposit.");
+    const allocationCommercial=await allocationCommercialSnapshot(enquiry.id);
+    let financial:{currency:string;sellingPrice:number;internalCost:number;grossProfit:number;profitMargin:number;snapshot:Json};
+    let legacyQuote:AdminPackageQuote|null=null;
+    if(allocationCommercial.allocations.length){
+      if(allocationCommercial.summary.incompleteLines)throw new AccountingPostError("PRICING","Complete supplier cost and selling price for every active allocation before recording the deposit.");
+      const active=allocationCommercial.snapshot.filter(line=>line.confirmationStatus!=="cancelled");
+      if(!active.length||allocationCommercial.summary.totalSellingPrice<=0)throw new AccountingPostError("PRICING","At least one active, priced supplier allocation is required before recording the deposit.");
+      const currencies=new Set(active.map(line=>line.currency));
+      if(currencies.size!==1)throw new AccountingPostError("PRICING","All supplier allocations must use the same currency before recording the deposit.");
+      financial={
+        currency:active[0].currency,sellingPrice:allocationCommercial.summary.totalSellingPrice,
+        internalCost:allocationCommercial.summary.totalSupplierCost,grossProfit:allocationCommercial.summary.grossProfit,
+        profitMargin:allocationCommercial.summary.profitMargin,
+        snapshot:asJson({source:"supplier_allocations",summary:allocationCommercial.summary,allocations:active})
+      };
+    }else{
+      try{legacyQuote=await new PackagePricingService().quote(selectionFrom(enquiry))}
+      catch(error){throw new AccountingPostError("PRICING",error instanceof Error?error.message:"The package could not be priced.")}
+      if(legacyQuote.public.status!=="ready"||legacyQuote.sellingPrice===null||legacyQuote.internalCost===null||legacyQuote.grossProfit===null||legacyQuote.profitMargin===null){
+        throw new AccountingPostError("PRICING","Complete all journey supplier rates and DMC pricing settings before recording the deposit.");
+      }
+      financial={currency:legacyQuote.public.currency,sellingPrice:legacyQuote.sellingPrice,internalCost:legacyQuote.internalCost,grossProfit:legacyQuote.grossProfit,profitMargin:legacyQuote.profitMargin,snapshot:asJson(legacyQuote)};
     }
-    if(deposit.amount>quote.sellingPrice+0.005)throw new AccountingPostError("DATABASE","Deposit exceeds the package selling price.");
+    if(deposit.amount>financial.sellingPrice+0.005)throw new AccountingPostError("DATABASE","Deposit exceeds the package selling price.");
     const {data:createdAccount,error:accountError}=await database.from("journey_accounts").insert({
       enquiry_id:enquiry.id,
       journey_reference:enquiry.journey_reference,
@@ -143,24 +162,31 @@ export async function activateJourneyAccount(enquiryId:string,userId:string,depo
       status:"active",
       active:true,
       activated_at:new Date().toISOString(),
-      currency:quote.public.currency,
-      selling_price:quote.sellingPrice,
-      internal_cost:quote.internalCost,
-      gross_profit:quote.grossProfit,
-      profit_margin:quote.profitMargin,
+      currency:financial.currency,
+      selling_price:financial.sellingPrice,
+      internal_cost:financial.internalCost,
+      gross_profit:financial.grossProfit,
+      profit_margin:financial.profitMargin,
       travel_start_date:enquiry.travel_start_date,
       travel_end_date:enquiry.travel_end_date,
-      quote_snapshot:asJson(quote),
+      quote_snapshot:financial.snapshot,
       created_by:userId
     }).select("*").single();
     if(accountError||!createdAccount)throw new AccountingPostError("DATABASE",accountError?.message??"The journey account could not be created.");
     account=createdAccount;created=true;
-    const settlements=await settlementsFor(account,quote);
-    if(settlements.length){
-      const {error:settlementError}=await database.from("journey_settlements").insert(settlements);
-      if(settlementError){
+    if(allocationCommercial.allocations.length){
+      try{await syncAllocationAccounting(enquiry.id)}catch(error){
         await database.from("journey_accounts").delete().eq("id",account.id);
-        throw new AccountingPostError("DATABASE",settlementError.message);
+        throw new AccountingPostError("DATABASE",error instanceof Error?error.message:"Allocation Accounting could not be created.");
+      }
+    }else if(legacyQuote){
+      const settlements=await settlementsFor(account,legacyQuote);
+      if(settlements.length){
+        const {error:settlementError}=await database.from("journey_settlements").insert(settlements);
+        if(settlementError){
+          await database.from("journey_accounts").delete().eq("id",account.id);
+          throw new AccountingPostError("DATABASE",settlementError.message);
+        }
       }
     }
   }

@@ -5,6 +5,7 @@ js/config.js
 node_modules/
 dist/
 .next/
+*.tsbuildinfo
 reports/latest-import-report.json
 /tmp/
 /output/
