@@ -9,9 +9,9 @@ import {includeExperienceSelection,removeExperienceSelection} from "../lib/journ
 import {guidePreferenceOptions,normaliseDestinationPreferences,stayPreferenceOptions} from "../lib/journey/journey-preferences.ts";
 import {journeyLegKey,journeyLegs,normaliseTravelPreferences,recommendedTravelPreferences,travelPreferenceOptions} from "../lib/journey/travel-preferences.ts";
 
-test("public builder follows the six-step preference flow without stay or guide supplier selectors",()=>{
+test("public builder follows the seven-step preference and insights flow without supplier selectors",()=>{
   const source=readFileSync(new URL("../features/journey/journey-builder.tsx",import.meta.url),"utf8");
-  assert.match(source,/\["Theme","Destination","Experience","Journey Preferences","Journey Details","Review"\]/);
+  assert.match(source,/\["Theme","Destination","Experience","Journey Preferences","Journey Details","Journey Insights","Review"\]/);
   assert.match(source,/selectedStayIds:\[\]/);
   assert.match(source,/selectedGuideId:null/);
   assert.doesNotMatch(source,/availableStays\(|data\.guides\.(?:map|filter)|Local Guides/);
@@ -54,12 +54,12 @@ test("destination journey preferences expose the approved stay and guide choices
 
 test("destination journey preferences persist independently and follow selected destinations",()=>{
   const preferences=normaliseDestinationPreferences({
-    kandy:{stayPreference:"boutique_hotels_villas",guidePreference:"national_tourist_guide",notes:"Quiet room, please."},
+    kandy:{stayPreference:"boutique_hotels_villas",guidePreference:"national_tourist_guide",nights:null,notes:"Quiet room, please."},
     galle:{stayPreference:"not-a-valid-choice",guidePreference:"not-a-valid-choice",notes:42},
     removed:{stayPreference:"homestays",guidePreference:"no_guide",notes:"Should be pruned."}
   },["kandy","galle"]);
-  assert.deepEqual(preferences.kandy,{stayPreference:"boutique_hotels_villas",guidePreference:"national_tourist_guide",notes:"Quiet room, please."});
-  assert.deepEqual(preferences.galle,{stayPreference:"recommend",guidePreference:"recommend",notes:""});
+  assert.deepEqual(preferences.kandy,{stayPreference:"boutique_hotels_villas",guidePreference:"national_tourist_guide",nights:null,notes:"Quiet room, please."});
+  assert.deepEqual(preferences.galle,{stayPreference:"recommend",guidePreference:"recommend",nights:null,notes:""});
   assert.equal(preferences.removed,undefined);
 });
 

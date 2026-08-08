@@ -25,12 +25,15 @@ const isJourneyState=(value:unknown):value is JourneyState=>{
 };
 const normaliseState=(state:JourneyState):JourneyState=>({
   ...state,
-  currentStep:Math.min(5,Math.max(0,Number(state.currentStep)||0)),
+  currentStep:Math.min(6,Math.max(0,Number(state.currentStep)||0)),
   destinationPreferences:normaliseDestinationPreferences(state.destinationPreferences,state.selectedDestinationIds),
   travelPreferencesByLeg:normaliseTravelPreferences(state.travelPreferencesByLeg,state.selectedDestinationIds),
   travellerCounts:{adults:Number(state.travellerCounts.adults)||0,children:Number(state.travellerCounts.children)||0,infants:Number(state.travellerCounts.infants)||0},
   experienceParticipants:state.experienceParticipants??{},
-  selectedPricingPlanIds:state.selectedPricingPlanIds??{}
+  selectedPricingPlanIds:state.selectedPricingPlanIds??{},
+  budgetPreference:state.budgetPreference??"flexible",
+  travelPace:state.travelPace??"balanced",
+  accessibilityRequirements:state.accessibilityRequirements??""
 });
 
 export function saveJourneyHandoff(state:JourneyState,quote:PublicPackageQuote|null){

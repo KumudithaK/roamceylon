@@ -23,12 +23,12 @@ export const guidePreferenceOptions=[
 
 export type StayPreference=(typeof stayPreferenceOptions)[number][0];
 export type GuidePreference=(typeof guidePreferenceOptions)[number][0];
-export type DestinationPreference={stayPreference:StayPreference;guidePreference:GuidePreference;notes:string};
+export type DestinationPreference={stayPreference:StayPreference;guidePreference:GuidePreference;nights:number|null;notes:string};
 export type DestinationPreferences=Record<string,DestinationPreference>;
 
 const stayValues=new Set<string>(stayPreferenceOptions.map(([value])=>value));
 const guideValues=new Set<string>(guidePreferenceOptions.map(([value])=>value));
-export const defaultDestinationPreference=():DestinationPreference=>({stayPreference:"recommend",guidePreference:"recommend",notes:""});
+export const defaultDestinationPreference=():DestinationPreference=>({stayPreference:"recommend",guidePreference:"recommend",nights:null,notes:""});
 
 export function normaliseDestinationPreferences(value:unknown,destinationIds:string[]):DestinationPreferences{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value as Record<string,unknown>:{};
@@ -37,6 +37,7 @@ export function normaliseDestinationPreferences(value:unknown,destinationIds:str
     return [destinationId,{
       stayPreference:stayValues.has(String(item.stayPreference))?item.stayPreference as StayPreference:"recommend",
       guidePreference:guideValues.has(String(item.guidePreference))?item.guidePreference as GuidePreference:"recommend",
+      nights:item.nights!==null&&item.nights!==undefined&&item.nights!==""&&Number.isFinite(Number(item.nights))&&Number(item.nights)>=0?Math.floor(Number(item.nights)):null,
       notes:typeof item.notes==="string"?item.notes:""
     }];
   }));

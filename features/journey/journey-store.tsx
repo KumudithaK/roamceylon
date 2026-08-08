@@ -23,6 +23,8 @@ export type JourneyState={
   travellerCounts:ParticipantCounts;
   experienceParticipants:Record<string,ParticipantCounts>;
   budgetPreference:string;
+  travelPace:"relaxed"|"balanced"|"fast_paced";
+  accessibilityRequirements:string;
 };
 type Action=
   |{type:"toggle";field:"selectedThemeIds"|"selectedDestinationIds"|"selectedExperienceIds";id:string}
@@ -36,9 +38,12 @@ type Action=
   |{type:"stayPreference";destinationId:string;value:StayPreference}
   |{type:"guidePreference";destinationId:string;value:GuidePreference}
   |{type:"destinationNotes";destinationId:string;value:string}
+  |{type:"destinationNights";destinationId:string;value:number|null}
   |{type:"travelPreference";legKey:string;value:TravelPreference}
   |{type:"step";value:number}
   |{type:"budget";value:string}
+  |{type:"pace";value:JourneyState["travelPace"]}
+  |{type:"accessibility";value:string}
   |{type:"hydrate";state:JourneyState};
 
 const emptyParticipants:ParticipantCounts={adults:0,children:0,infants:0};
@@ -71,7 +76,7 @@ const withPlan=(plans:Record<string,string>,type:"accommodation"|"vehicle"|"guid
   return planId?{...next,[pricingPlanKey(type,id)]:planId}:next;
 };
 const keepPlans=(plans:Record<string,string>,type:"accommodation"|"experience",ids:string[])=>Object.fromEntries(Object.entries(plans).filter(([key])=>!key.startsWith(`${type}:`)||ids.includes(key.slice(type.length+1))));
-export const emptyJourneyState:JourneyState={currentStep:0,selectedThemeIds:[],selectedDestinationIds:[],selectedExperienceIds:[],destinationPreferences:{},travelPreferencesByLeg:{},selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds:{},travelDates:{start:"",end:""},travellerCounts:emptyParticipants,experienceParticipants:{},budgetPreference:"flexible"};
+export const emptyJourneyState:JourneyState={currentStep:0,selectedThemeIds:[],selectedDestinationIds:[],selectedExperienceIds:[],destinationPreferences:{},travelPreferencesByLeg:{},selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds:{},travelDates:{start:"",end:""},travellerCounts:emptyParticipants,experienceParticipants:{},budgetPreference:"flexible",travelPace:"balanced",accessibilityRequirements:""};
 
 const validateDependencies=(data:JourneyBootstrap,state:JourneyState):JourneyState=>{
   const themeIds=new Set(data.themes.map(item=>item.id));
@@ -137,7 +142,7 @@ function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):Journey
     const selectedExperienceIds=state.selectedExperienceIds.filter(id=>id!==action.experienceId);
     return {...state,selectedExperienceIds,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedPricingPlanIds:withoutPlan(state.selectedPricingPlanIds,"experience",action.experienceId)};
   }
-  if(action.type==="stayPreference"||action.type==="guidePreference"||action.type==="destinationNotes"){
+  if(action.type==="stayPreference"||action.type==="guidePreference"||action.type==="destinationNotes"||action.type==="destinationNights"){
     if(!state.selectedDestinationIds.includes(action.destinationId))return state;
     const destinationPreferences=normaliseDestinationPreferences(state.destinationPreferences,state.selectedDestinationIds);
     const current=destinationPreferences[action.destinationId];
@@ -145,7 +150,9 @@ function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):Journey
       ?{...current,stayPreference:action.value}
       :action.type==="guidePreference"
         ?{...current,guidePreference:action.value}
-        :{...current,notes:action.value};
+        :action.type==="destinationNights"
+          ?{...current,nights:action.value===null?null:Math.max(0,Math.floor(action.value))}
+          :{...current,notes:action.value};
     return {...state,destinationPreferences:{...destinationPreferences,[action.destinationId]:preference}};
   }
   if(action.type==="travelPreference"){
@@ -153,8 +160,10 @@ function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):Journey
     const leg=travelPreferencesByLeg[action.legKey];
     return leg?{...state,travelPreferencesByLeg:{...travelPreferencesByLeg,[action.legKey]:{...leg,travelPreference:action.value}}}:state;
   }
-  if(action.type==="step")return {...state,currentStep:Math.min(5,Math.max(0,action.value))};
+  if(action.type==="step")return {...state,currentStep:Math.min(6,Math.max(0,action.value))};
   if(action.type==="budget")return {...state,budgetPreference:action.value};
+  if(action.type==="pace")return {...state,travelPace:action.value};
+  if(action.type==="accessibility")return {...state,accessibilityRequirements:action.value};
   return state;
 }
 
@@ -171,7 +180,7 @@ export function JourneyProvider({data,initialSelection,children}:{data:JourneyBo
     const destinationIds=[...(initialSelection?.destinationIds??[]),...(destinationId?[destinationId]:[])].filter((id,index,values)=>data.destinations.some(item=>item.id===id)&&values.indexOf(id)===index);
     return {
       ...emptyJourneyState,
-      currentStep:Math.min(5,Math.max(0,initialSelection?.step??(experience?2:0))),
+      currentStep:Math.min(6,Math.max(0,initialSelection?.step??(experience?2:0))),
       selectedThemeIds:themeIds,
       selectedDestinationIds:destinationIds,
       destinationPreferences:normaliseDestinationPreferences({},destinationIds),
@@ -199,12 +208,12 @@ export function JourneyProvider({data,initialSelection,children}:{data:JourneyBo
       }:saved});
     };
     restore();
-    setHydrated(true);
+    const hydrationTimer=window.setTimeout(()=>setHydrated(true),0);
     const resume=(event:PageTransitionEvent)=>{if(event.persisted)restore()};
     const visible=()=>{if(document.visibilityState==="visible")restore()};
     window.addEventListener("pageshow",resume);
     document.addEventListener("visibilitychange",visible);
-    return()=>{window.removeEventListener("pageshow",resume);document.removeEventListener("visibilitychange",visible)};
+    return()=>{window.clearTimeout(hydrationTimer);window.removeEventListener("pageshow",resume);document.removeEventListener("visibilitychange",visible)};
   },[initialSelection,startingState]);
   useEffect(()=>{if(hydrated){writeJourneyState(state);clearJourneyLaunchParameters()}},[hydrated,state]);
   const value=useMemo(()=>({state,dispatch}),[state]);

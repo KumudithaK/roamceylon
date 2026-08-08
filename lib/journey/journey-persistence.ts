@@ -16,7 +16,7 @@ export function readJourneyState():JourneyState|null{
     const parsed=JSON.parse(raw) as Partial<JourneyState>;
     if(!Array.isArray(parsed.selectedThemeIds)||!Array.isArray(parsed.selectedDestinationIds)||!Array.isArray(parsed.selectedExperienceIds))return null;
     return {
-      currentStep:Math.min(5,Math.max(0,Number(parsed.currentStep)||0)),
+      currentStep:Math.min(6,Math.max(0,Number(parsed.currentStep)||0)),
       selectedThemeIds:parsed.selectedThemeIds,
       selectedDestinationIds:parsed.selectedDestinationIds,
       selectedExperienceIds:parsed.selectedExperienceIds,
@@ -29,7 +29,9 @@ export function readJourneyState():JourneyState|null{
       travelDates:parsed.travelDates??{start:"",end:""},
       travellerCounts:{adults:Number(parsed.travellerCounts?.adults)||0,children:Number(parsed.travellerCounts?.children)||0,infants:Number(parsed.travellerCounts?.infants)||0},
       experienceParticipants:parsed.experienceParticipants??{},
-      budgetPreference:parsed.budgetPreference??"flexible"
+      budgetPreference:parsed.budgetPreference??"flexible",
+      travelPace:parsed.travelPace??"balanced",
+      accessibilityRequirements:parsed.accessibilityRequirements??""
     };
   }catch{return null}
 }
