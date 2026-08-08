@@ -6,7 +6,7 @@ import {calculatePackageQuote} from "../lib/pricing/package-engine.ts";
 import type {SupplierCost} from "../lib/pricing/package-types.ts";
 import {getNearbyDestinations,getRouteEstimate} from "../lib/journey/route.ts";
 import {includeExperienceSelection,removeExperienceSelection} from "../lib/journey/journey-selection.ts";
-import {guidePreferenceOptions,normaliseDestinationPreferences,stayPreferenceOptions} from "../lib/journey/journey-preferences.ts";
+import {guideLanguageOptions,guidePreferenceOptions,journeyGuidePreferenceOptions,normaliseDestinationPreferences,specialistGuideOptions,stayPreferenceOptions} from "../lib/journey/journey-preferences.ts";
 import {journeyLegKey,journeyLegs,normaliseTravelPreferences,recommendedTravelPreferences,travelPreferenceOptions} from "../lib/journey/travel-preferences.ts";
 
 test("public builder follows the seven-step preference and insights flow without supplier selectors",()=>{
@@ -50,6 +50,10 @@ test("destination journey preferences expose the approved stay and guide choices
   assert.deepEqual(guidePreferenceOptions.map(([,label])=>label),[
     "National Tourist Guide","Chauffeur Tourist Guide","Area Tourist Guide","Site Tourist Guide","Wildlife Tracker / Safari Guide","Adventure / Trekking Guide","No Guide","Let Roam Ceylon Recommend"
   ]);
+  assert.deepEqual(journeyGuidePreferenceOptions.map(([,label])=>label),["National Tourist Guide","Chauffeur Tourist Guide","No Guide Required","Let Roam Ceylon Recommend"]);
+  assert.equal(guideLanguageOptions.length,10);
+  assert.deepEqual(specialistGuideOptions("Sigiriya").map(([,label])=>label),["None","Site Guide","Archaeological Guide"]);
+  assert.deepEqual(specialistGuideOptions("Galle").map(([,label])=>label),["None"]);
 });
 
 test("destination journey preferences persist independently and follow selected destinations",()=>{
@@ -58,8 +62,8 @@ test("destination journey preferences persist independently and follow selected 
     galle:{stayPreference:"not-a-valid-choice",guidePreference:"not-a-valid-choice",notes:42},
     removed:{stayPreference:"homestays",guidePreference:"no_guide",notes:"Should be pruned."}
   },["kandy","galle"]);
-  assert.deepEqual(preferences.kandy,{stayPreference:"boutique_hotels_villas",guidePreference:"national_tourist_guide",nights:null,notes:"Quiet room, please."});
-  assert.deepEqual(preferences.galle,{stayPreference:"recommend",guidePreference:"recommend",nights:null,notes:""});
+  assert.deepEqual(preferences.kandy,{stayPreference:"boutique_hotels_villas",guidePreference:"national_tourist_guide",specialistGuidePreference:"none",nights:null,notes:"Quiet room, please."});
+  assert.deepEqual(preferences.galle,{stayPreference:"recommend",guidePreference:"recommend",specialistGuidePreference:"none",nights:null,notes:""});
   assert.equal(preferences.removed,undefined);
 });
 

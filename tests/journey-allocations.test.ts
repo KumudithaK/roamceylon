@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {destinationAllocationKey,hasOwnPreferenceSnapshot,journeyAllocationScopes,journeyGuideAllocationKey,vehicleAllocationKey} from "../lib/admin/journey-allocations.ts";
+import {destinationAllocationKey,hasOwnJourneyGuideSnapshot,hasOwnPreferenceSnapshot,journeyAllocationScopes,journeyGuideAllocationKey,vehicleAllocationKey} from "../lib/admin/journey-allocations.ts";
 import {allocationFinancialSummary} from "../lib/admin/allocation-financials.ts";
 
 test("supplier allocation scopes follow destinations and consecutive route legs",()=>{
@@ -46,6 +46,31 @@ test("specialist guides remain destination-specific and no-guide destinations ar
   assert.deepEqual(scopes.filter(scope=>scope.type==="guide").map(scope=>scope.key),[destinationAllocationKey("guide","sigiriya")]);
 });
 
+test("global guide model creates one primary guide and multiple requested specialists",()=>{
+  const scopes=journeyAllocationScopes(["sigiriya","kandy","galle"],[],{
+    journeyGuidePreference:"national_tourist_guide",
+    specialistGuidePreferencesByDestination:{sigiriya:"archaeological_guide",kandy:"temple_specialist",galle:"none"}
+  });
+  const guides=scopes.filter(scope=>scope.type==="guide");
+  assert.equal(guides.length,3);
+  assert.deepEqual(guides.map(scope=>scope.key),[journeyGuideAllocationKey,destinationAllocationKey("guide","sigiriya"),destinationAllocationKey("guide","kandy")]);
+  assert.equal(guides[0].guideRole,"primary");
+  assert.equal(guides[1].guideRole,"specialist");
+  assert.equal(guides[1].guideSpeciality,"archaeological_guide");
+});
+
+test("no primary guide still permits a destination specialist",()=>{
+  const scopes=journeyAllocationScopes(["yala"],[],{journeyGuidePreference:"no_guide",specialistGuidePreferencesByDestination:{yala:"wildlife_tracker"}});
+  assert.deepEqual(scopes.filter(scope=>scope.type==="guide").map(scope=>scope.key),[destinationAllocationKey("guide","yala")]);
+});
+
+test("chauffeur and recommendation preferences each require one journey guide",()=>{
+  for(const journeyGuidePreference of ["chauffeur_tourist_guide","recommend"]){
+    const scopes=journeyAllocationScopes(["kandy","galle"],[],{journeyGuidePreference,specialistGuidePreferencesByDestination:{}});
+    assert.deepEqual(scopes.filter(scope=>scope.type==="guide").map(scope=>scope.key),[journeyGuideAllocationKey]);
+  }
+});
+
 test("allocation financials calculate supplier cost, selling price and margin",()=>{
   const summary=allocationFinancialSummary([
     {supplier_cost:900,selling_price:1200,confirmation_status:"confirmed"},
@@ -59,4 +84,6 @@ test("legacy enquiries are distinguishable from traveller preference snapshots",
   assert.equal(hasOwnPreferenceSnapshot({state:{selectedDestinationIds:["sigiriya"]}},"destinationPreferences"),false);
   assert.equal(hasOwnPreferenceSnapshot({state:{destinationPreferences:{sigiriya:{stayPreference:"recommend"}}}},"destinationPreferences"),true);
   assert.equal(hasOwnPreferenceSnapshot({travelPreferencesByLeg:{}},"travelPreferencesByLeg"),true);
+  assert.equal(hasOwnJourneyGuideSnapshot({state:{destinationPreferences:{}}}),false);
+  assert.equal(hasOwnJourneyGuideSnapshot({state:{journeyGuidePreference:"no_guide"}}),true);
 });

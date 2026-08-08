@@ -1,7 +1,7 @@
 "use client";
 
 import type {JourneyState} from "@/features/journey/journey-store";
-import {normaliseDestinationPreferences} from "@/lib/journey/journey-preferences";
+import {normaliseDestinationPreferences,normaliseGuideLanguages,normaliseJourneyGuidePreference} from "@/lib/journey/journey-preferences";
 import {normaliseTravelPreferences} from "@/lib/journey/travel-preferences";
 
 export const journeyStorageKey="roam-ceylon-journey-v3";
@@ -21,6 +21,9 @@ export function readJourneyState():JourneyState|null{
       selectedDestinationIds:parsed.selectedDestinationIds,
       selectedExperienceIds:parsed.selectedExperienceIds,
       destinationPreferences:normaliseDestinationPreferences(parsed.destinationPreferences,parsed.selectedDestinationIds),
+      journeyGuidePreference:normaliseJourneyGuidePreference(parsed.journeyGuidePreference),
+      journeyGuideLanguages:normaliseGuideLanguages(parsed.journeyGuideLanguages),
+      journeyGuideNotes:typeof parsed.journeyGuideNotes==="string"?parsed.journeyGuideNotes:"",
       travelPreferencesByLeg:normaliseTravelPreferences(parsed.travelPreferencesByLeg,parsed.selectedDestinationIds),
       selectedStayIdsByDestination:{},
       selectedVehicleId:null,

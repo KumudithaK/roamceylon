@@ -117,10 +117,12 @@ export async function syncAllocationAccounting(enquiryId:string,userId?:string){
     const existing=settlements.find(item=>item.allocation_id===line.allocationId);
     const amountDue=line.supplierCost??0;
     if(existing&&amountDue+0.005<existing.amount_paid+existing.waived_amount)throw new Error(`${line.providerName}: supplier cost cannot be lower than payments and waivers already recorded.`);
+    const guideDetails=line.type==="guide"&&line.serviceDetails&&typeof line.serviceDetails==="object"&&!Array.isArray(line.serviceDetails)?line.serviceDetails as Record<string,Json>:null;
+    const guideDescription=guideDetails?(guideDetails.guideRole==="specialist"?`${String(guideDetails.guideSpeciality??"Specialist guide").replaceAll("_"," ")} · ${line.serviceName??line.resourceName}`:`Primary journey guide · ${line.serviceName??line.resourceName}`):null;
     const payload={
       account_id:account.id,allocation_id:line.allocationId,source_key:`allocation:${line.allocationId}`,
       payee_type:line.type,entity_id:line.resourceId,payee_name:line.providerName,
-      description:line.serviceName??line.resourceName,currency:line.currency,amount_due:amountDue,
+      description:guideDescription??line.serviceName??line.resourceName,currency:line.currency,amount_due:amountDue,
       status:existing?.status??"pending",notes:line.specialNotes
     };
     const result=existing

@@ -1,7 +1,7 @@
 import "server-only";
 import {createAdminClient} from "@/lib/supabase/admin";
 import {allocationCommercialSnapshot} from "@/lib/accounting/allocation-accounting";
-import {experienceAllocationKey,journeyAllocationScopes,journeyGuideAllocationKey} from "@/lib/admin/journey-allocations";
+import {experienceAllocationKey,hasOwnJourneyGuideSnapshot,journeyAllocationScopes,journeyGuideAllocationKey} from "@/lib/admin/journey-allocations";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import type {Database,Json} from "@/lib/database.types";
 
@@ -32,9 +32,12 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
   if(experienceScopes.length!==experienceIds.length)throw new ProposalError("INCOMPLETE","Every selected experience must have a selected destination relationship before a proposal can be generated.");
   const handoff=parseJourneyHandoff(enquiry.trip_state);
   const destinationPreferences=handoff?.state.destinationPreferences;
+  const hasGlobalGuide=hasOwnJourneyGuideSnapshot(enquiry.trip_state);
   const required=journeyAllocationScopes(destinationIds,experienceScopes,{
     nightsByDestination:destinationPreferences?Object.fromEntries(destinationIds.map(id=>[id,destinationPreferences[id]?.nights??null])):undefined,
-    guidePreferencesByDestination:destinationPreferences?Object.fromEntries(destinationIds.map(id=>[id,destinationPreferences[id]?.guidePreference??"recommend"])):undefined
+    guidePreferencesByDestination:!hasGlobalGuide&&destinationPreferences?Object.fromEntries(destinationIds.map(id=>[id,destinationPreferences[id]?.guidePreference??"recommend"])):undefined,
+    journeyGuidePreference:hasGlobalGuide?handoff?.state.journeyGuidePreference:undefined,
+    specialistGuidePreferencesByDestination:hasGlobalGuide&&destinationPreferences?Object.fromEntries(destinationIds.map(id=>[id,destinationPreferences[id]?.specialistGuidePreference??"none"])):undefined
   });
   const commercial=await allocationCommercialSnapshot(enquiryId);
   const active=commercial.allocations.filter(row=>row.confirmation_status!=="cancelled");
@@ -47,7 +50,7 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
     ]);
     const destinationNames=new Map((destinationResult.data??[]).map(item=>[item.id,item.name]));
     const experienceNames=new Map((experienceResult.data??[]).map(item=>[item.id,item.name]));
-    const label=(scope:typeof missing[number])=>scope.type==="accommodation"?`Stay in ${destinationNames.get(scope.destinationId??"")??"a selected destination"}`:scope.type==="guide"?(scope.destinationId?`Guide for ${destinationNames.get(scope.destinationId)??"a selected destination"}`:"Journey guide"):scope.type==="vehicle"?`Transport from ${destinationNames.get(scope.fromDestinationId??"")??"origin"} to ${destinationNames.get(scope.toDestinationId??"")??"destination"}`:`Provider for ${experienceNames.get(scope.key.slice("experience:".length))??"a selected experience"}`;
+    const label=(scope:typeof missing[number])=>scope.type==="accommodation"?`Stay in ${destinationNames.get(scope.destinationId??"")??"a selected destination"}`:scope.type==="guide"?(scope.guideRole==="specialist"?`${scope.guideSpeciality?.replaceAll("_"," ")??"Specialist guide"} for ${destinationNames.get(scope.destinationId??"")??"a selected destination"}`:"Primary journey guide"):scope.type==="vehicle"?`Transport from ${destinationNames.get(scope.fromDestinationId??"")??"origin"} to ${destinationNames.get(scope.toDestinationId??"")??"destination"}`:`Provider for ${experienceNames.get(scope.key.slice("experience:".length))??"a selected experience"}`;
     throw new ProposalError("INCOMPLETE",`Complete and save these allocations first: ${missing.map(label).join("; ")}.`);
   }
   const incompleteServices=active.filter(row=>!row.service_name||!row.quantity||!row.quantity_label||!row.pricing_plan_id&&(!row.pricing_plan_snapshot||typeof row.pricing_plan_snapshot!=="object"));
