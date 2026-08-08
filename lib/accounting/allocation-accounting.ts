@@ -18,6 +18,12 @@ export type AllocationSnapshotLine={
   toDestinationName:string|null;
   resourceId:string|null;
   resourceName:string;
+  pricingPlanId:string|null;
+  pricingPlanSnapshot:Json;
+  serviceName:string|null;
+  quantity:number|null;
+  quantityLabel:string|null;
+  serviceDetails:Json;
   providerName:string;
   supplierContact:string|null;
   supplierCost:number|null;
@@ -68,6 +74,8 @@ export async function allocationCommercialSnapshot(enquiryId:string){
       fromDestinationId:row.from_destination_id,fromDestinationName:row.from_destination_id?destinationNames.get(row.from_destination_id)??null:null,
       toDestinationId:row.to_destination_id,toDestinationName:row.to_destination_id?destinationNames.get(row.to_destination_id)??null:null,
       resourceId:id,resourceName:name,providerName:row.provider_name?.trim()||name,
+      pricingPlanId:row.pricing_plan_id,pricingPlanSnapshot:row.pricing_plan_snapshot,
+      serviceName:row.service_name,quantity:row.quantity===null?null:Number(row.quantity),quantityLabel:row.quantity_label,serviceDetails:row.service_details,
       supplierContact:row.supplier_contact,supplierCost:row.supplier_cost===null?null:Number(row.supplier_cost),sellingPrice:row.selling_price===null?null:Number(row.selling_price),currency:row.currency,
       confirmationStatus:row.confirmation_status,invoiceStatus:row.invoice_status,paymentStatus:row.payment_status,
       arrivalInstructions:row.arrival_instructions,specialNotes:row.special_notes
@@ -82,31 +90,15 @@ const isAllocationAccount=(account:Account)=>{
 };
 
 export async function syncAllocationAccounting(enquiryId:string,userId?:string){
+  void userId;
   const database=createAdminClient();
   if(!database)throw new Error("Supabase server credentials are unavailable.");
   const {data:existingAccount,error}=await database.from("journey_accounts").select("*").eq("enquiry_id",enquiryId).maybeSingle();
   if(error)throw new Error(error.message);
   const commercial=await allocationCommercialSnapshot(enquiryId);
-  let account=existingAccount;
+  const account=existingAccount;
   if(account&&!isAllocationAccount(account))return {account,synced:false};
-  if(!account){
-    const active=commercial.snapshot.filter(line=>line.confirmationStatus!=="cancelled");
-    const currencies=new Set(active.map(line=>line.currency));
-    if(!active.length||commercial.summary.incompleteLines||commercial.summary.totalSellingPrice<=0||currencies.size!==1)return {account:null,synced:false};
-    const {data:enquiry,error:enquiryError}=await database.from("enquiries").select("journey_reference,name,email,travel_start_date,travel_end_date").eq("id",enquiryId).maybeSingle();
-    if(enquiryError)throw new Error(enquiryError.message);
-    if(!enquiry)throw new Error("Traveller enquiry not found.");
-    const {data:created,error:createError}=await database.from("journey_accounts").insert({
-      enquiry_id:enquiryId,journey_reference:enquiry.journey_reference,traveller_name:enquiry.name,traveller_email:enquiry.email,
-      status:"pending_deposit",active:false,deactivated_at:new Date().toISOString(),currency:active[0].currency,
-      selling_price:commercial.summary.totalSellingPrice,internal_cost:commercial.summary.totalSupplierCost,
-      gross_profit:commercial.summary.grossProfit,profit_margin:commercial.summary.profitMargin,
-      travel_start_date:enquiry.travel_start_date,travel_end_date:enquiry.travel_end_date,
-      quote_snapshot:asJson({source:"supplier_allocations",summary:commercial.summary,allocations:active}),created_by:userId??null
-    }).select("*").single();
-    if(createError||!created)throw new Error(createError?.message??"Journey Accounting could not be prepared.");
-    account=created;
-  }
+  if(!account||!account.active)return {account,synced:false};
   if(commercial.summary.incompleteLines)throw new Error("Complete supplier cost and selling price for every active allocation before Accounting can be updated.");
   const active=commercial.snapshot.filter(line=>line.confirmationStatus!=="cancelled");
   const {error:accountError}=await database.from("journey_accounts").update({
@@ -128,7 +120,7 @@ export async function syncAllocationAccounting(enquiryId:string,userId?:string){
     const payload={
       account_id:account.id,allocation_id:line.allocationId,source_key:`allocation:${line.allocationId}`,
       payee_type:line.type,entity_id:line.resourceId,payee_name:line.providerName,
-      description:line.resourceName,currency:line.currency,amount_due:amountDue,
+      description:line.serviceName??line.resourceName,currency:line.currency,amount_due:amountDue,
       status:existing?.status??"pending",notes:line.specialNotes
     };
     const result=existing

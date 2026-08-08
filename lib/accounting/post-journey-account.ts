@@ -128,9 +128,14 @@ export async function activateJourneyAccount(enquiryId:string,userId:string,depo
   const {data:existingAccount,error:accountLookupError}=await database.from("journey_accounts").select("*").eq("enquiry_id",enquiryId).maybeSingle();
   let account=existingAccount;
   if(accountLookupError)throw new AccountingPostError("DATABASE",accountLookupError.message);
+  const allocationCommercial=await allocationCommercialSnapshot(enquiry.id);
+  if(allocationCommercial.allocations.length){
+    const {data:approved,error:proposalError}=await database.from("journey_proposals").select("id").eq("enquiry_id",enquiry.id).eq("status","approved").limit(1).maybeSingle();
+    if(proposalError)throw new AccountingPostError("DATABASE",proposalError.message);
+    if(!approved)throw new AccountingPostError("PRICING","The traveller must accept an approved journey proposal before a deposit can activate Accounting.");
+  }
   let created=false;
   if(!account){
-    const allocationCommercial=await allocationCommercialSnapshot(enquiry.id);
     let financial:{currency:string;sellingPrice:number;internalCost:number;grossProfit:number;profitMargin:number;snapshot:Json};
     let legacyQuote:AdminPackageQuote|null=null;
     if(allocationCommercial.allocations.length){
@@ -189,6 +194,19 @@ export async function activateJourneyAccount(enquiryId:string,userId:string,depo
         }
       }
     }
+  }else if(!account.active&&allocationCommercial.allocations.length){
+    if(allocationCommercial.summary.incompleteLines)throw new AccountingPostError("PRICING","Complete supplier cost and selling price for every active allocation before recording the deposit.");
+    const active=allocationCommercial.snapshot.filter(line=>line.confirmationStatus!=="cancelled");
+    const currencies=new Set(active.map(line=>line.currency));
+    if(!active.length||allocationCommercial.summary.totalSellingPrice<=0||currencies.size!==1)throw new AccountingPostError("PRICING","Complete the accepted proposal commercial details before recording the deposit.");
+    const {data:refreshed,error:refreshError}=await database.from("journey_accounts").update({
+      currency:active[0].currency,selling_price:allocationCommercial.summary.totalSellingPrice,
+      internal_cost:allocationCommercial.summary.totalSupplierCost,gross_profit:allocationCommercial.summary.grossProfit,
+      profit_margin:allocationCommercial.summary.profitMargin,
+      quote_snapshot:asJson({source:"supplier_allocations",summary:allocationCommercial.summary,allocations:active})
+    }).eq("id",account.id).select("*").single();
+    if(refreshError||!refreshed)throw new AccountingPostError("DATABASE",refreshError?.message??"The accepted proposal could not be prepared for Accounting.");
+    account=refreshed;
   }
   const idempotencyKey=`initial-deposit:${enquiry.id}`;
   const {data:existingDeposit,error:depositLookupError}=await database.from("accounting_transactions").select("id").eq("account_id",account.id).eq("idempotency_key",idempotencyKey).maybeSingle();

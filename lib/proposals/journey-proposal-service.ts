@@ -1,7 +1,7 @@
 import "server-only";
 import {createAdminClient} from "@/lib/supabase/admin";
 import {allocationCommercialSnapshot} from "@/lib/accounting/allocation-accounting";
-import {experienceAllocationKey,journeyAllocationScopes} from "@/lib/admin/journey-allocations";
+import {experienceAllocationKey,journeyAllocationScopes,journeyGuideAllocationKey} from "@/lib/admin/journey-allocations";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import type {Database,Json} from "@/lib/database.types";
 
@@ -10,7 +10,7 @@ const ids=(value:Json)=>Array.isArray(value)?value.filter((item):item is string=
 const asJson=(value:unknown)=>JSON.parse(JSON.stringify(value)) as Json;
 const allocationKey=(row:Database["public"]["Tables"]["journey_supplier_allocations"]["Row"])=>row.allocation_type==="vehicle"
   ?`vehicle:${row.from_destination_id}:${row.to_destination_id}`
-  :row.allocation_type==="experience"&&row.experience_id?experienceAllocationKey(row.experience_id):`${row.allocation_type}:${row.destination_id}`;
+  :row.allocation_type==="experience"&&row.experience_id?experienceAllocationKey(row.experience_id):row.allocation_type==="guide"&&!row.destination_id?journeyGuideAllocationKey:`${row.allocation_type}:${row.destination_id}`;
 
 export class ProposalError extends Error{
   constructor(public code:"NOT_FOUND"|"INCOMPLETE"|"DATABASE",message:string){super(message);this.name="ProposalError"}
@@ -31,12 +31,27 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
   });
   if(experienceScopes.length!==experienceIds.length)throw new ProposalError("INCOMPLETE","Every selected experience must have a selected destination relationship before a proposal can be generated.");
   const handoff=parseJourneyHandoff(enquiry.trip_state);
-  const required=journeyAllocationScopes(destinationIds,experienceScopes).filter(scope=>scope.type!=="guide"||handoff?.state.destinationPreferences?.[scope.destinationId??""]?.guidePreference!=="no_guide");
+  const destinationPreferences=handoff?.state.destinationPreferences;
+  const required=journeyAllocationScopes(destinationIds,experienceScopes,{
+    nightsByDestination:destinationPreferences?Object.fromEntries(destinationIds.map(id=>[id,destinationPreferences[id]?.nights??null])):undefined,
+    guidePreferencesByDestination:destinationPreferences?Object.fromEntries(destinationIds.map(id=>[id,destinationPreferences[id]?.guidePreference??"recommend"])):undefined
+  });
   const commercial=await allocationCommercialSnapshot(enquiryId);
   const active=commercial.allocations.filter(row=>row.confirmation_status!=="cancelled");
   const available=new Set(active.map(allocationKey));
   const missing=required.filter(scope=>!available.has(scope.key));
-  if(missing.length)throw new ProposalError("INCOMPLETE",`Allocate every required stay, route, guide, and experience provider first. ${missing.length} allocation${missing.length===1?" is":"s are"} missing.`);
+  if(missing.length){
+    const [destinationResult,experienceResult]=await Promise.all([
+      destinationIds.length?database.from("destinations").select("id,name").in("id",destinationIds):Promise.resolve({data:[],error:null}),
+      experienceIds.length?database.from("experiences").select("id,name").in("id",experienceIds):Promise.resolve({data:[],error:null})
+    ]);
+    const destinationNames=new Map((destinationResult.data??[]).map(item=>[item.id,item.name]));
+    const experienceNames=new Map((experienceResult.data??[]).map(item=>[item.id,item.name]));
+    const label=(scope:typeof missing[number])=>scope.type==="accommodation"?`Stay in ${destinationNames.get(scope.destinationId??"")??"a selected destination"}`:scope.type==="guide"?(scope.destinationId?`Guide for ${destinationNames.get(scope.destinationId)??"a selected destination"}`:"Journey guide"):scope.type==="vehicle"?`Transport from ${destinationNames.get(scope.fromDestinationId??"")??"origin"} to ${destinationNames.get(scope.toDestinationId??"")??"destination"}`:`Provider for ${experienceNames.get(scope.key.slice("experience:".length))??"a selected experience"}`;
+    throw new ProposalError("INCOMPLETE",`Complete and save these allocations first: ${missing.map(label).join("; ")}.`);
+  }
+  const incompleteServices=active.filter(row=>!row.service_name||!row.quantity||!row.quantity_label||!row.pricing_plan_id&&(!row.pricing_plan_snapshot||typeof row.pricing_plan_snapshot!=="object"));
+  if(incompleteServices.length)throw new ProposalError("INCOMPLETE",`Select or record a complete service rate and quantity for ${incompleteServices.length} allocation${incompleteServices.length===1?"":"s"} before generating the proposal.`);
   if(commercial.summary.incompleteLines)throw new ProposalError("INCOMPLETE","Complete supplier cost and selling price for every active allocation before generating the proposal.");
   const currencies=new Set(commercial.snapshot.filter(line=>line.confirmationStatus!=="cancelled").map(line=>line.currency));
   if(currencies.size>1)throw new ProposalError("INCOMPLETE","All proposal allocations must use the same currency.");

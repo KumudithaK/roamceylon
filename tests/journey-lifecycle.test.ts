@@ -19,21 +19,26 @@ test("proposal snapshots use allocated suppliers and enforce sent before approva
   assert.match(service,/"proposal_accepted"/);
 });
 
-test("allocation accounting preserves the legacy quote path",()=>{
+test("allocation accounting preserves the legacy quote path and activates only after payment",()=>{
   const posting=read("../lib/accounting/post-journey-account.ts");
   const allocationAccounting=read("../lib/accounting/allocation-accounting.ts");
   assert.match(posting,/allocationCommercial\.allocations\.length/);
   assert.match(posting,/new PackagePricingService\(\)\.quote/);
   assert.match(posting,/source:"supplier_allocations"/);
-  assert.match(allocationAccounting,/status:"pending_deposit"/);
+  assert.match(allocationAccounting,/!account\|\|!account\.active/);
+  assert.doesNotMatch(allocationAccounting,/journey_accounts"\)\.insert/);
   assert.match(allocationAccounting,/source_key:`allocation:/);
   assert.match(allocationAccounting,/allocation_id:line\.allocationId/);
 });
 
 test("migration stores commercial, operational, proposal and reporting relationships",()=>{
   const migration=read("../supabase/migrations/202608080003_journey_proposal_financial_operations.sql");
+  const rateMigration=read("../supabase/migrations/202608080004_allocation_rate_snapshots.sql");
   for(const field of ["supplier_cost","selling_price","supplier_contact","arrival_instructions","confirmation_status","invoice_status","payment_status","allocation_id","journey_proposals","allocation_snapshot"]){
     assert.match(migration,new RegExp(field));
+  }
+  for(const field of ["pricing_plan_id","pricing_plan_snapshot","service_name","quantity","quantity_label","service_details"]){
+    assert.match(rateMigration,new RegExp(field));
   }
 });
 

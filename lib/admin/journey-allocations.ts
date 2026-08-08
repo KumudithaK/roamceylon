@@ -7,15 +7,35 @@ export type AllocationScope={
   toDestinationId:string|null;
 };
 
+export type AllocationRequirements={
+  nightsByDestination?:Record<string,number|null>;
+  guidePreferencesByDestination?:Record<string,string|null>;
+};
+
 export const destinationAllocationKey=(type:"accommodation"|"guide",destinationId:string)=>`${type}:${destinationId}`;
+export const journeyGuideAllocationKey="guide:journey";
 export const vehicleAllocationKey=(fromDestinationId:string,toDestinationId:string)=>`vehicle:${fromDestinationId}:${toDestinationId}`;
 export const experienceAllocationKey=(experienceId:string)=>`experience:${experienceId}`;
 
-export function journeyAllocationScopes(destinationIds:string[],experiences:Array<{experienceId:string;destinationId:string}>=[]):AllocationScope[]{
-  const destinationScopes=destinationIds.flatMap(destinationId=>([
+export function journeyAllocationScopes(destinationIds:string[],experiences:Array<{experienceId:string;destinationId:string}>=[],requirements:AllocationRequirements={}):AllocationScope[]{
+  const hasNights=Boolean(requirements.nightsByDestination);
+  const hasGuidePreferences=Boolean(requirements.guidePreferencesByDestination);
+  const accommodationScopes=destinationIds.filter(destinationId=>!hasNights||requirements.nightsByDestination?.[destinationId]!==0).map(destinationId=>({
+    key:destinationAllocationKey("accommodation",destinationId),type:"accommodation" as const,destinationId,fromDestinationId:null,toDestinationId:null
+  }));
+  const journeyGuideRequired=hasGuidePreferences&&destinationIds.some(destinationId=>["national_tourist_guide","chauffeur_tourist_guide"].includes(requirements.guidePreferencesByDestination?.[destinationId]??""));
+  const journeyGuideScopes:AllocationScope[]=journeyGuideRequired?[{key:journeyGuideAllocationKey,type:"guide",destinationId:null,fromDestinationId:null,toDestinationId:null}]:[];
+  const destinationGuideScopes=destinationIds.filter(destinationId=>{
+    if(!hasGuidePreferences)return true;
+    const preference=requirements.guidePreferencesByDestination?.[destinationId]??"recommend";
+    return preference!=="no_guide"&&!["national_tourist_guide","chauffeur_tourist_guide"].includes(preference);
+  }).map(destinationId=>({
+    key:destinationAllocationKey("guide",destinationId),type:"guide" as const,destinationId,fromDestinationId:null,toDestinationId:null
+  }));
+  const destinationScopes=!hasNights&&!hasGuidePreferences?destinationIds.flatMap(destinationId=>([
     {key:destinationAllocationKey("accommodation",destinationId),type:"accommodation" as const,destinationId,fromDestinationId:null,toDestinationId:null},
     {key:destinationAllocationKey("guide",destinationId),type:"guide" as const,destinationId,fromDestinationId:null,toDestinationId:null}
-  ]));
+  ])):[...accommodationScopes,...journeyGuideScopes,...destinationGuideScopes];
   const vehicleScopes=destinationIds.slice(0,-1).map((fromDestinationId,index)=>({
     key:vehicleAllocationKey(fromDestinationId,destinationIds[index+1]),
     type:"vehicle" as const,
