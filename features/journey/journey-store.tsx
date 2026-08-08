@@ -4,6 +4,7 @@ import {createContext,useContext,useEffect,useMemo,useReducer,useState} from "re
 import type {JourneyBootstrap} from "@/lib/journey/journey-service";
 import {availableDestinations,availableExperiences} from "@/lib/journey/journey-selectors";
 import {normaliseDestinationPreferences,type DestinationPreferences,type GuidePreference,type StayPreference} from "@/lib/journey/journey-preferences";
+import {normaliseTravelPreferences,type TravelPreference,type TravelPreferencesByLeg} from "@/lib/journey/travel-preferences";
 import type {ParticipantCounts} from "@/lib/types";
 import {clearJourneyLaunchParameters,readJourneyState,writeJourneyState} from "@/lib/journey/journey-persistence";
 
@@ -13,6 +14,7 @@ export type JourneyState={
   selectedDestinationIds:string[];
   selectedExperienceIds:string[];
   destinationPreferences:DestinationPreferences;
+  travelPreferencesByLeg:TravelPreferencesByLeg;
   selectedStayIdsByDestination:Record<string,string>;
   selectedVehicleId:string|null;
   selectedGuideId:string|null;
@@ -34,6 +36,7 @@ type Action=
   |{type:"stayPreference";destinationId:string;value:StayPreference}
   |{type:"guidePreference";destinationId:string;value:GuidePreference}
   |{type:"destinationNotes";destinationId:string;value:string}
+  |{type:"travelPreference";legKey:string;value:TravelPreference}
   |{type:"step";value:number}
   |{type:"budget";value:string}
   |{type:"hydrate";state:JourneyState};
@@ -68,7 +71,7 @@ const withPlan=(plans:Record<string,string>,type:"accommodation"|"vehicle"|"guid
   return planId?{...next,[pricingPlanKey(type,id)]:planId}:next;
 };
 const keepPlans=(plans:Record<string,string>,type:"accommodation"|"experience",ids:string[])=>Object.fromEntries(Object.entries(plans).filter(([key])=>!key.startsWith(`${type}:`)||ids.includes(key.slice(type.length+1))));
-export const emptyJourneyState:JourneyState={currentStep:0,selectedThemeIds:[],selectedDestinationIds:[],selectedExperienceIds:[],destinationPreferences:{},selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds:{},travelDates:{start:"",end:""},travellerCounts:emptyParticipants,experienceParticipants:{},budgetPreference:"flexible"};
+export const emptyJourneyState:JourneyState={currentStep:0,selectedThemeIds:[],selectedDestinationIds:[],selectedExperienceIds:[],destinationPreferences:{},travelPreferencesByLeg:{},selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds:{},travelDates:{start:"",end:""},travellerCounts:emptyParticipants,experienceParticipants:{},budgetPreference:"flexible"};
 
 const validateDependencies=(data:JourneyBootstrap,state:JourneyState):JourneyState=>{
   const themeIds=new Set(data.themes.map(item=>item.id));
@@ -78,8 +81,9 @@ const validateDependencies=(data:JourneyBootstrap,state:JourneyState):JourneySta
   const validExperiences=new Set(availableExperiences(data.experiences,selectedDestinationIds,selectedThemeIds).map(item=>item.id));
   const selectedExperienceIds=state.selectedExperienceIds.filter(id=>validExperiences.has(id));
   const destinationPreferences=normaliseDestinationPreferences(state.destinationPreferences,selectedDestinationIds);
-  const selectedPricingPlanIds=Object.fromEntries(Object.entries(keepPlans(state.selectedPricingPlanIds,"experience",selectedExperienceIds)).filter(([key])=>!key.startsWith("accommodation:")&&!key.startsWith("guide:")));
-  return {...state,selectedThemeIds,selectedDestinationIds,selectedExperienceIds,destinationPreferences,selectedStayIdsByDestination:{},selectedGuideId:null,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedPricingPlanIds};
+  const travelPreferencesByLeg=normaliseTravelPreferences(state.travelPreferencesByLeg,selectedDestinationIds);
+  const selectedPricingPlanIds=Object.fromEntries(Object.entries(keepPlans(state.selectedPricingPlanIds,"experience",selectedExperienceIds)).filter(([key])=>!key.startsWith("accommodation:")&&!key.startsWith("guide:")&&!key.startsWith("vehicle:")));
+  return {...state,selectedThemeIds,selectedDestinationIds,selectedExperienceIds,destinationPreferences,travelPreferencesByLeg,selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedPricingPlanIds};
 };
 
 function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):JourneyState{
@@ -94,15 +98,17 @@ function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):Journey
       const validExperiences=new Set(availableExperiences(data.experiences,selectedDestinationIds,next).map(item=>item.id));
       const selectedExperienceIds=state.selectedExperienceIds.filter(id=>validExperiences.has(id));
       const destinationPreferences=normaliseDestinationPreferences(state.destinationPreferences,selectedDestinationIds);
-      const selectedPricingPlanIds=Object.fromEntries(Object.entries(keepPlans(state.selectedPricingPlanIds,"experience",selectedExperienceIds)).filter(([key])=>!key.startsWith("accommodation:")&&!key.startsWith("guide:")));
-      result={...result,selectedDestinationIds,selectedExperienceIds,destinationPreferences,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedStayIdsByDestination:{},selectedGuideId:null,selectedPricingPlanIds};
+      const travelPreferencesByLeg=normaliseTravelPreferences(state.travelPreferencesByLeg,selectedDestinationIds);
+      const selectedPricingPlanIds=Object.fromEntries(Object.entries(keepPlans(state.selectedPricingPlanIds,"experience",selectedExperienceIds)).filter(([key])=>!key.startsWith("accommodation:")&&!key.startsWith("guide:")&&!key.startsWith("vehicle:")));
+      result={...result,selectedDestinationIds,selectedExperienceIds,destinationPreferences,travelPreferencesByLeg,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds};
     }
     if(action.field==="selectedDestinationIds"){
       const validExperiences=new Set(availableExperiences(data.experiences,next,state.selectedThemeIds).map(item=>item.id));
       const selectedExperienceIds=state.selectedExperienceIds.filter(id=>validExperiences.has(id));
       const destinationPreferences=normaliseDestinationPreferences(state.destinationPreferences,next);
-      const selectedPricingPlanIds=Object.fromEntries(Object.entries(keepPlans(state.selectedPricingPlanIds,"experience",selectedExperienceIds)).filter(([key])=>!key.startsWith("accommodation:")&&!key.startsWith("guide:")));
-      result={...result,selectedExperienceIds,destinationPreferences,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedStayIdsByDestination:{},selectedGuideId:null,selectedPricingPlanIds};
+      const travelPreferencesByLeg=normaliseTravelPreferences(state.travelPreferencesByLeg,next);
+      const selectedPricingPlanIds=Object.fromEntries(Object.entries(keepPlans(state.selectedPricingPlanIds,"experience",selectedExperienceIds)).filter(([key])=>!key.startsWith("accommodation:")&&!key.startsWith("guide:")&&!key.startsWith("vehicle:")));
+      result={...result,selectedExperienceIds,destinationPreferences,travelPreferencesByLeg,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds};
     }
     if(action.field==="selectedExperienceIds"&&!next.includes(action.id))result={...result,experienceParticipants:keepParticipants(state.experienceParticipants,next),selectedPricingPlanIds:withoutPlan(state.selectedPricingPlanIds,"experience",action.id)};
     return result;
@@ -142,6 +148,11 @@ function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):Journey
         :{...current,notes:action.value};
     return {...state,destinationPreferences:{...destinationPreferences,[action.destinationId]:preference}};
   }
+  if(action.type==="travelPreference"){
+    const travelPreferencesByLeg=normaliseTravelPreferences(state.travelPreferencesByLeg,state.selectedDestinationIds);
+    const leg=travelPreferencesByLeg[action.legKey];
+    return leg?{...state,travelPreferencesByLeg:{...travelPreferencesByLeg,[action.legKey]:{...leg,travelPreference:action.value}}}:state;
+  }
   if(action.type==="step")return {...state,currentStep:Math.min(5,Math.max(0,action.value))};
   if(action.type==="budget")return {...state,budgetPreference:action.value};
   return state;
@@ -164,6 +175,7 @@ export function JourneyProvider({data,initialSelection,children}:{data:JourneyBo
       selectedThemeIds:themeIds,
       selectedDestinationIds:destinationIds,
       destinationPreferences:normaliseDestinationPreferences({},destinationIds),
+      travelPreferencesByLeg:normaliseTravelPreferences({},destinationIds),
       travellerCounts:initialSelection?.travellers?normaliseCounts(initialSelection.travellers):emptyParticipants,
       selectedExperienceIds:experience?[experience.id]:[],
       experienceParticipants:experience&&initialSelection?.experienceParticipants?{[experience.id]:normaliseCounts(initialSelection.experienceParticipants,true)}:{}

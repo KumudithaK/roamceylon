@@ -7,6 +7,7 @@ import type {SupplierCost} from "../lib/pricing/package-types.ts";
 import {getNearbyDestinations,getRouteEstimate} from "../lib/journey/route.ts";
 import {includeExperienceSelection,removeExperienceSelection} from "../lib/journey/journey-selection.ts";
 import {guidePreferenceOptions,normaliseDestinationPreferences,stayPreferenceOptions} from "../lib/journey/journey-preferences.ts";
+import {journeyLegKey,journeyLegs,normaliseTravelPreferences,recommendedTravelPreferences,travelPreferenceOptions} from "../lib/journey/travel-preferences.ts";
 
 test("public builder follows the six-step preference flow without stay or guide supplier selectors",()=>{
   const source=readFileSync(new URL("../features/journey/journey-builder.tsx",import.meta.url),"utf8");
@@ -14,6 +15,32 @@ test("public builder follows the six-step preference flow without stay or guide 
   assert.match(source,/selectedStayIds:\[\]/);
   assert.match(source,/selectedGuideId:null/);
   assert.doesNotMatch(source,/availableStays\(|data\.guides\.(?:map|filter)|Local Guides/);
+  assert.doesNotMatch(source,/data\.vehicles|VehicleCard|VehicleSelectionModal/);
+  assert.match(source,/selectedVehicleId:null/);
+});
+
+test("travel preferences cover every approved movement choice without restricting selection",()=>{
+  assert.deepEqual(travelPreferenceOptions.map(([,label])=>label),[
+    "Scenic Train","Private Chauffeur Car / SUV","High-Roof Van","Mini Coach / Bus","Tuk-Tuk","Scooter","Domestic Floatplane","Self-Drive Car","Self-Drive Van","Self-Drive Tuk-Tuk","Self-Drive Scooter","Let Roam Ceylon Recommend"
+  ]);
+  assert.equal(travelPreferenceOptions.length,12);
+  assert(recommendedTravelPreferences(2).includes("private_chauffeur_car_suv"));
+  assert(recommendedTravelPreferences(8).includes("mini_coach_bus"));
+  assert(recommendedTravelPreferences(20).includes("mini_coach_bus"));
+});
+
+test("travel preferences follow consecutive destination legs and prune stale routes",()=>{
+  assert.deepEqual(journeyLegs(["sigiriya","kandy","ella"]).map(leg=>leg.key),["sigiriya:kandy","kandy:ella"]);
+  const preferences=normaliseTravelPreferences({
+    [journeyLegKey("sigiriya","kandy")]:{fromDestinationId:"sigiriya",toDestinationId:"kandy",travelPreference:"private_chauffeur_car_suv"},
+    [journeyLegKey("kandy","ella")]:{fromDestinationId:"kandy",toDestinationId:"ella",travelPreference:"scenic_train"},
+    stale:{fromDestinationId:"galle",toDestinationId:"colombo",travelPreference:"tuk_tuk"}
+  },["sigiriya","kandy","ella"]);
+  assert.equal(preferences["sigiriya:kandy"].travelPreference,"private_chauffeur_car_suv");
+  assert.equal(preferences["kandy:ella"].travelPreference,"scenic_train");
+  assert.equal(preferences.stale,undefined);
+  const changed=normaliseTravelPreferences(preferences,["sigiriya","ella"]);
+  assert.deepEqual(changed["sigiriya:ella"],{fromDestinationId:"sigiriya",toDestinationId:"ella",travelPreference:"recommend"});
 });
 
 test("destination journey preferences expose the approved stay and guide choices",()=>{

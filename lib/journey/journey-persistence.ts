@@ -2,6 +2,7 @@
 
 import type {JourneyState} from "@/features/journey/journey-store";
 import {normaliseDestinationPreferences} from "@/lib/journey/journey-preferences";
+import {normaliseTravelPreferences} from "@/lib/journey/travel-preferences";
 
 export const journeyStorageKey="roam-ceylon-journey-v3";
 export const journeyStateEvent="roam-ceylon:journey-state";
@@ -20,10 +21,11 @@ export function readJourneyState():JourneyState|null{
       selectedDestinationIds:parsed.selectedDestinationIds,
       selectedExperienceIds:parsed.selectedExperienceIds,
       destinationPreferences:normaliseDestinationPreferences(parsed.destinationPreferences,parsed.selectedDestinationIds),
+      travelPreferencesByLeg:normaliseTravelPreferences(parsed.travelPreferencesByLeg,parsed.selectedDestinationIds),
       selectedStayIdsByDestination:{},
-      selectedVehicleId:parsed.selectedVehicleId??null,
+      selectedVehicleId:null,
       selectedGuideId:null,
-      selectedPricingPlanIds:Object.fromEntries(Object.entries(parsed.selectedPricingPlanIds??{}).filter(([key])=>!key.startsWith("accommodation:")&&!key.startsWith("guide:"))),
+      selectedPricingPlanIds:Object.fromEntries(Object.entries(parsed.selectedPricingPlanIds??{}).filter(([key])=>!key.startsWith("accommodation:")&&!key.startsWith("guide:")&&!key.startsWith("vehicle:"))),
       travelDates:parsed.travelDates??{start:"",end:""},
       travellerCounts:{adults:Number(parsed.travellerCounts?.adults)||0,children:Number(parsed.travellerCounts?.children)||0,infants:Number(parsed.travellerCounts?.infants)||0},
       experienceParticipants:parsed.experienceParticipants??{},

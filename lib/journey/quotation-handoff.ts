@@ -2,6 +2,7 @@ import type {Json} from "@/lib/database.types";
 import type {PublicPackageQuote} from "@/lib/pricing/package-types";
 import type {JourneyState} from "@/features/journey/journey-store";
 import {normaliseDestinationPreferences} from "@/lib/journey/journey-preferences";
+import {normaliseTravelPreferences} from "@/lib/journey/travel-preferences";
 
 export const quotationHandoffKey="roam-ceylon-quotation-handoff-v1";
 
@@ -26,6 +27,7 @@ const normaliseState=(state:JourneyState):JourneyState=>({
   ...state,
   currentStep:Math.min(5,Math.max(0,Number(state.currentStep)||0)),
   destinationPreferences:normaliseDestinationPreferences(state.destinationPreferences,state.selectedDestinationIds),
+  travelPreferencesByLeg:normaliseTravelPreferences(state.travelPreferencesByLeg,state.selectedDestinationIds),
   travellerCounts:{adults:Number(state.travellerCounts.adults)||0,children:Number(state.travellerCounts.children)||0,infants:Number(state.travellerCounts.infants)||0},
   experienceParticipants:state.experienceParticipants??{},
   selectedPricingPlanIds:state.selectedPricingPlanIds??{}
