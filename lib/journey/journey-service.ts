@@ -36,7 +36,7 @@ export class JourneyService{
     return {themes,destinations,experiences,stays:staysWithPlans,vehicles:vehiclesWithPlans,guides:guidesWithPlans};
   }
   getAvailableDestinations(data:JourneyBootstrap,themeIds:string[]){return availableDestinations(data.destinations,themeIds)}
-  getAvailableExperiences(data:JourneyBootstrap,destinationIds:string[]){return availableExperiences(data.experiences,destinationIds)}
+  getAvailableExperiences(data:JourneyBootstrap,destinationIds:string[],themeIds:string[]){return availableExperiences(data.experiences,destinationIds,themeIds)}
   getAvailableStays(data:JourneyBootstrap,destinationIds:string[]){return availableStays(data.stays,destinationIds)}
   getAvailableVehicles(data:JourneyBootstrap,destinationIds:string[]=[]){return data.vehicles.filter(x=>x.nationwide||x.destinationIds.some(id=>destinationIds.includes(id)))}
   getAvailableGuides(data:JourneyBootstrap,selection:{selectedThemeIds:string[];selectedDestinationIds:string[];selectedExperienceIds:string[]}){return data.guides.map(x=>({...x,relevance:x.destinationIds.filter(id=>selection.selectedDestinationIds.includes(id)).length*4+x.themeIds.filter(id=>selection.selectedThemeIds.includes(id)).length*2+x.experienceIds.filter(id=>selection.selectedExperienceIds.includes(id)).length*3+(x.verified?1:0)})).filter(x=>x.nationwide||x.relevance!>0).sort((a,b)=>b.relevance!-a.relevance!)}

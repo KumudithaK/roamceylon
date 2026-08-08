@@ -30,14 +30,34 @@ test("theme selection returns the destination union without duplicates",()=>{
   assert.deepEqual(result.map(item=>item.id),["ella","kandy"]);
 });
 
-test("destination selection returns the experience union",()=>{
+test("theme and destination selection returns only their intersecting experience union",()=>{
   const experiences=[
-    {id:"train",name:"Train",destinationIds:["ella"],themeIds:[]},
-    {id:"tea",name:"Tea",destinationIds:["ella","kandy"],themeIds:[]}
+    {id:"train",name:"Train",destinationIds:["ella"],themeIds:["nature"]},
+    {id:"tea",name:"Tea",destinationIds:["ella","kandy"],themeIds:["nature","culture"]},
+    {id:"cricket",name:"Cricket",destinationIds:["kandy"],themeIds:["sporting"]},
+    {id:"temple",name:"Temple",destinationIds:["kandy"],themeIds:["culture"]}
   ];
-  const result=availableExperiences(experiences as never,["ella","kandy"]);
+  const result=availableExperiences(experiences as never,["ella","kandy"],["nature"]);
   assert.deepEqual(result.map(item=>item.id),["tea","train"]);
   assert.deepEqual(result[0].matchedDestinationIds,["ella","kandy"]);
+});
+
+test("Sporting Sri Lanka never leaks unrelated experiences from its destinations",()=>{
+  const experiences=[
+    {id:"colombo-cricket",name:"Colombo Cricket",destinationIds:["colombo"],themeIds:["sporting"]},
+    {id:"galle-golf",name:"Galle Golf",destinationIds:["galle"],themeIds:["sporting"]},
+    {id:"colombo-food",name:"Colombo Food Walk",destinationIds:["colombo"],themeIds:["food"]},
+    {id:"galle-fort",name:"Galle Fort Walk",destinationIds:["galle"],themeIds:["heritage"]},
+    {id:"kandy-rafting",name:"Kandy Rafting",destinationIds:["kandy"],themeIds:["adventure"]}
+  ];
+  const sporting=availableExperiences(experiences as never,["colombo","galle","kandy"],["sporting"]);
+  assert.deepEqual(sporting.map(item=>item.id),["colombo-cricket","galle-golf"]);
+});
+
+test("experience discovery stays hidden until both a theme and destination are selected",()=>{
+  const experiences=[{id:"cricket",name:"Cricket",destinationIds:["colombo"],themeIds:["sporting"]}];
+  assert.deepEqual(availableExperiences(experiences as never,["colombo"],[]),[]);
+  assert.deepEqual(availableExperiences(experiences as never,[],["sporting"]),[]);
 });
 
 test("route estimate preserves selection order and computes distance",()=>{

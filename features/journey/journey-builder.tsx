@@ -97,7 +97,7 @@ function Builder({data}:{data:JourneyBootstrap}){
   const setStep=(value:number)=>dispatch({type:"step",value});
   const [quotationOpen,setQuotationOpen]=useState(false);
   const destinations=useMemo(()=>availableDestinations(data.destinations,state.selectedThemeIds),[data.destinations,state.selectedThemeIds]);
-  const experiences=useMemo(()=>availableExperiences(data.experiences,state.selectedDestinationIds),[data.experiences,state.selectedDestinationIds]);
+  const experiences=useMemo(()=>availableExperiences(data.experiences,state.selectedDestinationIds,state.selectedThemeIds),[data.experiences,state.selectedDestinationIds,state.selectedThemeIds]);
   const current=step===0?data.themes:destinations;
   const selected=step===0?state.selectedThemeIds:state.selectedDestinationIds;
   const field=step===0?"selectedThemeIds":"selectedDestinationIds";

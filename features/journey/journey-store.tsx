@@ -65,8 +65,20 @@ const withPlan=(plans:Record<string,string>,type:"accommodation"|"vehicle"|"guid
 const keepPlans=(plans:Record<string,string>,type:"accommodation"|"experience",ids:string[])=>Object.fromEntries(Object.entries(plans).filter(([key])=>!key.startsWith(`${type}:`)||ids.includes(key.slice(type.length+1))));
 export const emptyJourneyState:JourneyState={currentStep:0,selectedThemeIds:[],selectedDestinationIds:[],selectedExperienceIds:[],selectedStayIdsByDestination:{},selectedVehicleId:null,selectedGuideId:null,selectedPricingPlanIds:{},travelDates:{start:"",end:""},travellerCounts:emptyParticipants,experienceParticipants:{},budgetPreference:"flexible"};
 
+const validateDependencies=(data:JourneyBootstrap,state:JourneyState):JourneyState=>{
+  const themeIds=new Set(data.themes.map(item=>item.id));
+  const selectedThemeIds=state.selectedThemeIds.filter(id=>themeIds.has(id));
+  const validDestinations=new Set(availableDestinations(data.destinations,selectedThemeIds).map(item=>item.id));
+  const selectedDestinationIds=state.selectedDestinationIds.filter(id=>validDestinations.has(id));
+  const validExperiences=new Set(availableExperiences(data.experiences,selectedDestinationIds,selectedThemeIds).map(item=>item.id));
+  const selectedExperienceIds=state.selectedExperienceIds.filter(id=>validExperiences.has(id));
+  const selectedStayIdsByDestination=Object.fromEntries(Object.entries(state.selectedStayIdsByDestination).filter(([destinationId,stayId])=>validDestinations.has(destinationId)&&data.stays.some(item=>item.id===stayId&&item.destinationId===destinationId)));
+  const selectedPricingPlanIds=keepPlans(keepPlans(state.selectedPricingPlanIds,"experience",selectedExperienceIds),"accommodation",Object.values(selectedStayIdsByDestination));
+  return {...state,selectedThemeIds,selectedDestinationIds,selectedExperienceIds,selectedStayIdsByDestination,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedPricingPlanIds};
+};
+
 function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):JourneyState{
-  if(action.type==="hydrate")return action.state;
+  if(action.type==="hydrate")return validateDependencies(data,action.state);
   if(action.type==="toggle"){
     const values=state[action.field];
     const next=values.includes(action.id)?values.filter(id=>id!==action.id):[...values,action.id];
@@ -74,14 +86,14 @@ function reducer(data:JourneyBootstrap,state:JourneyState,action:Action):Journey
     if(action.field==="selectedThemeIds"){
       const validDestinations=new Set(availableDestinations(data.destinations,next).map(item=>item.id));
       const selectedDestinationIds=state.selectedDestinationIds.filter(id=>validDestinations.has(id));
-      const validExperiences=new Set(availableExperiences(data.experiences,selectedDestinationIds).map(item=>item.id));
+      const validExperiences=new Set(availableExperiences(data.experiences,selectedDestinationIds,next).map(item=>item.id));
       const selectedExperienceIds=state.selectedExperienceIds.filter(id=>validExperiences.has(id));
       const selectedStayIdsByDestination=Object.fromEntries(Object.entries(state.selectedStayIdsByDestination).filter(([id])=>validDestinations.has(id)));
       const selectedPricingPlanIds=keepPlans(keepPlans(state.selectedPricingPlanIds,"experience",selectedExperienceIds),"accommodation",Object.values(selectedStayIdsByDestination));
       result={...result,selectedDestinationIds,selectedExperienceIds,experienceParticipants:keepParticipants(state.experienceParticipants,selectedExperienceIds),selectedStayIdsByDestination,selectedPricingPlanIds};
     }
     if(action.field==="selectedDestinationIds"){
-      const validExperiences=new Set(availableExperiences(data.experiences,next).map(item=>item.id));
+      const validExperiences=new Set(availableExperiences(data.experiences,next,state.selectedThemeIds).map(item=>item.id));
       const selectedExperienceIds=state.selectedExperienceIds.filter(id=>validExperiences.has(id));
       const selectedStayIdsByDestination=Object.fromEntries(Object.entries(state.selectedStayIdsByDestination).filter(([id])=>next.includes(id)));
       const selectedPricingPlanIds=keepPlans(keepPlans(state.selectedPricingPlanIds,"experience",selectedExperienceIds),"accommodation",Object.values(selectedStayIdsByDestination));

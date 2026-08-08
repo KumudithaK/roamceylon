@@ -5,6 +5,7 @@ import test from "node:test";
 const themes=JSON.parse(readFileSync(new URL("../data/themes.json",import.meta.url),"utf8"));
 const migration=readFileSync(new URL("../supabase/migrations/202608060005_sporting_sri_lanka_editorial_reset.sql",import.meta.url),"utf8");
 const strictScope=readFileSync(new URL("../supabase/migrations/202608060006_sporting_sri_lanka_strict_scope.sql",import.meta.url),"utf8");
+const ownership=readFileSync(new URL("../supabase/migrations/202608080001_enforce_sporting_experience_theme_ownership.sql",import.meta.url),"utf8");
 const approved=[
   "sri-lanka-international-cricket-matchday",
   "cricket-with-local-players",
@@ -33,4 +34,10 @@ test("strict sporting scope adds sport fishing without adding an adventure desti
   assert.match(strictScope,/d\.slug in \('colombo','kandy','galle','hambantota','nuwaraeliya'\)/);
   assert.doesNotMatch(strictScope,/d\.slug in \([^)]*(kalpitiya|kitulgala|arugambay|hikkaduwa)/i);
   assert.match(strictScope,/destinations_count<>5 or invalid_count<>0/);
+});
+
+test("sporting products cannot retain legacy cross-theme relationships",()=>{
+  assert.match(ownership,/t\.slug<>'sporting'/);
+  assert.match(ownership,/cross_theme_count<>0/);
+  assert.match(ownership,/colombo-royal-golf-private-round/);
 });
