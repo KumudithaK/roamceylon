@@ -74,7 +74,9 @@ export async function POST(request:Request){
   if(firstError)return NextResponse.json({error:firstError.message},{status:500});
   if((accommodations.data?.length??0)!==new Set(accommodationIds).size||(guides.data?.length??0)!==new Set(guideIds).size||(vehicles.data?.length??0)!==new Set(vehicleIds).size)return NextResponse.json({error:"One or more selected supplier records no longer exist."},{status:409});
   for(const row of allocations.filter(item=>item.allocationType==="accommodation")){
-    if(!accommodations.data?.some(item=>item.id===row.accommodationId&&item.destination_id===row.destinationId))return NextResponse.json({error:"The accommodation partner must belong to the allocated destination."},{status:400});
+    const partner=accommodations.data?.find(item=>item.id===row.accommodationId);
+    const override=row.serviceDetails.destinationOverrideConfirmed===true;
+    if(partner?.destination_id!==row.destinationId&&!override)return NextResponse.json({error:"Confirm the destination override before assigning this accommodation partner."},{status:400});
   }
   for(const row of allocations.filter(item=>item.allocationType==="experience")){
     if(!experienceLinks.data?.some(item=>item.experience_id===row.experienceId&&item.destination_id===row.destinationId))return NextResponse.json({error:"The experience is not mapped to the allocated destination."},{status:400});
@@ -95,7 +97,7 @@ export async function POST(request:Request){
   const existingKey=(row:typeof existing[number])=>row.allocation_type==="vehicle"?`vehicle:${row.from_destination_id}:${row.to_destination_id}`:row.allocation_type==="experience"?`experience:${row.experience_id}`:row.allocation_type==="guide"&&!row.destination_id?"guide:journey":`${row.allocation_type}:${row.destination_id}`;
   const allocationAccount=accountResult.data?.active&&accountResult.data.quote_snapshot&&typeof accountResult.data.quote_snapshot==="object"&&!Array.isArray(accountResult.data.quote_snapshot)&&(accountResult.data.quote_snapshot as Record<string,Json|undefined>).source==="supplier_allocations";
   const activeInput=allocations.filter(row=>row.confirmationStatus!=="cancelled");
-  if(allocationAccount&&(activeInput.some(row=>row.supplierCost===null||row.sellingPrice===null)||new Set(activeInput.map(row=>row.currency)).size!==1))return NextResponse.json({error:"An active Accounting account requires complete supplier costs, selling prices and one currency."},{status:409});
+  if(allocationAccount&&(activeInput.some(row=>row.supplierCost===null)||new Set(activeInput.map(row=>row.currency)).size!==1))return NextResponse.json({error:"An active Accounting account requires complete supplier costs and one currency."},{status:409});
   const existingIds=existing.map(row=>row.id);
   const {data:financialActivity,error:financialError}=existingIds.length
     ?await database.from("journey_settlements").select("allocation_id,amount_paid,waived_amount").in("allocation_id",existingIds)
@@ -119,13 +121,15 @@ export async function POST(request:Request){
     const quantity=row.quantity??(plan?1:null);
     const supplierCost=plan?Number(plan.price)*(quantity??1):row.supplierCost;
     const paymentStatus:Database["public"]["Tables"]["journey_supplier_allocations"]["Row"]["payment_status"]=current?.payment_status==="paid"?"paid":row.paymentStatus;
+    const accommodation=accommodations.data?.find(item=>item.id===row.accommodationId);
+    const serviceDetails=row.allocationType==="accommodation"&&accommodation?.destination_id!==row.destinationId?{...row.serviceDetails,destinationOverrideConfirmed:true,catalogueDestinationId:accommodation?.destination_id??null}:row.serviceDetails;
     const stored={
       enquiry_id:enquiryId,allocation_type:row.allocationType,destination_id:row.destinationId,
       from_destination_id:row.fromDestinationId,to_destination_id:row.toDestinationId,
       accommodation_id:row.accommodationId,guide_id:row.guideId,vehicle_id:row.vehicleId,experience_id:row.experienceId,
       pricing_plan_id:plan?.id??null,
       pricing_plan_snapshot:plan?{id:plan.id,name:plan.name,description:plan.description,unitPrice:Number(plan.price),currency:plan.currency,chargingMethod:plan.charging_method,details:plan.details,notes:plan.notes}:{} as Json,
-      service_name:plan?.name??row.serviceName??null,quantity,quantity_label:row.quantityLabel||null,service_details:row.serviceDetails as Json,
+      service_name:plan?.name??row.serviceName??null,quantity,quantity_label:row.quantityLabel||null,service_details:serviceDetails as Json,
       provider_name:row.providerName||null,supplier_contact:row.supplierContact||null,
       supplier_cost:supplierCost,selling_price:row.sellingPrice,currency:plan?.currency??row.currency,
       confirmation_status:row.confirmationStatus,invoice_status:row.invoiceStatus,

@@ -71,7 +71,7 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
     total_selling_price:commercial.summary.totalSellingPrice,gross_profit:commercial.summary.grossProfit,
     profit_margin:commercial.summary.profitMargin,introduction:details.introduction||null,
     terms:details.terms||null,valid_until:details.validUntil||null,
-    allocation_snapshot:asJson(activeSnapshot),created_by:userId
+    allocation_snapshot:asJson(activeSnapshot),commercial_snapshot:asJson({summary:commercial.summary,context:commercial.commercialContext}),created_by:userId
   }).select("*").single();
   if(proposalError||!proposal)throw new ProposalError("DATABASE",proposalError?.message??"The proposal could not be generated.");
   const {error:statusError}=await database.from("enquiries").update({status:"preparing_proposal"}).eq("id",enquiryId);

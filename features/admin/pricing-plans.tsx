@@ -12,7 +12,7 @@ type DetailValue=string|number|boolean;
 type Draft=Pick<Plan,"name"|"description"|"price"|"currency"|"charging_method"|"minimum_quantity"|"maximum_quantity"|"image_url"|"notes"|"active">&{details:Record<string,DetailValue>};
 const empty:Draft={name:"",description:"",price:0,currency:"USD",charging_method:"per_person",minimum_quantity:null,maximum_quantity:null,image_url:null,notes:null,active:true,details:{}};
 const methods:Record<PricingEntityType,Array<[string,string]>>={
-  accommodation:[["per_night","Per night"],["per_room_night","Per room / night"],["per_person","Per person"],["per_villa","Per villa"]],
+  accommodation:[["per_night","Per room / night"],["per_room_night","Per room / night"],["per_person","Per person / night"],["per_person_stay","Per person / stay"],["per_villa","Per villa / night"],["per_stay","Per stay"]],
   vehicle:[["per_day","Per day"],["per_trip","Per trip"],["per_airport_transfer","Per airport transfer"],["per_km","Per kilometre"]],
   guide:[["half_day","Half day"],["full_day","Full day"],["multi_day","Multi day"],["private_tour","Private tour"],["custom_rate","Custom rate"]],
   experience:[["per_person","Per person"],["private_tour","Private"],["per_trip","Per group"],["custom_rate","Custom rate"]],

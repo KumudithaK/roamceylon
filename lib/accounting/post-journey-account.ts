@@ -10,6 +10,7 @@ import type {ParticipantCounts} from "@/lib/types";
 type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
 type Plan=Database["public"]["Tables"]["pricing_plans"]["Row"];
 type Account=Database["public"]["Tables"]["journey_accounts"]["Row"];
+type Proposal=Database["public"]["Tables"]["journey_proposals"]["Row"];
 type SettlementInsert=Database["public"]["Tables"]["journey_settlements"]["Insert"];
 export type DepositPayment={
   amount:number;
@@ -129,27 +130,27 @@ export async function activateJourneyAccount(enquiryId:string,userId:string,depo
   let account=existingAccount;
   if(accountLookupError)throw new AccountingPostError("DATABASE",accountLookupError.message);
   const allocationCommercial=await allocationCommercialSnapshot(enquiry.id);
+  let approvedProposal:Proposal|null=null;
   if(allocationCommercial.allocations.length){
-    const {data:approved,error:proposalError}=await database.from("journey_proposals").select("id").eq("enquiry_id",enquiry.id).eq("status","approved").limit(1).maybeSingle();
+    const {data:approved,error:proposalError}=await database.from("journey_proposals").select("*").eq("enquiry_id",enquiry.id).eq("status","approved").order("version",{ascending:false}).limit(1).maybeSingle();
     if(proposalError)throw new AccountingPostError("DATABASE",proposalError.message);
     if(!approved)throw new AccountingPostError("PRICING","The traveller must accept an approved journey proposal before a deposit can activate Accounting.");
+    approvedProposal=approved as Proposal;
   }
   let created=false;
   if(!account){
     let financial:{currency:string;sellingPrice:number;internalCost:number;grossProfit:number;profitMargin:number;snapshot:Json};
     let legacyQuote:AdminPackageQuote|null=null;
     if(allocationCommercial.allocations.length){
-      if(allocationCommercial.summary.incompleteLines)throw new AccountingPostError("PRICING","Complete supplier cost and selling price for every active allocation before recording the deposit.");
+      if(allocationCommercial.summary.incompleteLines)throw new AccountingPostError("PRICING","Complete supplier cost for every active allocation before recording the deposit.");
       const active=allocationCommercial.snapshot.filter(line=>line.confirmationStatus!=="cancelled");
       if(!active.length||allocationCommercial.summary.totalSellingPrice<=0)throw new AccountingPostError("PRICING","At least one active, priced supplier allocation is required before recording the deposit.");
       const currencies=new Set(active.map(line=>line.currency));
       if(currencies.size!==1)throw new AccountingPostError("PRICING","All supplier allocations must use the same currency before recording the deposit.");
-      financial={
-        currency:active[0].currency,sellingPrice:allocationCommercial.summary.totalSellingPrice,
-        internalCost:allocationCommercial.summary.totalSupplierCost,grossProfit:allocationCommercial.summary.grossProfit,
-        profitMargin:allocationCommercial.summary.profitMargin,
-        snapshot:asJson({source:"supplier_allocations",summary:allocationCommercial.summary,allocations:active})
-      };
+      const commercialSnapshot=approvedProposal?.commercial_snapshot&&typeof approvedProposal.commercial_snapshot==="object"&&!Array.isArray(approvedProposal.commercial_snapshot)?approvedProposal.commercial_snapshot as Record<string,Json|undefined>:null;
+      const summary=commercialSnapshot?.summary&&typeof commercialSnapshot.summary==="object"&&!Array.isArray(commercialSnapshot.summary)?commercialSnapshot.summary as Record<string,Json|undefined>:null;
+      const internalCost=summary&&typeof summary.internalCost==="number"?summary.internalCost:allocationCommercial.summary.internalCost;
+      financial={currency:approvedProposal?.currency??active[0].currency,sellingPrice:approvedProposal?.total_selling_price??allocationCommercial.summary.totalSellingPrice,internalCost,grossProfit:approvedProposal?.gross_profit??allocationCommercial.summary.grossProfit,profitMargin:approvedProposal?.profit_margin??allocationCommercial.summary.profitMargin,snapshot:asJson({source:"supplier_allocations",proposalReference:approvedProposal?.proposal_reference??null,summary:summary??allocationCommercial.summary,commercialContext:commercialSnapshot?.context??allocationCommercial.commercialContext,allocations:approvedProposal?.allocation_snapshot??active})};
     }else{
       try{legacyQuote=await new PackagePricingService().quote(selectionFrom(enquiry))}
       catch(error){throw new AccountingPostError("PRICING",error instanceof Error?error.message:"The package could not be priced.")}
@@ -195,15 +196,18 @@ export async function activateJourneyAccount(enquiryId:string,userId:string,depo
       }
     }
   }else if(!account.active&&allocationCommercial.allocations.length){
-    if(allocationCommercial.summary.incompleteLines)throw new AccountingPostError("PRICING","Complete supplier cost and selling price for every active allocation before recording the deposit.");
+    if(allocationCommercial.summary.incompleteLines)throw new AccountingPostError("PRICING","Complete supplier cost for every active allocation before recording the deposit.");
     const active=allocationCommercial.snapshot.filter(line=>line.confirmationStatus!=="cancelled");
     const currencies=new Set(active.map(line=>line.currency));
     if(!active.length||allocationCommercial.summary.totalSellingPrice<=0||currencies.size!==1)throw new AccountingPostError("PRICING","Complete the accepted proposal commercial details before recording the deposit.");
+    const commercialSnapshot=approvedProposal?.commercial_snapshot&&typeof approvedProposal.commercial_snapshot==="object"&&!Array.isArray(approvedProposal.commercial_snapshot)?approvedProposal.commercial_snapshot as Record<string,Json|undefined>:null;
+    const summary=commercialSnapshot?.summary&&typeof commercialSnapshot.summary==="object"&&!Array.isArray(commercialSnapshot.summary)?commercialSnapshot.summary as Record<string,Json|undefined>:null;
+    const approvedInternalCost=summary&&typeof summary.internalCost==="number"?summary.internalCost:allocationCommercial.summary.internalCost;
     const {data:refreshed,error:refreshError}=await database.from("journey_accounts").update({
-      currency:active[0].currency,selling_price:allocationCommercial.summary.totalSellingPrice,
-      internal_cost:allocationCommercial.summary.totalSupplierCost,gross_profit:allocationCommercial.summary.grossProfit,
-      profit_margin:allocationCommercial.summary.profitMargin,
-      quote_snapshot:asJson({source:"supplier_allocations",summary:allocationCommercial.summary,allocations:active})
+      currency:approvedProposal?.currency??active[0].currency,selling_price:approvedProposal?.total_selling_price??allocationCommercial.summary.totalSellingPrice,
+      internal_cost:approvedInternalCost,gross_profit:approvedProposal?.gross_profit??allocationCommercial.summary.grossProfit,
+      profit_margin:approvedProposal?.profit_margin??allocationCommercial.summary.profitMargin,
+      quote_snapshot:asJson({source:"supplier_allocations",proposalReference:approvedProposal?.proposal_reference??null,summary:summary??allocationCommercial.summary,commercialContext:commercialSnapshot?.context??allocationCommercial.commercialContext,allocations:approvedProposal?.allocation_snapshot??active})
     }).eq("id",account.id).select("*").single();
     if(refreshError||!refreshed)throw new AccountingPostError("DATABASE",refreshError?.message??"The accepted proposal could not be prepared for Accounting.");
     account=refreshed;

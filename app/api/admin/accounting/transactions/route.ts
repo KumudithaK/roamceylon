@@ -48,6 +48,7 @@ export async function POST(request:Request){
   }
   const {data:account,error:accountError}=await database.from("journey_accounts").select("*").eq("id",value.accountId).maybeSingle();
   if(accountError||!account)return NextResponse.json({error:"Journey account not found."},{status:404});
+  if(account.status==="closed")return NextResponse.json({error:"This account is closed. Reopen it through an authorised accounting correction before recording new transactions."},{status:409});
   if(!account.active)return NextResponse.json({error:"This accounting record is inactive because no deposit is currently recorded."},{status:409});
   if(account.status==="refunded"&&!["customer_refund","supplier_recovery"].includes(value.type))return NextResponse.json({error:"Only pending refunds or supplier recoveries can be recorded against a refunded account."},{status:409});
   let settlementId:string|null=null;

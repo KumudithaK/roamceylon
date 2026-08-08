@@ -22,6 +22,6 @@ export function allocationFinancialSummary(lines:AllocationFinancialLine[]):Allo
   return {
     totalSupplierCost,totalSellingPrice,grossProfit,
     profitMargin:totalSellingPrice?money(grossProfit/totalSellingPrice*100):0,
-    incompleteLines:active.filter(line=>line.supplier_cost===null||line.selling_price===null).length
+    incompleteLines:active.filter(line=>line.supplier_cost===null).length
   };
 }

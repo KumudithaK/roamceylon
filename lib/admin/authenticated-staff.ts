@@ -8,5 +8,5 @@ export async function authenticatedStaff(request:Request){
   const {data}=await database.auth.getUser(token);
   if(!data.user)return null;
   const {data:profile}=await database.from("profiles").select("role").eq("id",data.user.id).maybeSingle();
-  return profile&&["admin","editor"].includes(profile.role)?{database,user:data.user}:null;
+  return profile&&["admin","editor"].includes(profile.role)?{database,user:data.user,profile}:null;
 }
