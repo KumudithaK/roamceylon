@@ -20,7 +20,9 @@ const flag=(value:Json,key:string)=>record(value)[key]===true;
 export function calculateAllocationCommercials(lines:AllocationCommercialLine[],config:AllocationCommercialConfig,context:{days:number;nights:number;distanceKm:number},overrides:AllocationCommercialOverrides={}):AllocationCommercialResult{
   const active=lines.filter(line=>line.confirmationStatus!=="cancelled");
   const totalSupplierCost=money(active.reduce((sum,line)=>sum+(line.supplierCost??0),0));
-  const manualSellingFloor=money(active.reduce((sum,line)=>sum+(line.sellingPrice??0),0));
+  const manuallyPriced=active.filter(line=>line.sellingPrice!==null);
+  const manualSellingFloor=money(manuallyPriced.reduce((sum,line)=>sum+(line.sellingPrice??0),0));
+  const manualSupplierCost=money(manuallyPriced.reduce((sum,line)=>sum+(line.supplierCost??0),0));
   const incompleteLines=active.filter(line=>line.supplierCost===null).length;
   const vehicles=active.filter(line=>line.type==="vehicle");
   const guides=active.filter(line=>line.type==="guide");
@@ -47,13 +49,13 @@ export function calculateAllocationCommercials(lines:AllocationCommercialLine[],
   const internalCost=money(direct+administrationFee+contingency);
   const serviceFee=money(config.serviceFeeFixed+internalCost*config.serviceFeePercent/100);
   const margin=Math.min(99.99,Math.max(0,config.targetProfitMarginPercent));
-  const calculatedSelling=money((internalCost+serviceFee)/(1-margin/100));
-  const totalSellingPrice=money(Math.max(calculatedSelling,manualSellingFloor));
-  const floorAdjustment=money(Math.max(0,manualSellingFloor-calculatedSelling));
+  const automaticallyPricedCost=money(Math.max(0,internalCost-manualSupplierCost)+serviceFee);
+  const calculatedSelling=money(automaticallyPricedCost/(1-margin/100));
+  const totalSellingPrice=money(manualSellingFloor+calculatedSelling);
   breakdown.push({key:"administration",label:"Administration",amount:administrationFee,category:"administration",internal:true});
   breakdown.push({key:"contingency",label:"Journey contingency",amount:contingency,category:"contingency",internal:true});
   breakdown.push({key:"service-fee",label:"Roam Ceylon service fee",amount:serviceFee,category:"service_fee",internal:false});
-  if(floorAdjustment)breakdown.push({key:"commercial-floor",label:"Approved commercial uplift",amount:floorAdjustment,category:"commercial_floor",internal:false});
+  if(manuallyPriced.length)breakdown.push({key:"commercial-floor",label:"Entered service selling prices",amount:manualSellingFloor,category:"commercial_floor",internal:false});
   const grossProfit=money(totalSellingPrice-internalCost);
   return {totalSupplierCost,manualSellingFloor,operationsCost,administrationFee,contingency,serviceFee,internalCost,totalSellingPrice,grossProfit,profitMargin:totalSellingPrice?money(grossProfit/totalSellingPrice*100):0,incompleteLines,breakdown};
 }

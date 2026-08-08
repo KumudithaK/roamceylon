@@ -16,8 +16,8 @@ const schema=z.object({
   phone:z.string().trim().min(7,"Please enter your WhatsApp number."),
   email:z.email("Please enter a valid email address."),
   country:z.string().trim().optional(),
-  arrival:z.string().optional(),
-  departure:z.string().optional(),
+  arrival:z.string().min(1,"Please select your arrival date."),
+  departure:z.string().min(1,"Please select your departure date."),
   notes:z.string().trim().optional()
 }).refine(values=>!values.arrival||!values.departure||values.departure>=values.arrival,{message:"Departure must be after arrival.",path:["departure"]});
 type FormData=z.infer<typeof schema>;
@@ -41,6 +41,7 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:bool
   if(!open)return null;
   const submit=async(values:FormData)=>{
     setSubmitError("");
+    if(state.travellerCounts.adults<1){setSubmitError("Please return to Journey Details and add at least one adult traveller.");return}
     const submittedState={...state,travelDates:{start:values.arrival||state.travelDates.start,end:values.departure||state.travelDates.end}};
     const handoff:JourneyQuotationHandoff={version:1,createdAt:new Date().toISOString(),state:submittedState,quote};
     const {error}=await createClient().from("enquiries").insert({
@@ -76,8 +77,8 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:bool
         <div className="bg-forest px-7 py-8 pr-20 text-ivory md:px-10"><p className="eyebrow text-gold-light">Private, tailor-made travel</p><h2 id="quotation-title" className="mt-2 font-serif text-3xl md:text-4xl">Request your journey proposal.</h2><p className="mt-3 max-w-xl text-sm leading-6 text-ivory/65">Share a few details and your Roam Ceylon journey designer will personally review every part of your trip.</p></div>
         <div className="grid gap-5 p-7 md:grid-cols-2 md:p-10">
           {([["name","Full name *","text"],["phone","WhatsApp number *","tel"],["email","Email address *","email"],["country","Country","text"]] as const).map(([name,label,type])=><label key={name} className="grid gap-2 text-sm font-semibold">{label}<input type={type} {...register(name)} className="rounded-xl border border-stone/30 bg-white px-4 py-3 outline-none focus:border-gold"/>{errors[name]&&<small className="text-red-700">{errors[name]?.message}</small>}</label>)}
-          <label className="grid gap-2 text-sm font-semibold">Arrival date<input type="date" {...register("arrival")} className="rounded-xl border border-stone/30 bg-white px-4 py-3 outline-none focus:border-gold"/></label>
-          <label className="grid gap-2 text-sm font-semibold">Departure date<input type="date" {...register("departure")} className="rounded-xl border border-stone/30 bg-white px-4 py-3 outline-none focus:border-gold"/>{errors.departure&&<small className="text-red-700">{errors.departure.message}</small>}</label>
+          <label className="grid gap-2 text-sm font-semibold">Arrival date *<input required type="date" {...register("arrival")} className="rounded-xl border border-stone/30 bg-white px-4 py-3 outline-none focus:border-gold"/>{errors.arrival&&<small className="text-red-700">{errors.arrival.message}</small>}</label>
+          <label className="grid gap-2 text-sm font-semibold">Departure date *<input required type="date" {...register("departure")} className="rounded-xl border border-stone/30 bg-white px-4 py-3 outline-none focus:border-gold"/>{errors.departure&&<small className="text-red-700">{errors.departure.message}</small>}</label>
           <label className="grid gap-2 text-sm font-semibold md:col-span-2">Special requests<textarea rows={4} {...register("notes")} placeholder="Dietary needs, room preferences, mobility considerations or special occasions…" className="rounded-xl border border-stone/30 bg-white px-4 py-3 outline-none focus:border-gold"/></label>
           {submitError&&<p role="alert" className="text-sm text-red-700 md:col-span-2">{submitError}</p>}
           <Button disabled={isSubmitting} type="submit" variant="accent" className="md:col-span-2">{isSubmitting?"Sending your request…":"Request my journey proposal"}</Button>

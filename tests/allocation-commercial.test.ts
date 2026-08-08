@@ -15,10 +15,18 @@ test("allocation commercials apply DMC operations fees and target margin",()=>{
   assert.equal(result.incompleteLines,0);
 });
 
-test("manual traveller subtotals are a floor and are not marked up again",()=>{
+test("entered service selling prices are used exactly without marking up supplier cost again",()=>{
   const result=calculateAllocationCommercials([{type:"accommodation",supplierCost:600,sellingPrice:1200,pricingPlanSnapshot:{},serviceDetails:{},confirmationStatus:"confirmed"}],{...config,driverSalaryPerDay:0,fuelPricePerLitre:0,tollsPerJourney:0,parkingPerDay:0,guideAccommodationPerNight:0},{days:3,nights:2,distanceKm:0});
-  assert.equal(result.totalSellingPrice,1200);
+  assert.equal(result.manualSellingFloor,1200);
+  assert.equal(result.totalSellingPrice,1296.73);
   assert.ok(result.breakdown.some(line=>line.category==="commercial_floor"));
+});
+
+test("an entered service selling price may be below supplier cost and exposes the package result",()=>{
+  const result=calculateAllocationCommercials([{type:"accommodation",supplierCost:600,sellingPrice:500,pricingPlanSnapshot:{},serviceDetails:{},confirmationStatus:"confirmed"}],{...config,driverSalaryPerDay:0,fuelPricePerLitre:0,tollsPerJourney:0,parkingPerDay:0,guideAccommodationPerNight:0},{days:3,nights:2,distanceKm:0});
+  assert.equal(result.manualSellingFloor,500);
+  assert.equal(result.totalSellingPrice,596.73);
+  assert.ok(result.grossProfit<0);
 });
 
 test("journey overrides can remove operations and replace administration and contingency",()=>{

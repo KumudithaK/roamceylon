@@ -17,6 +17,9 @@ test("public builder follows the seven-step preference and insights flow without
   assert.doesNotMatch(source,/availableStays\(|data\.guides\.(?:map|filter)|Local Guides/);
   assert.doesNotMatch(source,/data\.vehicles|VehicleCard|VehicleSelectionModal/);
   assert.match(source,/selectedVehicleId:null/);
+  assert.match(source,/journeyDetailsIssue/);
+  assert.match(source,/Add both arrival and departure dates to continue/);
+  assert.match(source,/Add at least one adult traveller to continue/);
 });
 
 test("travel preferences cover every approved movement choice without restricting selection",()=>{

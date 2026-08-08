@@ -90,8 +90,6 @@ export async function POST(request:Request){
     if(available.length&&!plan)return NextResponse.json({error:`Choose a saved ${row.allocationType} rate before saving this allocation.`},{status:400});
     if(plan&&!row.quantity)return NextResponse.json({error:`Enter the billable quantity for ${plan.name}.`},{status:400});
     if(!plan&&(!row.serviceName||row.supplierCost===null||!row.quantity||!row.quantityLabel))return NextResponse.json({error:`Enter a custom service name, quantity, billing unit and supplier cost for this ${row.allocationType} allocation.`},{status:400});
-    const supplierCost=plan?Number(plan.price)*(row.quantity??1):row.supplierCost;
-    if(row.sellingPrice!==null&&supplierCost!==null&&row.sellingPrice<supplierCost)return NextResponse.json({error:"Selling price cannot be lower than supplier cost. Record any approved loss separately."},{status:400});
   }
   const existing=existingResult.data??[];
   const existingKey=(row:typeof existing[number])=>row.allocation_type==="vehicle"?`vehicle:${row.from_destination_id}:${row.to_destination_id}`:row.allocation_type==="experience"?`experience:${row.experience_id}`:row.allocation_type==="guide"&&!row.destination_id?"guide:journey":`${row.allocation_type}:${row.destination_id}`;
