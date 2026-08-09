@@ -8,6 +8,7 @@ import {AdminShell} from "./admin-shell";
 import {createClient} from "@/lib/supabase/client";
 import {enquiryStatusLabels,enquiryWorkflow} from "@/lib/enquiries/enquiry-workflow";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
+import {isJourneyEstimate} from "@/lib/pricing/journey-estimate-types";
 import type {Database,EnquiryStatus,Json} from "@/lib/database.types";
 
 type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
@@ -32,7 +33,8 @@ const statusStyle:Record<EnquiryStatus,string>={
 const ids=(value:Json)=>Array.isArray(value)?value.filter((item):item is string=>typeof item==="string"):[];
 const money=(row:Enquiry)=>{
   const quote=parseJourneyHandoff(row.trip_state)?.quote;
-  return quote?.status==="ready"&&quote.totalPackagePrice!==null
+  if(isJourneyEstimate(quote)&&quote.status==="estimated_range")return `${quote.currency} ${quote.perPersonMin?.toLocaleString("en-US",{maximumFractionDigits:0})}–${quote.perPersonMax?.toLocaleString("en-US",{maximumFractionDigits:0})} pp`;
+  return !isJourneyEstimate(quote)&&quote?.status==="ready"&&quote.totalPackagePrice!==null
     ?`${quote.currency} ${quote.totalPackagePrice.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`
     :"Personal quotation";
 };

@@ -1,0 +1,26 @@
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+import test from "node:test";
+import {calculateJourneyEstimateRange,journeyEstimateTailoredMessage} from "../lib/pricing/journey-estimate-engine.ts";
+import type {DmcPricingConfig} from "../lib/pricing/package-types.ts";
+
+const config: DmcPricingConfig={currency:"USD",roomOccupancy:2,childCostFactor:.5,routeDistanceBufferPercent:10,driverSalaryPerDay:25,fuelPricePerLitre:1.2,vehicleKmPerLitre:10,tollsPerJourney:20,parkingPerDay:5,guideAccommodationPerNight:30,airportTransferEachWay:35,administrationFixed:40,administrationPercent:5,contingencyPercent:5,serviceFeeFixed:25,serviceFeePercent:4,targetProfitMarginPercent:15};
+const estimate=(overrides:Partial<Parameters<typeof calculateJourneyEstimateRange>[0]>={})=>calculateJourneyEstimateRange({currency:"USD",durationDays:10,adults:2,children:0,infants:0,components:[{category:"Accommodation",minimum:800,maximum:1200},{category:"Transport",minimum:300,maximum:500}],operationsCost:200,config,factors:["Journey duration","Accommodation style","Number of travellers"],unavailableInputs:[],estimatedAt:"2026-08-09T00:00:00.000Z",...overrides});
+
+test("one adult receives a rounded, non-exact range",()=>{const result=estimate({adults:1});assert.equal(result.status,"estimated_range");assert(result.perPersonMin!<result.perPersonMax!);assert(Number.isInteger(result.perPersonMin!));});
+test("two adults receive per-person and total ranges",()=>{const result=estimate();assert.equal(result.status,"estimated_range");assert.equal(result.totalMin,result.perPersonMin!*2);assert.equal(result.totalMax,result.perPersonMax!*2);});
+test("families fall back until verified child and infant rules exist",()=>{const result=estimate({children:1});assert.equal(result.status,"tailored");assert.equal(result.message,journeyEstimateTailoredMessage);});
+test("a short journey can still produce an estimate",()=>{assert.equal(estimate({durationDays:2}).status,"estimated_range");});
+test("a fourteen-day journey retains duration context",()=>{assert.equal(estimate({durationDays:14}).durationDays,14);});
+test("lower supplier bounds produce a lower public range",()=>{const lower=estimate({components:[{category:"Stay",minimum:300,maximum:500}]});const higher=estimate({components:[{category:"Stay",minimum:900,maximum:1400}]});assert(lower.perPersonMin!<higher.perPersonMin!);});
+test("premium supplier choices expand the range without exposing the supplier",()=>{const result=estimate({components:[{category:"Premium accommodation",minimum:1500,maximum:2500}]});assert.equal(result.status,"estimated_range");assert(!JSON.stringify(result).includes("supplierCost"));});
+test("transport preference is represented only as a public factor",()=>{const result=estimate({factors:["Transport preferences"]});assert.deepEqual(result.factors,["Transport preferences"]);});
+test("a primary guide can contribute as an anonymous range component",()=>{const result=estimate({components:[{category:"Primary guide",minimum:300,maximum:500}]});assert(result.context.pricedComponents.includes("Primary guide"));});
+test("no-guide journeys remain estimateable when other bounds exist",()=>{assert.equal(estimate({components:[{category:"Stay",minimum:500,maximum:800}]}).status,"estimated_range");});
+test("specialist guides can be included without public rate disclosure",()=>{const result=estimate({components:[{category:"Specialist guide",minimum:80,maximum:140}]});assert.equal(result.status,"estimated_range");assert(!("components" in result));});
+test("complete verified inputs return an estimated range",()=>{assert.equal(estimate().status,"estimated_range");});
+test("missing rates use the exact tailored fallback",()=>{const result=estimate({unavailableInputs:["accommodation rates"]});assert.equal(result.status,"tailored");assert.equal(result.message,"Your journey includes preferences that require individual pricing. We'll carefully prepare the final cost as part of your Journey Proposal.");});
+test("a single exact supplier value is not presented as a deceptive range",()=>{assert.equal(estimate({components:[{category:"Experience",minimum:200,maximum:200}],operationsCost:0}).status,"tailored");});
+test("public estimate payload contains no margin, internal cost or supplier identity",()=>{const json=JSON.stringify(estimate());for(const secret of ["targetProfitMarginPercent","grossProfit","internalCost","supplierId","supplierCost"])assert(!json.includes(secret));});
+test("legacy exact pricing remains available internally while the builder uses the range endpoint",()=>{const builder=readFileSync(new URL("../features/journey/journey-builder.tsx",import.meta.url),"utf8");const accounting=readFileSync(new URL("../lib/accounting/post-journey-account.ts",import.meta.url),"utf8");assert.match(builder,/useJourneyEstimate/);assert.doesNotMatch(builder,/usePackageQuote/);assert.match(accounting,/PackagePricingService/);});
+test("submitted range snapshots are immutable and explicitly non-commercial",()=>{const migration=readFileSync(new URL("../supabase/migrations/202608090004_public_journey_estimate_snapshot.sql",import.meta.url),"utf8");assert.match(migration,/preserve_submitted_journey_estimate/);assert.match(migration,/never determines proposal or accounting prices/);});

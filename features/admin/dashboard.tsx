@@ -8,6 +8,7 @@ import {AdminShell} from "./admin-shell";
 import {createClient} from "@/lib/supabase/client";
 import {enquiryStatusLabels} from "@/lib/enquiries/enquiry-workflow";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
+import {isJourneyEstimate} from "@/lib/pricing/journey-estimate-types";
 import type {Database} from "@/lib/database.types";
 
 type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
@@ -76,7 +77,7 @@ export function AdminDashboard(){
   const readiness=totalContent?Math.round((publishedContent/totalContent)*100):0;
   const pipelineValue=enquiries.filter(row=>!["completed","cancelled","archived"].includes(row.status)).reduce((total,row)=>{
     const quote=parseJourneyHandoff(row.trip_state)?.quote;
-    return total+(quote?.status==="ready"&&quote.totalPackagePrice?quote.totalPackagePrice:0);
+    return total+(!isJourneyEstimate(quote)&&quote?.status==="ready"&&quote.totalPackagePrice?quote.totalPackagePrice:0);
   },0);
   const maxPipeline=Math.max(1,...pipeline.map(([status])=>enquiries.filter(row=>row.status===status).length));
   return <AdminShell><div className="mx-auto max-w-[1500px]">
@@ -93,7 +94,8 @@ export function AdminDashboard(){
         const handoff=parseJourneyHandoff(row.trip_state);
         const quote=handoff?.quote;
         const destinationCount=Array.isArray(row.selected_destinations)?row.selected_destinations.length:0;
-        return <Link key={row.id} href={`/admin/enquiries/${row.id}`} className="grid gap-3 p-5 transition hover:bg-sand-light md:grid-cols-[1fr_160px_130px] md:items-center"><div><div className="flex flex-wrap items-center gap-2"><strong>{row.name}</strong><span className="rounded-full bg-gold/10 px-2 py-1 text-[.65rem] font-bold uppercase text-gold">{enquiryStatusLabels[row.status]}</span></div><p className="mt-1 text-xs text-stone">{row.journey_reference} · {row.adults+row.children} travellers · {destinationCount} destinations · {row.nationality||"Country open"}</p></div><strong className="text-sm text-forest">{quote?.status==="ready"?`${quote.currency} ${quote.totalPackagePrice?.toLocaleString("en-US",{maximumFractionDigits:0})}`:"Personal quote"}</strong><span className="text-xs text-stone">{shortDate(row.created_at)}</span></Link>;
+        const estimateLabel=isJourneyEstimate(quote)&&quote.status==="estimated_range"?`${quote.currency} ${quote.perPersonMin?.toLocaleString("en-US",{maximumFractionDigits:0})}–${quote.perPersonMax?.toLocaleString("en-US",{maximumFractionDigits:0})} pp`:!isJourneyEstimate(quote)&&quote?.status==="ready"?`${quote.currency} ${quote.totalPackagePrice?.toLocaleString("en-US",{maximumFractionDigits:0})}`:"Personal quote";
+        return <Link key={row.id} href={`/admin/enquiries/${row.id}`} className="grid gap-3 p-5 transition hover:bg-sand-light md:grid-cols-[1fr_160px_130px] md:items-center"><div><div className="flex flex-wrap items-center gap-2"><strong>{row.name}</strong><span className="rounded-full bg-gold/10 px-2 py-1 text-[.65rem] font-bold uppercase text-gold">{enquiryStatusLabels[row.status]}</span></div><p className="mt-1 text-xs text-stone">{row.journey_reference} · {row.adults+row.children} travellers · {destinationCount} destinations · {row.nationality||"Country open"}</p></div><strong className="text-sm text-forest">{estimateLabel}</strong><span className="text-xs text-stone">{shortDate(row.created_at)}</span></Link>;
       })}</div>:<EmptyState text="No traveller enquiries have arrived yet."/>}</div>
       <div className="rounded-3xl bg-forest p-7 text-ivory"><p className="eyebrow mb-3 text-gold-light">Sales movement</p><h2 className="font-serif text-2xl">Quotation pipeline</h2><div className="mt-8 grid gap-5">{pipeline.map(([status,label])=>{const count=enquiries.filter(row=>row.status===status).length;return <div key={status}><div className="mb-2 flex justify-between text-sm"><span className="text-ivory/65">{label}</span><strong>{count}</strong></div><div className="h-2 rounded-full bg-white/10"><div className="h-full rounded-full bg-gold transition-all" style={{width:`${Math.max(count?8:0,(count/maxPipeline)*100)}%`}}/></div></div>})}</div><Link href="/admin/enquiries" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-gold-light">Manage sales pipeline <ArrowUpRight className="size-4"/></Link></div>
     </section>

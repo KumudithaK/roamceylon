@@ -1,5 +1,6 @@
 import type {Json} from "@/lib/database.types";
 import type {PublicPackageQuote} from "@/lib/pricing/package-types";
+import type {PublicJourneyEstimate} from "@/lib/pricing/journey-estimate-types";
 import type {JourneyState} from "@/features/journey/journey-store";
 import {normaliseDestinationPreferences,normaliseGuideLanguages,normaliseJourneyGuidePreference} from "@/lib/journey/journey-preferences";
 import {completeJourneyLegs,normaliseCompleteTravelPreferences} from "@/lib/journey/travel-preferences";
@@ -11,7 +12,7 @@ export type JourneyQuotationHandoff={
   version:1;
   createdAt:string;
   state:JourneyState;
-  quote:PublicPackageQuote|null;
+  quote:PublicJourneyEstimate|PublicPackageQuote|null;
 };
 
 const isJourneyState=(value:unknown):value is JourneyState=>{
@@ -47,7 +48,7 @@ const normaliseState=(state:JourneyState):JourneyState=>{
   };
 };
 
-export function saveJourneyHandoff(state:JourneyState,quote:PublicPackageQuote|null){
+export function saveJourneyHandoff(state:JourneyState,quote:PublicJourneyEstimate|PublicPackageQuote|null){
   if(typeof window==="undefined")return;
   const payload:JourneyQuotationHandoff={version:1,createdAt:new Date().toISOString(),state,quote};
   sessionStorage.setItem(quotationHandoffKey,JSON.stringify(payload));
@@ -90,7 +91,7 @@ export function parseJourneyHandoff(value:Json):JourneyQuotationHandoff|null{
       version:1,
       createdAt:typeof record.createdAt==="string"?record.createdAt:"",
       state:normaliseState(record.state),
-      quote:record.quote as PublicPackageQuote|null
+      quote:record.quote as PublicJourneyEstimate|PublicPackageQuote|null
     };
   }
   return isJourneyState(value)

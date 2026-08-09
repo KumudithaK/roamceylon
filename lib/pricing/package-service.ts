@@ -13,7 +13,7 @@ export class PackagePricingError extends Error{
 }
 
 const numberOrNull=(value:unknown)=>typeof value==="number"&&Number.isFinite(value)?value:null;
-const mapConfig=(row:ConfigRow):DmcPricingConfig=>({
+export const mapPricingConfig=(row:ConfigRow):DmcPricingConfig=>({
   currency:row.currency,
   roomOccupancy:row.room_occupancy,
   childCostFactor:Number(row.child_cost_factor),
@@ -95,7 +95,7 @@ export class PackagePricingService{
     const supplierCosts=selectedPlans.map(mapCost);
     const destinations=(destinationsResult.data??[]).map(item=>({...item,latitude:item.latitude===null?null:Number(item.latitude),longitude:item.longitude===null?null:Number(item.longitude)}));
     const route=getRouteEstimate(destinations,selection.selectedDestinationIds);
-    const quote=calculatePackageQuote({config:mapConfig(configResult.data),supplierCosts,selection,durationDays:Math.max(1,route.estimatedTravelDays),distanceKm:route.estimatedDistance,adjustments:[]});
+    const quote=calculatePackageQuote({config:mapPricingConfig(configResult.data),supplierCosts,selection,durationDays:Math.max(1,route.estimatedTravelDays),distanceKm:route.estimatedDistance,adjustments:[]});
     if(quote.public.status==="requires_manual_quote"){
       const activeKeys=new Set(supplierCosts.map(item=>`${item.entityType}:${item.entityId}`));
       const inactiveKeys=new Set(allPlans.filter(item=>!item.active).map(item=>`${item.entity_type}:${item.entity_id}`));

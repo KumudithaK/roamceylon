@@ -12,11 +12,11 @@ import {completeJourneyLegs,effectiveTravelPreference,journeyLegKey,journeyLegs,
 test("public builder follows the seven-step preference and insights flow without supplier selectors",()=>{
   const source=readFileSync(new URL("../features/journey/journey-builder.tsx",import.meta.url),"utf8");
   assert.match(source,/\["Theme","Destination","Experience","Journey Preferences","Journey Details","Journey Insights","Review"\]/);
-  assert.match(source,/selectedStayIds:\[\]/);
-  assert.match(source,/selectedGuideId:null/);
+  assert.match(source,/destinationPreferences:state\.destinationPreferences/);
+  assert.match(source,/journeyGuidePreference:state\.journeyGuidePreference/);
   assert.doesNotMatch(source,/availableStays\(|data\.guides\.(?:map|filter)|Local Guides/);
   assert.doesNotMatch(source,/data\.vehicles|VehicleCard|VehicleSelectionModal/);
-  assert.match(source,/selectedVehicleId:null/);
+  assert.match(source,/travelPreferencesByLeg:state\.travelPreferencesByLeg/);
   assert.match(source,/journeyDetailsIssue/);
   assert.match(source,/Complete the journey pickup point, date and time to continue/);
   assert.match(source,/Complete the journey drop-off point, date and time to continue/);

@@ -1,5 +1,6 @@
 import type {PDFFont,PDFPage,RGB} from "pdf-lib";
 import type {PublicPackageQuote} from "@/lib/pricing/package-types";
+import {isJourneyEstimate,type PublicJourneyEstimate} from "@/lib/pricing/journey-estimate-types";
 
 export type JourneyPdfDetails={
   themes:string[];
@@ -13,7 +14,7 @@ export type JourneyPdfDetails={
   estimatedDistance:number;
   estimatedTravelDays:number;
   routeCoordinates?:Array<{name:string;latitude:number;longitude:number}>;
-  quote:PublicPackageQuote|null;
+  quote:PublicPackageQuote|PublicJourneyEstimate|null;
 };
 
 const PAGE_WIDTH=595;
@@ -152,7 +153,7 @@ export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes:ArrayB
     return page;
   };
 
-  let pageNumberedCover=pdf.addPage([PAGE_WIDTH,PAGE_HEIGHT]);
+  const pageNumberedCover=pdf.addPage([PAGE_WIDTH,PAGE_HEIGHT]);
   pageNumber+=1;
   pageNumberedCover.drawRectangle({x:0,y:0,width:PAGE_WIDTH,height:PAGE_HEIGHT,color:forest});
   pageNumberedCover.drawRectangle({x:0,y:PAGE_HEIGHT-8,width:PAGE_WIDTH,height:8,color:gold});
@@ -258,7 +259,21 @@ export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes:ArrayB
   ];
   drawListSection("Travel plan",planLines);
 
-  if(details.quote?.status==="ready"){
+  if(isJourneyEstimate(details.quote)&&details.quote.status==="estimated_range"){
+    const quote=details.quote;
+    const priceHeight=150;
+    ensureSpace(priceHeight);
+    page.drawRectangle({x:MARGIN,y:cursorY-priceHeight,width:CONTENT_WIDTH,height:priceHeight,color:forest});
+    page.drawText("YOUR ESTIMATED JOURNEY",{x:MARGIN+20,y:cursorY-25,size:7,font:bold,color:goldLight});
+    const perPerson=`${quote.currency} ${quote.perPersonMin?.toLocaleString("en-US",{maximumFractionDigits:0})} - ${quote.perPersonMax?.toLocaleString("en-US",{maximumFractionDigits:0})}`;
+    page.drawText(perPerson,{x:MARGIN+20,y:cursorY-60,size:24,font:serif,color:white});
+    page.drawText("Estimated range per adult traveller",{x:MARGIN+20,y:cursorY-78,size:8,font:regular,color:rgb(.74,.8,.77)});
+    const total=`${quote.currency} ${quote.totalMin?.toLocaleString("en-US",{maximumFractionDigits:0})} - ${quote.totalMax?.toLocaleString("en-US",{maximumFractionDigits:0})}`;
+    page.drawText("ESTIMATED JOURNEY TOTAL",{x:MARGIN+20,y:cursorY-105,size:6,font:bold,color:goldLight});
+    page.drawText(total,{x:MARGIN+20,y:cursorY-122,size:11,font:bold,color:white});
+    drawWrapped(page,quote.message,MARGIN+270,cursorY-104,{size:8,color:rgb(.74,.8,.77),maxWidth:CONTENT_WIDTH-290,lineHeight:11});
+    cursorY-=priceHeight+13;
+  }else if(details.quote?.status==="ready"){
     const quote=details.quote;
     const componentHeight=(quote.components?.length??0)*20;
     const priceHeight=166+componentHeight;

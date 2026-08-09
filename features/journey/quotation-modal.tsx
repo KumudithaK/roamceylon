@@ -9,6 +9,7 @@ import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
 import {journeyHandoffToJson,type JourneyQuotationHandoff} from "@/lib/journey/quotation-handoff";
 import type {PublicPackageQuote} from "@/lib/pricing/package-types";
+import {isJourneyEstimate,type PublicJourneyEstimate} from "@/lib/pricing/journey-estimate-types";
 import type {JourneyState} from "./journey-store";
 
 const schema=z.object({
@@ -22,7 +23,7 @@ const schema=z.object({
 }).refine(values=>!values.arrival||!values.departure||values.departure>=values.arrival,{message:"Departure must be after arrival.",path:["departure"]});
 type FormData=z.infer<typeof schema>;
 
-export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:boolean;onClose:()=>void;onSubmitted:()=>void;state:JourneyState;quote:PublicPackageQuote|null}){
+export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:boolean;onClose:()=>void;onSubmitted:()=>void;state:JourneyState;quote:PublicJourneyEstimate|PublicPackageQuote|null}){
   const [sent,setSent]=useState(false);
   const [submitError,setSubmitError]=useState("");
   const wasOpen=useRef(false);
@@ -44,6 +45,7 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:bool
     if(state.travellerCounts.adults<1){setSubmitError("Please return to Journey Details and add at least one adult traveller.");return}
     const submittedState={...state,travelDates:{start:values.arrival||state.travelDates.start,end:values.departure||state.travelDates.end}};
     const handoff:JourneyQuotationHandoff={version:1,createdAt:new Date().toISOString(),state:submittedState,quote};
+    const estimate=isJourneyEstimate(quote)?quote:null;
     const {error}=await createClient().from("enquiries").insert({
       name:values.name,
       email:values.email,
@@ -63,7 +65,13 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:bool
       selected_experiences:submittedState.selectedExperienceIds,
       selected_stays:Object.values(submittedState.selectedStayIdsByDestination).filter(Boolean),
       selected_vehicle:submittedState.selectedVehicleId,
-      selected_guide:submittedState.selectedGuideId
+      selected_guide:submittedState.selectedGuideId,
+      estimated_price_min:estimate?.perPersonMin??null,
+      estimated_price_max:estimate?.perPersonMax??null,
+      estimated_price_currency:estimate?.currency??null,
+      estimated_price_basis:estimate?.basis??null,
+      estimated_at:estimate?.estimatedAt??null,
+      estimate_snapshot:estimate??{}
     });
     if(error){setSubmitError("We could not send your journey request. Please try again.");return}
     onSubmitted();
