@@ -32,7 +32,7 @@ type Draft={
   confirmationStatus:Allocation["confirmation_status"];invoiceStatus:Allocation["invoice_status"];paymentStatus:Allocation["payment_status"];
   arrivalInstructions:string;specialNotes:string;
 };
-type Props={enquiry:Enquiry;handoff:JourneyQuotationHandoff|null;destinations:Named[];experiences:Named[];experienceDestinations:Record<string,string[]>;legacySelections:string[];account:Account|null};
+type Props={enquiry:Enquiry;handoff:JourneyQuotationHandoff|null;destinations:Named[];experiences:Named[];experienceDestinations:Record<string,string[]>;legacySelections:string[];account:Account|null;onEnquiryStatusChange?:(status:Enquiry["status"])=>void};
 const emptySuppliers:SupplierDirectory={accommodations:[],guides:[],vehicles:[]};
 const money=(value:number,currency:string)=>`${currency} ${value.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
 const emptyDraft=(type:Draft["type"],destinationId:string|null=null,fromDestinationId:string|null=null,toDestinationId:string|null=null,fromLocationKey:string|null=null,toLocationKey:string|null=null):Draft=>({type,destinationId,fromDestinationId,toDestinationId,fromLocationKey,toLocationKey,resourceId:"",pricingPlanId:"",serviceName:"",quantity:null,quantityLabel:"",serviceDetails:{},providerName:"",supplierContact:"",supplierCost:null,sellingPrice:null,currency:"USD",confirmationStatus:"pending",invoiceStatus:"not_requested",paymentStatus:"pending",arrivalInstructions:"",specialNotes:""});
@@ -48,7 +48,7 @@ const rowDraft=(row:Allocation):Draft=>({
 const jsonArray=<T,>(value:Json):T[]=>Array.isArray(value)?value as T[]:[];
 const optionalFormNumber=(form:FormData|undefined,name:string)=>{const value=String(form?.get(name)??"").trim();return value===""?null:Number(value)};
 
-export function JourneyLifecycleWorkspace({enquiry,handoff,destinations,experiences,experienceDestinations,legacySelections,account:initialAccount}:Props){
+export function JourneyLifecycleWorkspace({enquiry,handoff,destinations,experiences,experienceDestinations,legacySelections,account:initialAccount,onEnquiryStatusChange}:Props){
   const [suppliers,setSuppliers]=useState<SupplierDirectory>(emptySuppliers);
   const [allocations,setAllocations]=useState<Allocation[]>([]);
   const [pricingPlans,setPricingPlans]=useState<PricingPlan[]>([]);
@@ -153,6 +153,7 @@ export function JourneyLifecycleWorkspace({enquiry,handoff,destinations,experien
     const response=await fetch("/api/admin/journey-proposals",{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${session?.access_token??""}`},body:JSON.stringify(body)});
     const result=await response.json() as {proposal?:Proposal;error?:string};setSaving(false);
     if(!response.ok||!result.proposal){setMessage(result.error??"The proposal could not be updated.");return}
+    onEnquiryStatusChange?.(action==="generate"?"preparing_proposal":action==="sent"?"proposal_sent":"proposal_accepted");
     setProposalOpen(false);setMessage(action==="generate"?"A new proposal version is ready.":action==="sent"?"Proposal marked as sent.":"Traveller approval recorded.");await load();
   };
   const latest=proposals.find(item=>!["superseded","cancelled"].includes(item.status))??proposals[0]??null;

@@ -13,10 +13,12 @@ test("supplier allocations remain independent from immutable traveller preferenc
 
 test("proposal snapshots use allocated suppliers and enforce sent before approval",()=>{
   const service=read("../lib/proposals/journey-proposal-service.ts");
+  const workspace=read("../features/admin/journey-lifecycle-workspace.tsx");
   assert.match(service,/allocationCommercialSnapshot/);
   assert.match(service,/allocation_snapshot/);
   assert.match(service,/proposal\.status!=="sent"/);
   assert.match(service,/"proposal_accepted"/);
+  assert.match(workspace,/onEnquiryStatusChange\?\.\(action==="generate"\?"preparing_proposal":action==="sent"\?"proposal_sent":"proposal_accepted"\)/);
 });
 
 test("allocation accounting preserves the legacy quote path and activates only after payment",()=>{
