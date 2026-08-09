@@ -50,6 +50,15 @@ test("phase eight migration supports endpoint transport legs without changing su
   assert.match(migration,/allocation_type='vehicle'/);
 });
 
+test("CMS relationship sync runs with scoped elevated permissions",()=>{
+  const migration=read("../supabase/migrations/202608090003_fix_relationship_sync_permissions.sql");
+  assert.match(migration,/sync_content_relationships/);
+  assert.match(migration,/security definer/);
+  assert.match(migration,/revoke all .* from anon/);
+  assert.match(migration,/grant execute .* to authenticated/);
+  assert.doesNotMatch(migration,/grant usage on schema private/);
+});
+
 test("admin journey lifecycle exposes the canonical DMC workflow",()=>{
   const workflow=read("../lib/enquiries/enquiry-workflow.ts");
   for(const label of ["Draft","Proposal Ready","Proposal Sent","Traveller Approved","Deposit Received","Supplier Allocation Complete","Ready for Operations","Travelling","Completed","Archived"]){
