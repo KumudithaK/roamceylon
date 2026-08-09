@@ -2,6 +2,8 @@ import {NextResponse} from "next/server";
 import {z} from "zod";
 import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
 import {syncAllocationAccounting} from "@/lib/accounting/allocation-accounting";
+import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
+import {completeJourneyLegs} from "@/lib/journey/travel-preferences";
 import type {Database,Json} from "@/lib/database.types";
 
 const allocationSchema=z.object({
@@ -9,6 +11,8 @@ const allocationSchema=z.object({
   destinationId:z.uuid().nullable(),
   fromDestinationId:z.uuid().nullable(),
   toDestinationId:z.uuid().nullable(),
+  fromLocationKey:z.string().trim().min(1).max(120).nullable(),
+  toLocationKey:z.string().trim().min(1).max(120).nullable(),
   accommodationId:z.uuid().nullable(),
   guideId:z.uuid().nullable(),
   vehicleId:z.uuid().nullable(),
@@ -32,7 +36,7 @@ const allocationSchema=z.object({
 const requestSchema=z.object({enquiryId:z.uuid(),allocations:z.array(allocationSchema).max(250)});
 const ids=(value:Json)=>Array.isArray(value)?value.filter((item):item is string=>typeof item==="string"):[];
 const key=(row:z.infer<typeof allocationSchema>)=>row.allocationType==="vehicle"
-  ?`vehicle:${row.fromDestinationId}:${row.toDestinationId}`
+  ?`vehicle:${row.fromLocationKey}:${row.toLocationKey}`
   :row.allocationType==="experience"?`experience:${row.experienceId}`:row.allocationType==="guide"&&!row.destinationId?"guide:journey":`${row.allocationType}:${row.destinationId}`;
 
 export async function POST(request:Request){
@@ -42,12 +46,17 @@ export async function POST(request:Request){
   if(!parsed.success)return NextResponse.json({error:parsed.error.issues[0]?.message??"Check the supplier allocations."},{status:400});
   const {database}=actor;const {enquiryId,allocations}=parsed.data;
   if(new Set(allocations.map(key)).size!==allocations.length)return NextResponse.json({error:"Each destination, route leg, and experience can have only one allocation."},{status:400});
-  const {data:enquiry,error:enquiryError}=await database.from("enquiries").select("selected_destinations,selected_experiences").eq("id",enquiryId).maybeSingle();
+  const {data:enquiry,error:enquiryError}=await database.from("enquiries").select("selected_destinations,selected_experiences,trip_state").eq("id",enquiryId).maybeSingle();
   if(enquiryError||!enquiry)return NextResponse.json({error:"Traveller enquiry not found."},{status:404});
-  const destinationIds=new Set(ids(enquiry.selected_destinations));const experienceIds=new Set(ids(enquiry.selected_experiences));
+  const selectedDestinationIds=ids(enquiry.selected_destinations);const destinationIds=new Set(selectedDestinationIds);const experienceIds=new Set(ids(enquiry.selected_experiences));
+  const handoff=parseJourneyHandoff(enquiry.trip_state);
+  const expectedTransportLegs=completeJourneyLegs(selectedDestinationIds,Boolean(handoff?.state.pickup.type),Boolean(handoff?.state.dropoff.type));
+  const expectedTransportKeys=new Set(expectedTransportLegs.map(leg=>`${leg.fromLocationKey}:${leg.toLocationKey}`));
   for(const row of allocations){
     if(row.allocationType==="vehicle"){
-      if(!row.fromDestinationId||!row.toDestinationId||!destinationIds.has(row.fromDestinationId)||!destinationIds.has(row.toDestinationId)||!row.vehicleId)return NextResponse.json({error:"A transport allocation must use two selected destinations and an existing vehicle."},{status:400});
+      const routeKey=`${row.fromLocationKey}:${row.toLocationKey}`;
+      const expected=expectedTransportLegs.find(leg=>leg.fromLocationKey===row.fromLocationKey&&leg.toLocationKey===row.toLocationKey);
+      if(!row.fromLocationKey||!row.toLocationKey||!expectedTransportKeys.has(routeKey)||!expected||row.fromDestinationId!==expected.fromDestinationId||row.toDestinationId!==expected.toDestinationId||!row.vehicleId)return NextResponse.json({error:"A transport allocation must belong to a valid pickup-to-drop-off journey leg and use an existing vehicle."},{status:400});
     }else if(row.allocationType==="experience"){
       if(!row.destinationId||!destinationIds.has(row.destinationId)||!row.experienceId||!experienceIds.has(row.experienceId)||!row.providerName)return NextResponse.json({error:"An experience allocation requires its selected destination, experience, and provider name."},{status:400});
     }else if(row.allocationType==="accommodation"){
@@ -92,7 +101,7 @@ export async function POST(request:Request){
     if(!plan&&(!row.serviceName||row.supplierCost===null||!row.quantity||!row.quantityLabel))return NextResponse.json({error:`Enter a custom service name, quantity, billing unit and supplier cost for this ${row.allocationType} allocation.`},{status:400});
   }
   const existing=existingResult.data??[];
-  const existingKey=(row:typeof existing[number])=>row.allocation_type==="vehicle"?`vehicle:${row.from_destination_id}:${row.to_destination_id}`:row.allocation_type==="experience"?`experience:${row.experience_id}`:row.allocation_type==="guide"&&!row.destination_id?"guide:journey":`${row.allocation_type}:${row.destination_id}`;
+  const existingKey=(row:typeof existing[number])=>row.allocation_type==="vehicle"?`vehicle:${row.from_location_key??`destination:${row.from_destination_id}`}:${row.to_location_key??`destination:${row.to_destination_id}`}`:row.allocation_type==="experience"?`experience:${row.experience_id}`:row.allocation_type==="guide"&&!row.destination_id?"guide:journey":`${row.allocation_type}:${row.destination_id}`;
   const allocationAccount=accountResult.data?.active&&accountResult.data.quote_snapshot&&typeof accountResult.data.quote_snapshot==="object"&&!Array.isArray(accountResult.data.quote_snapshot)&&(accountResult.data.quote_snapshot as Record<string,Json|undefined>).source==="supplier_allocations";
   const activeInput=allocations.filter(row=>row.confirmationStatus!=="cancelled");
   if(allocationAccount&&(activeInput.some(row=>row.supplierCost===null)||new Set(activeInput.map(row=>row.currency)).size!==1))return NextResponse.json({error:"An active Accounting account requires complete supplier costs and one currency."},{status:409});
@@ -123,7 +132,7 @@ export async function POST(request:Request){
     const serviceDetails=row.allocationType==="accommodation"&&accommodation?.destination_id!==row.destinationId?{...row.serviceDetails,destinationOverrideConfirmed:true,catalogueDestinationId:accommodation?.destination_id??null}:row.serviceDetails;
     const stored={
       enquiry_id:enquiryId,allocation_type:row.allocationType,destination_id:row.destinationId,
-      from_destination_id:row.fromDestinationId,to_destination_id:row.toDestinationId,
+      from_destination_id:row.fromDestinationId,to_destination_id:row.toDestinationId,from_location_key:row.fromLocationKey,to_location_key:row.toLocationKey,
       accommodation_id:row.accommodationId,guide_id:row.guideId,vehicle_id:row.vehicleId,experience_id:row.experienceId,
       pricing_plan_id:plan?.id??null,
       pricing_plan_snapshot:plan?{id:plan.id,name:plan.name,description:plan.description,unitPrice:Number(plan.price),currency:plan.currency,chargingMethod:plan.charging_method,details:plan.details,notes:plan.notes}:{} as Json,

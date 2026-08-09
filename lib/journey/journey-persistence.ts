@@ -2,7 +2,8 @@
 
 import type {JourneyState} from "@/features/journey/journey-store";
 import {normaliseDestinationPreferences,normaliseGuideLanguages,normaliseJourneyGuidePreference} from "@/lib/journey/journey-preferences";
-import {normaliseTravelPreferences} from "@/lib/journey/travel-preferences";
+import {completeJourneyLegs,normaliseCompleteTravelPreferences} from "@/lib/journey/travel-preferences";
+import {normaliseJourneyEndpoint} from "@/lib/journey/journey-endpoints";
 
 export const journeyStorageKey="roam-ceylon-journey-v3";
 export const journeyStateEvent="roam-ceylon:journey-state";
@@ -15,6 +16,9 @@ export function readJourneyState():JourneyState|null{
     if(!raw)return null;
     const parsed=JSON.parse(raw) as Partial<JourneyState>;
     if(!Array.isArray(parsed.selectedThemeIds)||!Array.isArray(parsed.selectedDestinationIds)||!Array.isArray(parsed.selectedExperienceIds))return null;
+    const pickup=normaliseJourneyEndpoint(parsed.pickup,parsed.travelDates?.start);
+    const dropoff=normaliseJourneyEndpoint(parsed.dropoff,parsed.travelDates?.end);
+    const legs=completeJourneyLegs(parsed.selectedDestinationIds,Boolean(pickup.type),Boolean(dropoff.type));
     return {
       currentStep:Math.min(6,Math.max(0,Number(parsed.currentStep)||0)),
       selectedThemeIds:parsed.selectedThemeIds,
@@ -24,7 +28,10 @@ export function readJourneyState():JourneyState|null{
       journeyGuidePreference:normaliseJourneyGuidePreference(parsed.journeyGuidePreference),
       journeyGuideLanguages:normaliseGuideLanguages(parsed.journeyGuideLanguages),
       journeyGuideNotes:typeof parsed.journeyGuideNotes==="string"?parsed.journeyGuideNotes:"",
-      travelPreferencesByLeg:normaliseTravelPreferences(parsed.travelPreferencesByLeg,parsed.selectedDestinationIds),
+      pickup,
+      dropoff,
+      globalTravelPreference:parsed.globalTravelPreference??"recommend",
+      travelPreferencesByLeg:normaliseCompleteTravelPreferences(parsed.travelPreferencesByLeg,legs),
       selectedStayIdsByDestination:{},
       selectedVehicleId:null,
       selectedGuideId:null,

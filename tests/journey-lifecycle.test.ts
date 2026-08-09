@@ -42,6 +42,14 @@ test("migration stores commercial, operational, proposal and reporting relations
   }
 });
 
+test("phase eight migration supports endpoint transport legs without changing supplier entities",()=>{
+  const migration=read("../supabase/migrations/202608090002_complete_transport_route_endpoints.sql");
+  assert.match(migration,/from_location_key/);
+  assert.match(migration,/to_location_key/);
+  assert.match(migration,/destination:/);
+  assert.match(migration,/allocation_type='vehicle'/);
+});
+
 test("admin journey lifecycle exposes the canonical DMC workflow",()=>{
   const workflow=read("../lib/enquiries/enquiry-workflow.ts");
   for(const label of ["Draft","Proposal Ready","Proposal Sent","Traveller Approved","Deposit Received","Supplier Allocation Complete","Ready for Operations","Travelling","Completed","Archived"]){

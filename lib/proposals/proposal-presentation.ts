@@ -10,7 +10,7 @@ export function proposalLinePresentation(line:Record<string,Json>){
   const service=text(line.serviceName)||text(line.resourceName),quantityLabel=text(line.quantityLabel).toLowerCase();
   const storedMethod=text(plan.chargingMethod)||text(plan.charging_method);
   const method=storedMethod||(/per person/i.test(service)||quantityLabel.includes("guest")?"per_person":"");
-  const destination=text(line.destinationName),from=text(line.fromDestinationName),to=text(line.toDestinationName);
+  const destination=text(line.destinationName),from=text(line.fromLocationName)||text(line.fromDestinationName),to=text(line.toLocationName)||text(line.toDestinationName);
   if(type==="accommodation"){
     const guests=number(details.guests),rooms=number(details.rooms),nights=number(details.nights);
     const basis=method==="per_person"?`${plural(guests,"guest")} × ${plural(nights,"night")}`:method==="per_person_stay"?plural(guests,"guest"):method==="per_stay"?"Complete stay":`${plural(rooms,"room")} × ${plural(nights,"night")}`;

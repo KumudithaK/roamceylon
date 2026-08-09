@@ -16,10 +16,16 @@ export const travelPreferenceOptions=[
 export type TravelPreference=(typeof travelPreferenceOptions)[number][0];
 export type JourneyLegPreference={fromDestinationId:string;toDestinationId:string;travelPreference:TravelPreference};
 export type TravelPreferencesByLeg=Record<string,JourneyLegPreference>;
+export type CompleteJourneyLeg={key:string;fromLocationKey:string;toLocationKey:string;fromDestinationId:string|null;toDestinationId:string|null};
 
 const travelValues=new Set<string>(travelPreferenceOptions.map(([value])=>value));
 export const journeyLegKey=(fromDestinationId:string,toDestinationId:string)=>`${fromDestinationId}:${toDestinationId}`;
 export const journeyLegs=(destinationIds:string[])=>destinationIds.slice(0,-1).map((fromDestinationId,index)=>({fromDestinationId,toDestinationId:destinationIds[index+1],key:journeyLegKey(fromDestinationId,destinationIds[index+1])}));
+export const destinationLocationKey=(id:string)=>`destination:${id}`;
+export function completeJourneyLegs(destinationIds:string[],includePickup:boolean,includeDropoff:boolean):CompleteJourneyLeg[]{
+  const stops=[...(includePickup?[{key:"pickup",destinationId:null}]:[]),...destinationIds.map(id=>({key:destinationLocationKey(id),destinationId:id})),...(includeDropoff?[{key:"dropoff",destinationId:null}]:[])];
+  return stops.slice(0,-1).map((from,index)=>{const to=stops[index+1];return {key:journeyLegKey(from.key,to.key),fromLocationKey:from.key,toLocationKey:to.key,fromDestinationId:from.destinationId,toDestinationId:to.destinationId}});
+}
 
 export function normaliseTravelPreferences(value:unknown,destinationIds:string[]):TravelPreferencesByLeg{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value as Record<string,unknown>:{};
@@ -29,7 +35,19 @@ export function normaliseTravelPreferences(value:unknown,destinationIds:string[]
   }));
 }
 
+export function normaliseCompleteTravelPreferences(value:unknown,legs:CompleteJourneyLeg[]):TravelPreferencesByLeg{
+  const source=value&&typeof value==="object"&&!Array.isArray(value)?value as Record<string,unknown>:{};
+  return Object.fromEntries(legs.flatMap(leg=>{
+    const legacyKey=leg.fromDestinationId&&leg.toDestinationId?journeyLegKey(leg.fromDestinationId,leg.toDestinationId):"";
+    const saved=source[leg.key]??(legacyKey?source[legacyKey]:undefined);
+    const item=saved&&typeof saved==="object"&&!Array.isArray(saved)?saved as Record<string,unknown>:null;
+    if(!item||!travelValues.has(String(item.travelPreference)))return [];
+    return [[leg.key,{fromDestinationId:leg.fromLocationKey,toDestinationId:leg.toLocationKey,travelPreference:item.travelPreference as TravelPreference}]];
+  }));
+}
+
 export const travelPreferenceLabel=(value:TravelPreference)=>travelPreferenceOptions.find(([key])=>key===value)?.[1]??"Let Roam Ceylon Recommend";
+export const effectiveTravelPreference=(preferences:TravelPreferencesByLeg,key:string,globalPreference:TravelPreference)=>preferences[key]?.travelPreference??globalPreference;
 
 export function recommendedTravelPreferences(travellers:number):TravelPreference[]{
   if(travellers>=16)return ["mini_coach_bus"];

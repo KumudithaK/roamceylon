@@ -1,5 +1,7 @@
 import type {DestinationPreferences} from "./journey-preferences";
 import type {TravelPreferencesByLeg} from "./travel-preferences";
+import {endpointRouteLocation,type JourneyEndpoint} from "./journey-endpoints.ts";
+import type {TravelPreference} from "./travel-preferences";
 import type {JourneyDestination,JourneyExperience,ParticipantCounts} from "@/lib/types";
 
 export type JourneyInsightSeverity="note"|"consider"|"important";
@@ -15,6 +17,9 @@ export type JourneyInsightsContext={
   experiences:JourneyExperience[];
   destinationPreferences:DestinationPreferences;
   travelPreferencesByLeg:TravelPreferencesByLeg;
+  pickup?:JourneyEndpoint;
+  dropoff?:JourneyEndpoint;
+  globalTravelPreference?:TravelPreference;
   travelDates:{start:string;end:string};
   travellerCounts:ParticipantCounts;
   budgetPreference:string;
@@ -33,14 +38,15 @@ const tripNights=(context:JourneyInsightsContext)=>{
   return Math.round((end.getTime()-start.getTime())/86_400_000);
 };
 const radians=(value:number)=>value*Math.PI/180;
-const distance=(a:JourneyDestination,b:JourneyDestination)=>{
+type LocatedInsightStop={latitude:number|null;longitude:number|null};
+const distance=(a:LocatedInsightStop,b:LocatedInsightStop)=>{
   if(!Number.isFinite(a.latitude)||!Number.isFinite(a.longitude)||!Number.isFinite(b.latitude)||!Number.isFinite(b.longitude))return 0;
   const latitude=radians(Number(b.latitude)-Number(a.latitude)),longitude=radians(Number(b.longitude)-Number(a.longitude));
   const value=Math.sin(latitude/2)**2+Math.cos(radians(Number(a.latitude)))*Math.cos(radians(Number(b.latitude)))*Math.sin(longitude/2)**2;
   return 6371*2*Math.asin(Math.sqrt(value));
 };
-const routeDistance=(route:JourneyDestination[])=>route.slice(1).reduce((total,item,index)=>total+distance(route[index],item),0);
-const efficientRouteDistance=(route:JourneyDestination[])=>{
+const routeDistance=(route:LocatedInsightStop[])=>route.slice(1).reduce((total,item,index)=>total+distance(route[index],item),0);
+const efficientRouteDistance=(route:LocatedInsightStop[])=>{
   if(route.length<3)return routeDistance(route);
   const remaining=route.slice(1),ordered=[route[0]];
   while(remaining.length){
@@ -60,7 +66,8 @@ const durationRule:JourneyInsightRule={id:"journey-duration",name:"Journey durat
 }};
 
 const routeRule:JourneyInsightRule={id:"route-optimisation",name:"Route flow",evaluate(context){
-  const route=selectedDestinations(context);
+  const destinations=selectedDestinations(context);
+  const route=[...(context.pickup?.type?[endpointRouteLocation(context.pickup,"pickup",context.destinations)]:[]),...destinations,...(context.dropoff?.type?[endpointRouteLocation(context.dropoff,"dropoff",context.destinations)]:[])];
   if(route.length<4||route.some(item=>!Number.isFinite(item.latitude)||!Number.isFinite(item.longitude)))return [];
   const current=routeDistance(route),efficient=efficientRouteDistance(route);
   return current>efficient*1.18&&current-efficient>70?[insight(this,"consider","We found a destination sequence that may reduce backtracking and make your time on the road feel easier.",{label:"Review route order",targetStep:1})]:[];
@@ -112,7 +119,7 @@ const seasonalityRule:JourneyInsightRule={id:"seasonality",name:"Seasonal condit
 const budgetRule:JourneyInsightRule={id:"budget-consistency",name:"Budget consistency",evaluate(context){
   if(context.budgetPreference!=="value_conscious")return [];
   const luxuryStay=context.selectedDestinationIds.some(id=>context.destinationPreferences[id]?.stayPreference==="five_star_resorts");
-  const premiumTravel=Object.values(context.travelPreferencesByLeg).some(item=>item.travelPreference==="domestic_floatplane");
+  const premiumTravel=context.globalTravelPreference==="domestic_floatplane"||Object.values(context.travelPreferencesByLeg).some(item=>item.travelPreference==="domestic_floatplane");
   return luxuryStay||premiumTravel?[insight(this,"consider","Some selected preferences may sit above a value-conscious journey style. Your journey designer can help keep the final proposal aligned with your priorities.",{label:"Review preferences",targetStep:3})]:[];
 }};
 

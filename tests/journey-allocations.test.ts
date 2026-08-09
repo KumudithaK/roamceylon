@@ -12,9 +12,25 @@ test("supplier allocation scopes follow destinations and consecutive route legs"
     destinationAllocationKey("guide","kandy"),
     destinationAllocationKey("accommodation","ella"),
     destinationAllocationKey("guide","ella"),
-    vehicleAllocationKey("sigiriya","kandy"),
-    vehicleAllocationKey("kandy","ella")
+    vehicleAllocationKey("destination:sigiriya","destination:kandy"),
+    vehicleAllocationKey("destination:kandy","destination:ella")
   ]);
+});
+
+test("complete route allocations include pickup and drop-off without treating endpoints as destinations",()=>{
+  const transportLegs=[
+    {fromLocationKey:"pickup",toLocationKey:"destination:sigiriya",fromDestinationId:null,toDestinationId:"sigiriya"},
+    {fromLocationKey:"destination:sigiriya",toLocationKey:"destination:kandy",fromDestinationId:"sigiriya",toDestinationId:"kandy"},
+    {fromLocationKey:"destination:kandy",toLocationKey:"dropoff",fromDestinationId:"kandy",toDestinationId:null}
+  ];
+  const vehicles=journeyAllocationScopes(["sigiriya","kandy"],[],{transportLegs}).filter(scope=>scope.type==="vehicle");
+  assert.deepEqual(vehicles.map(scope=>scope.key),[
+    vehicleAllocationKey("pickup","destination:sigiriya"),
+    vehicleAllocationKey("destination:sigiriya","destination:kandy"),
+    vehicleAllocationKey("destination:kandy","dropoff")
+  ]);
+  assert.equal(vehicles[0].fromDestinationId,null);
+  assert.equal(vehicles[2].toDestinationId,null);
 });
 
 test("experience providers become independent allocation scopes",()=>{

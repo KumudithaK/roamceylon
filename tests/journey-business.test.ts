@@ -7,7 +7,7 @@ import type {SupplierCost} from "../lib/pricing/package-types.ts";
 import {getNearbyDestinations,getRouteEstimate} from "../lib/journey/route.ts";
 import {includeExperienceSelection,removeExperienceSelection} from "../lib/journey/journey-selection.ts";
 import {guideLanguageOptions,guidePreferenceOptions,journeyGuidePreferenceOptions,normaliseDestinationPreferences,specialistGuideOptions,stayPreferenceOptions} from "../lib/journey/journey-preferences.ts";
-import {journeyLegKey,journeyLegs,normaliseTravelPreferences,recommendedTravelPreferences,travelPreferenceOptions} from "../lib/journey/travel-preferences.ts";
+import {completeJourneyLegs,effectiveTravelPreference,journeyLegKey,journeyLegs,normaliseCompleteTravelPreferences,normaliseTravelPreferences,recommendedTravelPreferences,travelPreferenceOptions} from "../lib/journey/travel-preferences.ts";
 
 test("public builder follows the seven-step preference and insights flow without supplier selectors",()=>{
   const source=readFileSync(new URL("../features/journey/journey-builder.tsx",import.meta.url),"utf8");
@@ -18,7 +18,8 @@ test("public builder follows the seven-step preference and insights flow without
   assert.doesNotMatch(source,/data\.vehicles|VehicleCard|VehicleSelectionModal/);
   assert.match(source,/selectedVehicleId:null/);
   assert.match(source,/journeyDetailsIssue/);
-  assert.match(source,/Add both arrival and departure dates to continue/);
+  assert.match(source,/Complete the journey pickup point, date and time to continue/);
+  assert.match(source,/Complete the journey drop-off point, date and time to continue/);
   assert.match(source,/Add at least one adult traveller to continue/);
 });
 
@@ -44,6 +45,27 @@ test("travel preferences follow consecutive destination legs and prune stale rou
   assert.equal(preferences.stale,undefined);
   const changed=normaliseTravelPreferences(preferences,["sigiriya","ella"]);
   assert.deepEqual(changed["sigiriya:ella"],{fromDestinationId:"sigiriya",toDestinationId:"ella",travelPreference:"recommend"});
+});
+
+test("complete journey legs cover all four pickup and drop-off route patterns",()=>{
+  const destinations=["sigiriya","kandy","ella"];
+  assert.equal(completeJourneyLegs(destinations,true,true).length,4);
+  assert.equal(completeJourneyLegs(destinations,true,false).length,3);
+  assert.equal(completeJourneyLegs(destinations,false,true).length,3);
+  assert.equal(completeJourneyLegs(destinations,false,false).length,2);
+  const full=completeJourneyLegs(destinations,true,true);
+  assert.deepEqual(full[0],{key:"pickup:destination:sigiriya",fromLocationKey:"pickup",toLocationKey:"destination:sigiriya",fromDestinationId:null,toDestinationId:"sigiriya"});
+  assert.equal(full.at(-1)?.key,"destination:ella:dropoff");
+});
+
+test("one route override leaves the global transport preference unchanged for every other leg",()=>{
+  const legs=completeJourneyLegs(["kandy","ella"],true,true);
+  const preferences=normaliseCompleteTravelPreferences({
+    [legs[1].key]:{fromDestinationId:legs[1].fromLocationKey,toDestinationId:legs[1].toLocationKey,travelPreference:"scenic_train"}
+  },legs);
+  assert.equal(effectiveTravelPreference(preferences,legs[0].key,"private_chauffeur_car_suv"),"private_chauffeur_car_suv");
+  assert.equal(effectiveTravelPreference(preferences,legs[1].key,"private_chauffeur_car_suv"),"scenic_train");
+  assert.equal(effectiveTravelPreference(preferences,legs[2].key,"private_chauffeur_car_suv"),"private_chauffeur_car_suv");
 });
 
 test("destination journey preferences expose the approved stay and guide choices",()=>{

@@ -5,6 +5,8 @@ export type AllocationScope={
   destinationId:string|null;
   fromDestinationId:string|null;
   toDestinationId:string|null;
+  fromLocationKey:string|null;
+  toLocationKey:string|null;
   guideRole:"primary"|"specialist"|"legacy_destination"|null;
   guideSpeciality:string|null;
 };
@@ -14,44 +16,47 @@ export type AllocationRequirements={
   guidePreferencesByDestination?:Record<string,string|null>;
   journeyGuidePreference?:string|null;
   specialistGuidePreferencesByDestination?:Record<string,string|null>;
+  transportLegs?:Array<{fromLocationKey:string;toLocationKey:string;fromDestinationId:string|null;toDestinationId:string|null}>;
 };
 
 export const destinationAllocationKey=(type:"accommodation"|"guide",destinationId:string)=>`${type}:${destinationId}`;
 export const journeyGuideAllocationKey="guide:journey";
 export const vehicleAllocationKey=(fromDestinationId:string,toDestinationId:string)=>`vehicle:${fromDestinationId}:${toDestinationId}`;
 export const experienceAllocationKey=(experienceId:string)=>`experience:${experienceId}`;
+const destinationLocationKey=(destinationId:string)=>`destination:${destinationId}`;
 
 export function journeyAllocationScopes(destinationIds:string[],experiences:Array<{experienceId:string;destinationId:string}>=[],requirements:AllocationRequirements={}):AllocationScope[]{
   const hasNights=Boolean(requirements.nightsByDestination);
   const hasGuidePreferences=Boolean(requirements.guidePreferencesByDestination);
   const accommodationScopes=destinationIds.filter(destinationId=>!hasNights||requirements.nightsByDestination?.[destinationId]!==0).map(destinationId=>({
-    key:destinationAllocationKey("accommodation",destinationId),type:"accommodation" as const,destinationId,fromDestinationId:null,toDestinationId:null,guideRole:null,guideSpeciality:null
+    key:destinationAllocationKey("accommodation",destinationId),type:"accommodation" as const,destinationId,fromDestinationId:null,toDestinationId:null,fromLocationKey:null,toLocationKey:null,guideRole:null,guideSpeciality:null
   }));
   const hasGlobalGuide=requirements.journeyGuidePreference!==undefined;
   const journeyGuideRequired=hasGlobalGuide?requirements.journeyGuidePreference!=="no_guide":hasGuidePreferences&&destinationIds.some(destinationId=>["national_tourist_guide","chauffeur_tourist_guide"].includes(requirements.guidePreferencesByDestination?.[destinationId]??""));
-  const journeyGuideScopes:AllocationScope[]=journeyGuideRequired?[{key:journeyGuideAllocationKey,type:"guide",destinationId:null,fromDestinationId:null,toDestinationId:null,guideRole:"primary",guideSpeciality:null}]:[];
+  const journeyGuideScopes:AllocationScope[]=journeyGuideRequired?[{key:journeyGuideAllocationKey,type:"guide",destinationId:null,fromDestinationId:null,toDestinationId:null,fromLocationKey:null,toLocationKey:null,guideRole:"primary",guideSpeciality:null}]:[];
   const destinationGuideScopes=destinationIds.filter(destinationId=>{
     if(hasGlobalGuide)return (requirements.specialistGuidePreferencesByDestination?.[destinationId]??"none")!=="none";
     if(!hasGuidePreferences)return true;
     const preference=requirements.guidePreferencesByDestination?.[destinationId]??"recommend";
     return preference!=="no_guide"&&!["national_tourist_guide","chauffeur_tourist_guide"].includes(preference);
   }).map<AllocationScope>(destinationId=>({
-    key:destinationAllocationKey("guide",destinationId),type:"guide" as const,destinationId,fromDestinationId:null,toDestinationId:null,guideRole:hasGlobalGuide?"specialist":"legacy_destination",guideSpeciality:hasGlobalGuide?requirements.specialistGuidePreferencesByDestination?.[destinationId]??null:null
+    key:destinationAllocationKey("guide",destinationId),type:"guide" as const,destinationId,fromDestinationId:null,toDestinationId:null,fromLocationKey:null,toLocationKey:null,guideRole:hasGlobalGuide?"specialist":"legacy_destination",guideSpeciality:hasGlobalGuide?requirements.specialistGuidePreferencesByDestination?.[destinationId]??null:null
   }));
   const destinationScopes=!hasNights&&!hasGuidePreferences&&!hasGlobalGuide?destinationIds.flatMap(destinationId=>([
-    {key:destinationAllocationKey("accommodation",destinationId),type:"accommodation" as const,destinationId,fromDestinationId:null,toDestinationId:null,guideRole:null,guideSpeciality:null},
-    {key:destinationAllocationKey("guide",destinationId),type:"guide" as const,destinationId,fromDestinationId:null,toDestinationId:null,guideRole:"legacy_destination" as const,guideSpeciality:null}
+    {key:destinationAllocationKey("accommodation",destinationId),type:"accommodation" as const,destinationId,fromDestinationId:null,toDestinationId:null,fromLocationKey:null,toLocationKey:null,guideRole:null,guideSpeciality:null},
+    {key:destinationAllocationKey("guide",destinationId),type:"guide" as const,destinationId,fromDestinationId:null,toDestinationId:null,fromLocationKey:null,toLocationKey:null,guideRole:"legacy_destination" as const,guideSpeciality:null}
   ])):[...accommodationScopes,...journeyGuideScopes,...destinationGuideScopes];
-  const vehicleScopes=destinationIds.slice(0,-1).map((fromDestinationId,index)=>({
-    key:vehicleAllocationKey(fromDestinationId,destinationIds[index+1]),
+  const routeLegs=requirements.transportLegs??destinationIds.slice(0,-1).map((fromDestinationId,index)=>({fromLocationKey:destinationLocationKey(fromDestinationId),toLocationKey:destinationLocationKey(destinationIds[index+1]),fromDestinationId,toDestinationId:destinationIds[index+1]}));
+  const vehicleScopes=routeLegs.map(leg=>({
+    key:vehicleAllocationKey(leg.fromLocationKey,leg.toLocationKey),
     type:"vehicle" as const,
     destinationId:null,
-    fromDestinationId,
-    toDestinationId:destinationIds[index+1],guideRole:null,guideSpeciality:null
+    fromDestinationId:leg.fromDestinationId,
+    toDestinationId:leg.toDestinationId,fromLocationKey:leg.fromLocationKey,toLocationKey:leg.toLocationKey,guideRole:null,guideSpeciality:null
   }));
   const experienceScopes=experiences.map(item=>({
     key:experienceAllocationKey(item.experienceId),type:"experience" as const,
-    destinationId:item.destinationId,fromDestinationId:null,toDestinationId:null,guideRole:null,guideSpeciality:null
+    destinationId:item.destinationId,fromDestinationId:null,toDestinationId:null,fromLocationKey:null,toLocationKey:null,guideRole:null,guideSpeciality:null
   }));
   return [...destinationScopes,...vehicleScopes,...experienceScopes];
 }

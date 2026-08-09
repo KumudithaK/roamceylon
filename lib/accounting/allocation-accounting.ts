@@ -1,6 +1,8 @@
 import "server-only";
 import {createAdminClient} from "@/lib/supabase/admin";
 import {getRouteEstimate} from "@/lib/journey/route";
+import {endpointRouteLocation} from "@/lib/journey/journey-endpoints";
+import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import {calculateAllocationCommercials,type AllocationCommercialConfig,type AllocationCommercialOverrides} from "@/lib/pricing/allocation-commercial";
 import type {Database,Json} from "@/lib/database.types";
 
@@ -17,6 +19,10 @@ export type AllocationSnapshotLine={
   fromDestinationName:string|null;
   toDestinationId:string|null;
   toDestinationName:string|null;
+  fromLocationKey:string|null;
+  fromLocationName:string|null;
+  toLocationKey:string|null;
+  toLocationName:string|null;
   resourceId:string|null;
   resourceName:string;
   pricingPlanId:string|null;
@@ -45,7 +51,7 @@ export async function allocationCommercialSnapshot(enquiryId:string,overrides:Al
   if(!database)throw new Error("Supabase server credentials are unavailable.");
   const [{data:rows,error},{data:enquiry,error:enquiryError},{data:config,error:configError}]=await Promise.all([
     database.from("journey_supplier_allocations").select("*").eq("enquiry_id",enquiryId).order("created_at"),
-    database.from("enquiries").select("selected_destinations,travel_start_date,travel_end_date").eq("id",enquiryId).maybeSingle(),
+    database.from("enquiries").select("selected_destinations,travel_start_date,travel_end_date,trip_state").eq("id",enquiryId).maybeSingle(),
     database.from("tour_pricing_config").select("*").eq("id",true).eq("active",true).maybeSingle()
   ]);
   if(error)throw new Error(error.message);
@@ -75,11 +81,14 @@ export async function allocationCommercialSnapshot(enquiryId:string,overrides:Al
   const snapshot:AllocationSnapshotLine[]=allocations.map(row=>{
     const id=resourceId(row);
     const name=id?names.get(id)??"Supplier allocation":"Supplier allocation";
+    const details=row.service_details&&typeof row.service_details==="object"&&!Array.isArray(row.service_details)?row.service_details as Record<string,Json|undefined>:{};
     return {
       allocationId:row.id,type:row.allocation_type,
       destinationId:row.destination_id,destinationName:row.destination_id?destinationNames.get(row.destination_id)??null:null,
       fromDestinationId:row.from_destination_id,fromDestinationName:row.from_destination_id?destinationNames.get(row.from_destination_id)??null:null,
       toDestinationId:row.to_destination_id,toDestinationName:row.to_destination_id?destinationNames.get(row.to_destination_id)??null:null,
+      fromLocationKey:row.from_location_key,fromLocationName:typeof details.fromLabel==="string"?details.fromLabel:row.from_destination_id?destinationNames.get(row.from_destination_id)??null:null,
+      toLocationKey:row.to_location_key,toLocationName:typeof details.toLabel==="string"?details.toLabel:row.to_destination_id?destinationNames.get(row.to_destination_id)??null:null,
       resourceId:id,resourceName:name,providerName:row.provider_name?.trim()||name,
       pricingPlanId:row.pricing_plan_id,pricingPlanSnapshot:row.pricing_plan_snapshot,
       serviceName:row.service_name,quantity:row.quantity===null?null:Number(row.quantity),quantityLabel:row.quantity_label,serviceDetails:row.service_details,
@@ -90,7 +99,11 @@ export async function allocationCommercialSnapshot(enquiryId:string,overrides:Al
   });
   const selectedDestinationIds=Array.isArray(enquiry.selected_destinations)?enquiry.selected_destinations.filter((value):value is string=>typeof value==="string"):[];
   const routeDestinations=(destinations.data??[]).map(item=>({...item,latitude:item.latitude===null?null:Number(item.latitude),longitude:item.longitude===null?null:Number(item.longitude)}));
-  const route=getRouteEstimate(routeDestinations,selectedDestinationIds);
+  const handoff=parseJourneyHandoff(enquiry.trip_state);
+  const pickup=handoff?.state.pickup.type?endpointRouteLocation(handoff.state.pickup,"pickup",routeDestinations):null;
+  const dropoff=handoff?.state.dropoff.type?endpointRouteLocation(handoff.state.dropoff,"dropoff",routeDestinations):null;
+  const completeRouteDestinations=[...routeDestinations,...(pickup?[pickup]:[]),...(dropoff?[dropoff]:[])];
+  const route=getRouteEstimate(completeRouteDestinations,[...(pickup?[pickup.id]:[]),...selectedDestinationIds,...(dropoff?[dropoff.id]:[])]);
   const start=enquiry.travel_start_date?new Date(`${enquiry.travel_start_date}T00:00:00Z`).getTime():NaN;
   const end=enquiry.travel_end_date?new Date(`${enquiry.travel_end_date}T00:00:00Z`).getTime():NaN;
   const days=Number.isFinite(start)&&Number.isFinite(end)&&end>=start?Math.max(1,Math.ceil((end-start)/86400000)+1):Math.max(1,selectedDestinationIds.length);
