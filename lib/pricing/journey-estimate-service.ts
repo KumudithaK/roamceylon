@@ -13,6 +13,7 @@ type Accommodation=Database["public"]["Tables"]["accommodations"]["Row"];
 type Vehicle=Database["public"]["Tables"]["vehicles"]["Row"];
 type Guide=Database["public"]["Tables"]["guides"]["Row"];
 type Destination=Database["public"]["Tables"]["destinations"]["Row"];
+type EstimateBand=Database["public"]["Tables"]["journey_estimate_bands"]["Row"];
 const strings=(value:Json)=>Array.isArray(value)?value.filter((item):item is string=>typeof item==="string"):[];
 const normal=(value:unknown)=>String(value??"").trim().toLowerCase().replace(/[^a-z0-9]+/g," ");
 const includesAny=(value:string,tokens:string[])=>tokens.some(token=>value.includes(token));
@@ -41,10 +42,10 @@ const guideMatches=(guide:Guide,preference:string)=>{
   return guide.nationwide&&includesAny(value,tokens[preference]??[]);
 };
 
-const accommodationCost=(plan:Plan,adults:number,nights:number,occupancy:number)=>{
-  const rooms=Math.max(1,Math.ceil(adults/Math.max(1,Number(plan.maximum_quantity)||occupancy)));
+const accommodationCost=(plan:Plan,travellers:number,billableUnits:number,nights:number,occupancy:number)=>{
+  const rooms=Math.max(1,Math.ceil(travellers/Math.max(1,Number(plan.maximum_quantity)||occupancy)));
   if(["per_night","per_room_night"].includes(plan.charging_method))return Number(plan.price)*rooms*nights;
-  if(plan.charging_method==="per_person")return Number(plan.price)*adults*nights;
+  if(plan.charging_method==="per_person")return Number(plan.price)*billableUnits*nights;
   if(plan.charging_method==="per_villa")return Number(plan.price)*nights;
   if(["fixed","private_tour"].includes(plan.charging_method))return Number(plan.price);
   return null;
@@ -57,14 +58,19 @@ const transportCost=(plan:Plan,distanceKm:number,airportLeg:boolean)=>{
 };
 const guideCost=(plan:Plan,days:number)=>["full_day","multi_day","per_day"].includes(plan.charging_method)?Number(plan.price)*days:["private_tour","custom_rate","fixed"].includes(plan.charging_method)?Number(plan.price):null;
 const experienceCost=(plan:Plan,participants:number)=>["per_person","per_entry"].includes(plan.charging_method)?Number(plan.price)*participants:["private_tour","per_trip","fixed"].includes(plan.charging_method)?Number(plan.price):null;
+const bandComponent=(bands:EstimateBand[],key:string,category:string,quantity:number):EstimateComponentBound|null=>{
+  const band=bands.find(item=>item.key===key&&item.active&&item.minimum!==null&&item.maximum!==null);
+  return band?{category,minimum:Number(band.minimum)*quantity,maximum:Number(band.maximum)*quantity}:null;
+};
 
 export class JourneyEstimateService{
   async estimate(request:JourneyEstimateRequest):Promise<PublicJourneyEstimate>{
     const database=createAdminClient();
     if(!database)throw new PackagePricingError("CONFIGURATION","Server-side Supabase credentials are unavailable.");
-    const durationDays=duration(request.travelDates.start,request.travelDates.end),tripNights=Math.max(0,durationDays-1),adults=request.travellerCounts.adults;
-    const [configResult,destinationResult,experienceResult,experienceDestinationLinksResult,accommodationResult,vehicleResult,guideResult,vehicleLinksResult,guideDestinationLinksResult,guideExperienceLinksResult]=await Promise.all([
+    const durationDays=duration(request.travelDates.start,request.travelDates.end),tripNights=Math.max(0,durationDays-1),adults=request.travellerCounts.adults,children=request.travellerCounts.children,travellers=adults+children;
+    const [configResult,bandsResult,destinationResult,experienceResult,experienceDestinationLinksResult,accommodationResult,vehicleResult,guideResult,vehicleLinksResult,guideDestinationLinksResult,guideExperienceLinksResult]=await Promise.all([
       database.from("tour_pricing_config").select("*").eq("id",true).eq("active",true).single(),
+      database.from("journey_estimate_bands").select("*").eq("active",true).order("sort_order"),
       request.selectedDestinationIds.length?database.from("destinations").select("*").in("id",request.selectedDestinationIds).eq("status","published").eq("active",true):Promise.resolve({data:[],error:null}),
       request.selectedExperienceIds.length?database.from("experiences").select("id").in("id",request.selectedExperienceIds).eq("status","published").eq("active",true):Promise.resolve({data:[],error:null}),
       request.selectedExperienceIds.length?database.from("experience_destinations").select("experience_id,destination_id").in("experience_id",request.selectedExperienceIds):Promise.resolve({data:[],error:null}),
@@ -75,7 +81,7 @@ export class JourneyEstimateService{
       database.from("guide_destinations").select("guide_id,destination_id"),
       database.from("guide_experiences").select("guide_id,experience_id")
     ]);
-    const firstError=[configResult,destinationResult,experienceResult,experienceDestinationLinksResult,accommodationResult,vehicleResult,guideResult,vehicleLinksResult,guideDestinationLinksResult,guideExperienceLinksResult].find(result=>result.error)?.error;
+    const firstError=[configResult,bandsResult,destinationResult,experienceResult,experienceDestinationLinksResult,accommodationResult,vehicleResult,guideResult,vehicleLinksResult,guideDestinationLinksResult,guideExperienceLinksResult].find(result=>result.error)?.error;
     if(firstError)throw new PackagePricingError("DATABASE",firstError.message);
     if(!configResult.data)throw new PackagePricingError("CONFIGURATION","Tour pricing configuration is unavailable.");
     const destinations=(destinationResult.data??[]) as Destination[],experiences=experienceResult.data??[],accommodations=(accommodationResult.data??[]) as Accommodation[],vehicles=(vehicleResult.data??[]) as Vehicle[],guides=(guideResult.data??[]) as Guide[];
@@ -83,7 +89,7 @@ export class JourneyEstimateService{
     const supplierIds=[...accommodations.map(item=>item.id),...vehicles.map(item=>item.id),...guides.map(item=>item.id),...request.selectedExperienceIds];
     const plansResult=supplierIds.length?await database.from("pricing_plans").select("*").in("entity_id",supplierIds).eq("active",true).order("sort_order"):({data:[],error:null});
     if(plansResult.error)throw new PackagePricingError("DATABASE",plansResult.error.message);
-    const plans=(plansResult.data??[]) as Plan[],config=mapPricingConfig(configResult.data),components:EstimateComponentBound[]=[],unavailable:string[]=[];
+    const plans=(plansResult.data??[]) as Plan[],bands=(bandsResult.data??[]) as EstimateBand[],config=mapPricingConfig(configResult.data),billableUnits=adults+children*config.childCostFactor,components:EstimateComponentBound[]=[],unavailable:string[]=[];
     if(!durationDays)unavailable.push("complete travel dates");
     const plannedNights=request.selectedDestinationIds.map(id=>request.destinationPreferences[id]?.nights);
     if(plannedNights.some(value=>value===null||value===undefined)||plannedNights.reduce<number>((sum,value)=>sum+Number(value),0)!==tripNights)unavailable.push("nights allocated across the journey");
@@ -92,9 +98,10 @@ export class JourneyEstimateService{
       const preference=request.destinationPreferences[destinationId],nights=preference?.nights;
       if(nights===null||nights===undefined||nights===0)continue;
       const candidates=accommodations.filter(item=>item.destination_id===destinationId&&stayMatches(item,preference.stayPreference));
-      const values=candidates.flatMap(item=>plansFor(plans,"accommodation",item.id,config.currency).flatMap(plan=>{const value=accommodationCost(plan,adults,nights,config.roomOccupancy);return value===null?[]:[value]}));
+      const values=candidates.flatMap(item=>plansFor(plans,"accommodation",item.id,config.currency).flatMap(plan=>{const value=accommodationCost(plan,travellers,billableUnits,nights,config.roomOccupancy);return value===null?[]:[value]}));
       const component=bounds(`Accommodation in ${destinations.find(item=>item.id===destinationId)?.name??"destination"}`,values);
-      if(component)components.push(component);else unavailable.push(`accommodation rates for ${destinationId}`);
+      const fallback=bandComponent(bands,`stay:${preference.stayPreference}`,`Accommodation in ${destinations.find(item=>item.id===destinationId)?.name??"destination"}`,billableUnits*nights);
+      if(component)components.push(component);else if(fallback)components.push(fallback);else unavailable.push(`accommodation planning range for ${preference.stayPreference}`);
     }
 
     for(const experienceId of request.selectedExperienceIds){
@@ -103,7 +110,8 @@ export class JourneyEstimateService{
       const counts=request.experienceParticipants[experienceId],participants=counts?counts.adults+counts.children+counts.infants:adults;
       const values=applicable.flatMap(plan=>{const value=experienceCost(plan,participants);return value===null?[]:[value]});
       const component=bounds(`Experience ${experienceId}`,values);
-      if(component)components.push(component);else unavailable.push(`selected ticket pricing for ${experienceId}`);
+      const fallback=bandComponent(bands,"experience:default",`Experience ${experienceId}`,Math.max(1,participants));
+      if(component)components.push(component);else if(fallback)components.push(fallback);else unavailable.push(`selected ticket pricing for ${experienceId}`);
     }
 
     const destinationMap=new Map(destinations.map(item=>[item.id,item]));
@@ -117,10 +125,11 @@ export class JourneyEstimateService{
       if(!from||!to||!Number.isFinite(from.latitude)||!Number.isFinite(from.longitude)||!Number.isFinite(to.latitude)||!Number.isFinite(to.longitude)){unavailable.push(`route distance for ${leg.key}`);continue}
       const distanceKm=getRouteEstimate([from,to],[from.id,to.id]).estimatedDistance;totalRouteDistance+=distanceKm;
       const relevantDestinations=[leg.fromDestinationId,leg.toDestinationId].filter((id):id is string=>Boolean(id));
-      const candidates=vehicles.filter(vehicle=>vehicleMatches(vehicle,preference,adults)&& (vehicle.nationwide||relevantDestinations.every(id=>vehicleDestinationIds(vehicle.id).includes(id))));
+      const candidates=vehicles.filter(vehicle=>vehicleMatches(vehicle,preference,travellers)&& (vehicle.nationwide||relevantDestinations.every(id=>vehicleDestinationIds(vehicle.id).includes(id))));
       const values=candidates.flatMap(vehicle=>plansFor(plans,"vehicle",vehicle.id,config.currency).flatMap(plan=>{const value=transportCost(plan,distanceKm,leg.fromLocationKey==="pickup"||leg.toLocationKey==="dropoff");return value===null?[]:[value]}));
       const component=bounds(`Transport ${leg.key}`,values);
-      if(component)components.push(component);else unavailable.push(`transport rates for ${preference}`);
+      const fallback=bandComponent(bands,`transport:${preference}`,`Transport ${leg.key}`,1);
+      if(component)components.push(component);else if(fallback)components.push(fallback);else unavailable.push(`transport planning range for ${preference}`);
       if(["private_chauffeur_car_suv","high_roof_van","mini_coach_bus","tuk_tuk","recommend"].includes(preference))chauffeurLegs+=1;
     }
 
@@ -129,7 +138,7 @@ export class JourneyEstimateService{
     if(request.journeyGuidePreference!=="no_guide"){
       const candidates=guides.filter(guide=>guideMatches(guide,request.journeyGuidePreference));
       const values=candidates.flatMap(guide=>plansFor(plans,"guide",guide.id,config.currency).flatMap(plan=>{const value=guideCost(plan,Math.max(1,durationDays));return value===null?[]:[value]}));
-      const component=bounds("Primary guide",values);if(component)components.push(component);else unavailable.push(`guide rates for ${request.journeyGuidePreference}`);
+      const component=bounds("Primary guide",values),fallback=bandComponent(bands,`guide:${request.journeyGuidePreference}`,"Primary guide",Math.max(1,durationDays));if(component)components.push(component);else if(fallback)components.push(fallback);else unavailable.push(`guide planning range for ${request.journeyGuidePreference}`);
     }
     for(const destinationId of request.selectedDestinationIds){
       const specialist=request.destinationPreferences[destinationId]?.specialistGuidePreference??"none";
@@ -138,7 +147,7 @@ export class JourneyEstimateService{
       const candidates=guides.filter(guide=>guide.nationwide||guideDestinationIds(guide.id).includes(destinationId)||guideExperienceIds(guide.id).some(id=>selectedAtDestination.includes(id)));
       const days=Math.max(1,Number(request.destinationPreferences[destinationId]?.nights)||1);
       const values=candidates.flatMap(guide=>plansFor(plans,"guide",guide.id,config.currency).flatMap(plan=>{const value=guideCost(plan,days);return value===null?[]:[value]}));
-      const component=bounds(`Specialist guide ${destinationId}`,values);if(component)components.push(component);else unavailable.push(`specialist guide rates for ${destinationId}`);
+      const component=bounds(`Specialist guide ${destinationId}`,values),fallback=bandComponent(bands,"guide:specialist",`Specialist guide ${destinationId}`,days);if(component)components.push(component);else if(fallback)components.push(fallback);else unavailable.push(`specialist guide planning range for ${destinationId}`);
     }
 
     let operationsCost=0;

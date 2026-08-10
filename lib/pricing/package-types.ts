@@ -42,6 +42,8 @@ export type DmcPricingConfig={
   serviceFeeFixed:number|null;
   serviceFeePercent:number|null;
   targetProfitMarginPercent:number|null;
+  estimateLowerBufferPercent?:number;
+  estimateUpperBufferPercent?:number;
 };
 
 export type PricingAdjustment={

@@ -6,6 +6,7 @@ import {experienceAllocationKey,hasOwnJourneyGuideSnapshot,journeyAllocationScop
 import {endpointLabel} from "@/lib/journey/journey-endpoints";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import {completeJourneyLegs} from "@/lib/journey/travel-preferences";
+import {reviewProposalAgainstEstimate} from "./proposal-range-review";
 import type {Database,Json} from "@/lib/database.types";
 
 type Proposal=Database["public"]["Tables"]["journey_proposals"]["Row"];
@@ -19,7 +20,7 @@ export class ProposalError extends Error{
   constructor(public code:"NOT_FOUND"|"INCOMPLETE"|"DATABASE",message:string){super(message);this.name="ProposalError"}
 }
 
-export async function generateJourneyProposal(enquiryId:string,userId:string,details:{introduction?:string;terms?:string;validUntil?:string;commercialOverrides?:AllocationCommercialOverrides}){
+export async function generateJourneyProposal(enquiryId:string,userId:string,details:{introduction?:string;terms?:string;validUntil?:string;rangeOverrideReason?:string;commercialOverrides?:AllocationCommercialOverrides}){
   const database=createAdminClient();
   if(!database)throw new ProposalError("DATABASE","Supabase server credentials are unavailable.");
   const {data:enquiry,error}=await database.from("enquiries").select("*").eq("id",enquiryId).maybeSingle();
@@ -71,13 +72,15 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
   const {error:supersedeError}=await database.from("journey_proposals").update({status:"superseded"}).eq("enquiry_id",enquiryId).in("status",["ready","sent"]);
   if(supersedeError)throw new ProposalError("DATABASE",supersedeError.message);
   const activeSnapshot=commercial.snapshot.filter(line=>line.confirmationStatus!=="cancelled");
+  const rangeReview=reviewProposalAgainstEstimate(handoff?.quote??enquiry.estimate_snapshot,commercial.summary.totalSellingPrice,details.rangeOverrideReason);
+  if(rangeReview.status==="outside_range"&&(!rangeReview.reason||rangeReview.reason.length<10))throw new ProposalError("INCOMPLETE",`This proposal is outside the traveller's submitted planning range (${rangeReview.currency} ${rangeReview.estimateTotalMin?.toLocaleString()}–${rangeReview.estimateTotalMax?.toLocaleString()}). Add a clear internal explanation before generating it.`);
   const {data:proposal,error:proposalError}=await database.from("journey_proposals").insert({
     enquiry_id:enquiryId,version,proposal_reference:reference,status:"ready",
     currency:activeSnapshot[0]?.currency??"USD",total_supplier_cost:commercial.summary.totalSupplierCost,
     total_selling_price:commercial.summary.totalSellingPrice,gross_profit:commercial.summary.grossProfit,
     profit_margin:commercial.summary.profitMargin,introduction:details.introduction||null,
     terms:details.terms||null,valid_until:details.validUntil||null,
-    allocation_snapshot:asJson(activeSnapshot),commercial_snapshot:asJson({summary:commercial.summary,context:commercial.commercialContext}),created_by:userId
+    allocation_snapshot:asJson(activeSnapshot),commercial_snapshot:asJson({summary:commercial.summary,context:commercial.commercialContext,rangeReview}),created_by:userId
   }).select("*").single();
   if(proposalError||!proposal)throw new ProposalError("DATABASE",proposalError?.message??"The proposal could not be generated.");
   const {error:statusError}=await database.from("enquiries").update({status:"preparing_proposal"}).eq("id",enquiryId);

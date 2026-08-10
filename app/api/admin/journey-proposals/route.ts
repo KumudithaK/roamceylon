@@ -5,7 +5,7 @@ import {generateJourneyProposal,ProposalError,transitionJourneyProposal} from "@
 
 const generateSchema=z.object({
   action:z.literal("generate"),enquiryId:z.uuid(),
-  introduction:z.string().trim().max(3000).optional(),terms:z.string().trim().max(5000).optional(),validUntil:z.iso.date().optional(),
+  introduction:z.string().trim().max(3000).optional(),terms:z.string().trim().max(5000).optional(),validUntil:z.iso.date().optional(),rangeOverrideReason:z.string().trim().max(1500).optional(),
   commercialOverrides:z.object({
     driverOperations:z.number().min(0).nullable().optional(),fuel:z.number().min(0).nullable().optional(),tolls:z.number().min(0).nullable().optional(),
     parking:z.number().min(0).nullable().optional(),guideAccommodation:z.number().min(0).nullable().optional(),administration:z.number().min(0).nullable().optional(),contingency:z.number().min(0).nullable().optional()

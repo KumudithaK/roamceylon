@@ -9,15 +9,17 @@ import {createClient} from "@/lib/supabase/client";
 import type {Database} from "@/lib/database.types";
 
 type Config=Database["public"]["Tables"]["tour_pricing_config"]["Row"];
+type EstimateBand=Database["public"]["Tables"]["journey_estimate_bands"]["Row"];
 type NumericKey=Exclude<{
   [Key in keyof Config]:Config[Key] extends number|null?Key:never
 }[keyof Config],undefined>;
-type Section="calculation"|"operations"|"fees";
+type Section="calculation"|"operations"|"fees"|"estimates";
 
 const sections:Array<{id:Section;label:string;description:string}>=[
   {id:"calculation",label:"Calculation",description:"Currency, occupancy and route assumptions"},
   {id:"operations",label:"Operations",description:"Internal transport and guide costs"},
-  {id:"fees",label:"Fees & Margin",description:"Overheads, contingency and selling margin"}
+  {id:"fees",label:"Fees & Margin",description:"Overheads, contingency and selling margin"},
+  {id:"estimates",label:"Public Estimates",description:"Planning ranges shown during journey design"}
 ];
 
 const requiredFields:NumericKey[]=[
@@ -31,6 +33,7 @@ const requiredFields:NumericKey[]=[
 export function BusinessPricingSettings(){
   const router=useRouter();
   const [config,setConfig]=useState<Config|null>(null);
+  const [bands,setBands]=useState<EstimateBand[]>([]);
   const [section,setSection]=useState<Section>("calculation");
   const [message,setMessage]=useState("");
   const [saving,setSaving]=useState(false);
@@ -39,10 +42,11 @@ export function BusinessPricingSettings(){
     const database=createClient();
     const {data:{session}}=await database.auth.getSession();
     if(!session){router.replace("/admin/login");return}
-    const {data,error}=await database.from("tour_pricing_config").select("*").eq("id",true).maybeSingle();
-    if(error){setMessage(error.message);return}
+    const [{data,error},{data:bandData,error:bandError}]=await Promise.all([database.from("tour_pricing_config").select("*").eq("id",true).maybeSingle(),database.from("journey_estimate_bands").select("*").order("sort_order")]);
+    if(error||bandError){setMessage(error?.message??bandError?.message??"Pricing settings could not be loaded.");return}
     if(!data){setMessage("Business pricing has not been initialized. Apply the latest Supabase migrations first.");return}
     setConfig(data);
+    setBands(bandData??[]);
   })()},[router]);
 
   const setNumber=(key:NumericKey,input:string)=>{
@@ -57,14 +61,19 @@ export function BusinessPricingSettings(){
     if(config.room_occupancy<1){setMessage("Room occupancy must be at least 1.");return}
     if(config.child_cost_factor<0||config.child_cost_factor>1){setMessage("Child cost factor must be between 0 and 1.");return}
     if(config.target_profit_margin_percent!>=100){setMessage("Target profit margin must be below 100%.");return}
+    if(config.estimate_lower_buffer_percent<0||config.estimate_lower_buffer_percent>=100||config.estimate_upper_buffer_percent<0){setMessage("Estimate buffers must be valid non-negative percentages; the lower buffer must remain below 100%.");return}
+    const invalidBand=bands.find(item=>item.active&&(item.minimum===null||item.maximum===null||item.minimum<0||item.maximum<item.minimum));
+    if(invalidBand){setMessage(`Complete a valid minimum and maximum for ${invalidBand.label}.`);return}
     setSaving(true);setMessage("");
     const database=createClient();
     const {data:{user}}=await database.auth.getUser();
     const {id,updated_at,updated_by,...changes}=config;void id;void updated_at;void updated_by;
     const {data,error}=await database.from("tour_pricing_config").update({...changes,active:true,updated_by:user?.id??null}).eq("id",true).select("*").single();
+    const bandChanges=bands.map(band=>({key:band.key,category:band.category,label:band.label,minimum:band.minimum,maximum:band.maximum,unit:band.unit,active:band.active,sort_order:band.sort_order,notes:band.notes,updated_by:user?.id??band.updated_by}));
+    const {error:bandsError}=error?{error:null}:await database.from("journey_estimate_bands").upsert(bandChanges,{onConflict:"key"});
     setSaving(false);
-    if(error){setMessage(error.message);return}
-    setConfig(data);setMessage("Business pricing settings saved. Journey prices will now use these values.");
+    if(error||bandsError){setMessage(error?.message??bandsError?.message??"Pricing settings could not be saved.");return}
+    setConfig(data);setMessage("Business pricing and public planning assumptions saved.");
   };
 
   if(!config)return <main className="grid min-h-screen place-items-center bg-[#f4f3ef]"><p className="max-w-xl px-6 text-center text-stone">{message||"Loading business pricing…"}</p></main>;
@@ -77,7 +86,12 @@ export function BusinessPricingSettings(){
       <section className="rounded-3xl border border-stone/15 bg-white p-6 md:p-8">
         {section==="calculation"&&<Calculation config={config} setConfig={setConfig} setNumber={setNumber}/>}
         {section==="operations"&&<Operations config={config} setNumber={setNumber}/>}
-        {section==="fees"&&<Fees config={config} setNumber={setNumber}/>}
+        {section==="fees"&&(
+          <Fees config={config} setNumber={setNumber}/>
+        )}
+        {section==="estimates"&&(
+          <PublicEstimates config={config} setNumber={setNumber} bands={bands} setBands={setBands}/>
+        )}
       </section>
     </div>
   </div></main>;
@@ -92,6 +106,19 @@ function Operations({config,setNumber}:NumbersProps){
 }
 function Fees({config,setNumber}:NumbersProps){
   return <><Heading title="Fees and target margin" text="Combine fixed and percentage amounts to match Roam Ceylon’s commercial model. Enter 0 when a fee does not apply."/><Grid><Money label="Administration fee (fixed)" field="administration_fixed" {...{config,setNumber}}/><Percent label="Administration fee (%)" field="administration_percent" {...{config,setNumber}}/><Percent label="Contingency (%)" field="contingency_percent" {...{config,setNumber}}/><Money label="Roam Ceylon service fee (fixed)" field="service_fee_fixed" {...{config,setNumber}}/><Percent label="Roam Ceylon service fee (%)" field="service_fee_percent" {...{config,setNumber}}/><Percent label="Target profit margin (%)" field="target_profit_margin_percent" max={99.99} {...{config,setNumber}}/></Grid></>;
+}
+function PublicEstimates({config,setNumber,bands,setBands}:NumbersProps&{bands:EstimateBand[];setBands:(value:EstimateBand[])=>void}){
+  const update=(key:string,changes:Partial<EstimateBand>)=>setBands(bands.map(item=>item.key===key?{...item,...changes}:item));
+  const groups:Array<{category:EstimateBand["category"];title:string;description:string}>=[
+    {category:"stay",title:"Stay preferences",description:"Cost per billable traveller, per night."},
+    {category:"transport",title:"Travel preferences",description:"Cost for one journey leg."},
+    {category:"guide",title:"Guide preferences",description:"Cost per guide service day."},
+    {category:"experience",title:"Experience fallback",description:"Cost per participant when a selected ticket does not yet have a usable rate."}
+  ];
+  return <><Heading title="Public journey estimates" text="These confidential planning assumptions fill ordinary catalogue gaps while the traveller designs a journey. Published supplier rates are always preferred. They do not set proposal or Accounting prices."/>
+    <div className="mt-6 rounded-2xl border border-gold/20 bg-sand-light p-5"><strong className="font-serif text-xl">Planning envelope</strong><p className="mt-2 text-xs leading-5 text-stone">A modest envelope keeps a live estimate honest while availability is still unconfirmed.</p><Grid><Percent label="Lower range buffer (%)" field="estimate_lower_buffer_percent" max={99.99} {...{config,setNumber}}/><Percent label="Upper range buffer (%)" field="estimate_upper_buffer_percent" {...{config,setNumber}}/></Grid></div>
+    <div className="mt-7 grid gap-6">{groups.map(group=><section key={group.category}><div><h3 className="font-serif text-xl">{group.title}</h3><p className="mt-1 text-xs text-stone">{group.description}</p></div><div className="mt-3 overflow-hidden rounded-2xl border border-stone/15">{bands.filter(item=>item.category===group.category).map(item=><div key={item.key} className="grid gap-3 border-b border-stone/15 p-4 last:border-0 md:grid-cols-[1.4fr_.8fr_.8fr_auto] md:items-end"><div><strong className="block text-sm">{item.label}</strong><span className="text-xs text-stone">{item.unit.replaceAll("_"," ")} · {config.currency}</span></div><Field label="Minimum"><input type="number" min="0" step=".01" value={item.minimum??""} onChange={event=>update(item.key,{minimum:event.target.value===""?null:Number(event.target.value)})}/></Field><Field label="Maximum"><input type="number" min="0" step=".01" value={item.maximum??""} onChange={event=>update(item.key,{maximum:event.target.value===""?null:Number(event.target.value)})}/></Field><label className="flex items-center gap-2 pb-3 text-sm font-semibold"><input type="checkbox" checked={item.active} onChange={event=>update(item.key,{active:event.target.checked})}/> Use fallback</label></div>)}</div></section>)}</div>
+  </>;
 }
 
 function Money({label,field,config,setNumber}:{label:string;field:NumericKey}&NumbersProps){return <Field label={label} help={`Amount in ${config.currency}.`}><input type="number" min="0" step=".01" value={config[field]??""} onChange={event=>setNumber(field,event.target.value)}/></Field>}

@@ -30,7 +30,9 @@ export const mapPricingConfig=(row:ConfigRow):DmcPricingConfig=>({
   contingencyPercent:numberOrNull(row.contingency_percent),
   serviceFeeFixed:numberOrNull(row.service_fee_fixed),
   serviceFeePercent:numberOrNull(row.service_fee_percent),
-  targetProfitMarginPercent:numberOrNull(row.target_profit_margin_percent)
+  targetProfitMarginPercent:numberOrNull(row.target_profit_margin_percent),
+  estimateLowerBufferPercent:Number(row.estimate_lower_buffer_percent),
+  estimateUpperBufferPercent:Number(row.estimate_upper_buffer_percent)
 });
 const unitFor=(row:CostRow):SupplierCost["unit"]=>{
   if(["per_night","per_room_night","per_villa"].includes(row.charging_method))return "per_room_night";
