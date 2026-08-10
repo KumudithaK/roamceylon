@@ -7,6 +7,7 @@ import {mapPricingConfig,PackagePricingError} from "./package-service";
 import {calculateJourneyEstimateRange,type EstimateComponentBound} from "./journey-estimate-engine";
 import type {JourneyEstimateRequest,PublicJourneyEstimate} from "./journey-estimate-types";
 import type {Database,Json} from "@/lib/database.types";
+import {allocatePlanningNights} from "./journey-estimate-nights";
 
 type Plan=Database["public"]["Tables"]["pricing_plans"]["Row"];
 type Accommodation=Database["public"]["Tables"]["accommodations"]["Row"];
@@ -91,17 +92,21 @@ export class JourneyEstimateService{
     if(plansResult.error)throw new PackagePricingError("DATABASE",plansResult.error.message);
     const plans=(plansResult.data??[]) as Plan[],bands=(bandsResult.data??[]) as EstimateBand[],config=mapPricingConfig(configResult.data),billableUnits=adults+children*config.childCostFactor,components:EstimateComponentBound[]=[],unavailable:string[]=[];
     if(!durationDays)unavailable.push("complete travel dates");
-    const plannedNights=request.selectedDestinationIds.map(id=>request.destinationPreferences[id]?.nights);
-    if(plannedNights.some(value=>value===null||value===undefined)||plannedNights.reduce<number>((sum,value)=>sum+Number(value),0)!==tripNights)unavailable.push("nights allocated across the journey");
+    const planningNights=allocatePlanningNights(request.selectedDestinationIds,request.destinationPreferences,tripNights);
+    if(planningNights.exceedsJourney)unavailable.push("planned nights within the journey duration");
 
     for(const destinationId of request.selectedDestinationIds){
-      const preference=request.destinationPreferences[destinationId],nights=preference?.nights;
-      if(nights===null||nights===undefined||nights===0)continue;
+      const preference=request.destinationPreferences[destinationId],nights=planningNights.nightsByDestination[destinationId]??0;
+      if(nights===0)continue;
       const candidates=accommodations.filter(item=>item.destination_id===destinationId&&stayMatches(item,preference.stayPreference));
       const values=candidates.flatMap(item=>plansFor(plans,"accommodation",item.id,config.currency).flatMap(plan=>{const value=accommodationCost(plan,travellers,billableUnits,nights,config.roomOccupancy);return value===null?[]:[value]}));
       const component=bounds(`Accommodation in ${destinations.find(item=>item.id===destinationId)?.name??"destination"}`,values);
       const fallback=bandComponent(bands,`stay:${preference.stayPreference}`,`Accommodation in ${destinations.find(item=>item.id===destinationId)?.name??"destination"}`,billableUnits*nights);
       if(component)components.push(component);else if(fallback)components.push(fallback);else unavailable.push(`accommodation planning range for ${preference.stayPreference}`);
+    }
+    if(planningNights.unallocatedNights){
+      const fallback=bandComponent(bands,"stay:recommend","Accommodation nights open for recommendation",billableUnits*planningNights.unallocatedNights);
+      if(fallback)components.push(fallback);else unavailable.push("accommodation planning range for open nights");
     }
 
     for(const experienceId of request.selectedExperienceIds){

@@ -27,6 +27,10 @@ The starter ranges were informed by published 2025–2026 Sri Lankan market exam
 
 Children now use the existing confidential child-cost factor for stay planning and are included in the public per-person denominator. Infants retain the careful fallback until a verified infant-pricing rule is introduced.
 
+## Optional night planning correction
+
+The public UI intentionally allows travellers to leave destination nights open for Roam Ceylon to recommend. The estimator previously contradicted that behaviour by requiring every night to be manually allocated. Open nights are now distributed across the selected destinations for estimation only. Explicit traveller choices remain unchanged, and any remaining unallocated nights use the general stay-planning band. A plan whose explicit nights exceed the journey duration remains invalid.
+
 ## Proposal safeguard
 
 Every newly generated proposal is compared with the immutable estimate snapshot submitted by the traveller:
@@ -44,7 +48,7 @@ This safeguard does not modify supplier allocation, exact proposal pricing, Acco
 - Supabase migration `202608100001_journey_estimate_planning_bands.sql` applied remotely.
 - TypeScript compilation passed.
 - Targeted ESLint passed.
-- 97 automated tests passed.
+- 102 automated tests passed.
 - Next.js production build passed with all 38 static pages generated.
 
 ## Required review before launch
