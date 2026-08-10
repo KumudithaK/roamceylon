@@ -68,7 +68,7 @@ export class JourneyEstimateService{
   async estimate(request:JourneyEstimateRequest):Promise<PublicJourneyEstimate>{
     const database=createAdminClient();
     if(!database)throw new PackagePricingError("CONFIGURATION","Server-side Supabase credentials are unavailable.");
-    const durationDays=duration(request.travelDates.start,request.travelDates.end),tripNights=Math.max(0,durationDays-1),adults=request.travellerCounts.adults,children=request.travellerCounts.children,travellers=adults+children;
+    const durationDays=duration(request.travelDates.start,request.travelDates.end),tripNights=Math.max(0,durationDays-1),adults=request.travellerCounts.adults,children=request.travellerCounts.children,infants=request.travellerCounts.infants,travellers=adults+children+infants;
     const [configResult,bandsResult,destinationResult,experienceResult,experienceDestinationLinksResult,accommodationResult,vehicleResult,guideResult,vehicleLinksResult,guideDestinationLinksResult,guideExperienceLinksResult]=await Promise.all([
       database.from("tour_pricing_config").select("*").eq("id",true).eq("active",true).single(),
       database.from("journey_estimate_bands").select("*").eq("active",true).order("sort_order"),
@@ -164,6 +164,6 @@ export class JourneyEstimateService{
     if(request.journeyGuidePreference!=="no_guide"){
       if(config.guideAccommodationPerNight===null)unavailable.push("guide accommodation costs");else operationsCost+=config.guideAccommodationPerNight*tripNights;
     }
-    return calculateJourneyEstimateRange({currency:config.currency,durationDays,adults,children:request.travellerCounts.children,infants:request.travellerCounts.infants,components,operationsCost,config,factors:["Journey duration","Accommodation style","Experiences","Transport preferences","Guide preferences","Number of travellers","Travel period"],unavailableInputs:unavailable});
+    return calculateJourneyEstimateRange({currency:config.currency,durationDays,adults,children,infants,components,operationsCost,config,factors:["Journey duration","Accommodation style","Experiences","Transport preferences","Guide preferences","Number of travellers","Travel period"],unavailableInputs:unavailable});
   }
 }

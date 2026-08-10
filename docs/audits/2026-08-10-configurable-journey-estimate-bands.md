@@ -25,7 +25,7 @@ The starter ranges were informed by published 2025–2026 Sri Lankan market exam
 
 ## Family handling
 
-Children now use the existing confidential child-cost factor for stay planning and are included in the public per-person denominator. Infants retain the careful fallback until a verified infant-pricing rule is introduced.
+Children use the existing confidential child-cost factor for stay planning. Infants no longer suppress an otherwise valid estimate: they are included in capacity and per-traveller presentation, while accommodation fallback costs continue to use adult and child billable units rather than automatically pricing an infant as an adult. Exact supplier ticket rules still take priority whenever a selected published rate is available.
 
 ## Optional night planning correction
 
@@ -43,12 +43,16 @@ Every newly generated proposal is compared with the immutable estimate snapshot 
 
 This safeguard does not modify supplier allocation, exact proposal pricing, Accounting, or the Phase 10 proposal design.
 
+## Journey-specific supplier rates
+
+Admin supplier allocation now distinguishes a saved catalogue rate from an explicitly selected **Custom journey rate**. A custom rate requires a service name, positive quantity, billing unit and supplier cost, and is stored only in that journey allocation snapshot. It does not alter the vehicle or supplier catalogue. Existing saved rates remain the default and cannot be bypassed accidentally by typing an operator name.
+
 ## Verification
 
 - Supabase migration `202608100001_journey_estimate_planning_bands.sql` applied remotely.
 - TypeScript compilation passed.
 - Targeted ESLint passed.
-- 102 automated tests passed.
+- 102 automated tests passed for the initial estimate-band release. The infant and custom-rate correction adds focused regression coverage and is verified again in the project test suite.
 - Next.js production build passed with all 38 static pages generated.
 
 ## Required review before launch

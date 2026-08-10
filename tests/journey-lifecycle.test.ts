@@ -75,3 +75,12 @@ test("allocation editors initialise complete controlled drafts before matching s
   assert.match(workspace,/value=\{draft\.providerName\?\?""\}/);
   assert.match(workspace,/value=\{draft\.currency\?\?"USD"\}/);
 });
+
+test("saved suppliers can use a one-off journey rate without changing catalogue pricing",()=>{
+  const route=read("../app/api/admin/journey-allocations/route.ts");
+  const workspace=read("../features/admin/journey-lifecycle-workspace.tsx");
+  assert.match(route,/usesCustomJourneyRate/);
+  assert.match(route,/completeCustomJourneyRate/);
+  assert.match(workspace,/Custom journey rate/);
+  assert.match(workspace,/does not change the supplier&apos;s catalogue pricing/);
+});

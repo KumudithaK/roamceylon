@@ -4,6 +4,7 @@ import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
 import {syncAllocationAccounting} from "@/lib/accounting/allocation-accounting";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import {completeJourneyLegs} from "@/lib/journey/travel-preferences";
+import {completeCustomJourneyRate,usesCustomJourneyRate} from "@/lib/admin/allocation-rate";
 import type {Database,Json} from "@/lib/database.types";
 
 const allocationSchema=z.object({
@@ -95,10 +96,11 @@ export async function POST(request:Request){
   for(const row of allocations){
     const entityId=entityFor(row);const available=plans.filter(plan=>plan.entity_type===row.allocationType&&plan.entity_id===entityId);
     const plan=row.pricingPlanId?available.find(item=>item.id===row.pricingPlanId):null;
+    const customRate=usesCustomJourneyRate(row.serviceDetails);
     if(row.pricingPlanId&&!plan)return NextResponse.json({error:"The selected rate is inactive or does not belong to this supplier."},{status:400});
-    if(available.length&&!plan)return NextResponse.json({error:`Choose a saved ${row.allocationType} rate before saving this allocation.`},{status:400});
+    if(available.length&&!plan&&!customRate)return NextResponse.json({error:`Choose a saved ${row.allocationType} rate or select Custom journey rate before saving this allocation.`},{status:400});
     if(plan&&!row.quantity)return NextResponse.json({error:`Enter the billable quantity for ${plan.name}.`},{status:400});
-    if(!plan&&(!row.serviceName||row.supplierCost===null||!row.quantity||!row.quantityLabel))return NextResponse.json({error:`Enter a custom service name, quantity, billing unit and supplier cost for this ${row.allocationType} allocation.`},{status:400});
+    if(!plan&&!completeCustomJourneyRate({serviceName:row.serviceName,quantity:row.quantity,quantityLabel:row.quantityLabel,supplierCost:row.supplierCost}))return NextResponse.json({error:`Enter a custom service name, quantity, billing unit and supplier cost for this ${row.allocationType} allocation.`},{status:400});
   }
   const existing=existingResult.data??[];
   const existingKey=(row:typeof existing[number])=>row.allocation_type==="vehicle"?`vehicle:${row.from_location_key??`destination:${row.from_destination_id}`}:${row.to_location_key??`destination:${row.to_destination_id}`}`:row.allocation_type==="experience"?`experience:${row.experience_id}`:row.allocation_type==="guide"&&!row.destination_id?"guide:journey":`${row.allocation_type}:${row.destination_id}`;

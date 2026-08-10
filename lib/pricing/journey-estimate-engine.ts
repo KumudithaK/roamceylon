@@ -43,7 +43,6 @@ export function calculateJourneyEstimateRange(input:EstimateEnvelopeInput):Publi
   const unavailable=[...new Set([
     ...input.unavailableInputs,
     ...(input.adults<1?["adult traveller count"]:[]),
-    ...(input.infants>0?["verified infant pricing"]:[]),
     ...(!commercialConfigReady(input.config)?["business pricing settings"]:[]),
     ...(!input.components.length?["priced journey components"]:[])
   ])];
@@ -55,7 +54,7 @@ export function calculateJourneyEstimateRange(input:EstimateEnvelopeInput):Publi
   const supplierMax=(input.components.reduce((sum,item)=>sum+item.maximum,0)+input.operationsCost)*(1+input.config.estimateUpperBufferPercent!/100);
   const minimum=sellingPrice(supplierMin,input.config),maximum=sellingPrice(supplierMax,input.config);
   if(!Number.isFinite(minimum)||!Number.isFinite(maximum)||maximum<=minimum)return tailored(["a meaningful supplier price range"]);
-  const travellerCount=input.adults+input.children;
+  const travellerCount=input.adults+input.children+input.infants;
   const range=outwardRange(minimum,maximum,travellerCount);
   if(range.perPersonMax<=range.perPersonMin)return tailored(["a meaningful supplier price range"]);
   return {status:"estimated_range",currency:input.currency,basis:"per_person",...range,durationDays:input.durationDays,estimatedAt,factors:input.factors,message:"Your final Journey Proposal is expected to remain within this planning range after availability is reviewed. If an exceptional change is needed, your journey designer will explain it clearly.",context:{version:1,pricedComponents:input.components.map(item=>item.category),unavailableInputs:[]}};
