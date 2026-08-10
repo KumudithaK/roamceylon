@@ -111,7 +111,7 @@ function PublicEstimates({config,setNumber,bands,setBands}:NumbersProps&{bands:E
   const update=(key:string,changes:Partial<EstimateBand>)=>setBands(bands.map(item=>item.key===key?{...item,...changes}:item));
   const groups:Array<{category:EstimateBand["category"];title:string;description:string}>=[
     {category:"stay",title:"Stay preferences",description:"Cost per billable traveller, per night."},
-    {category:"transport",title:"Travel preferences",description:"Cost for one journey leg."},
+    {category:"transport",title:"Travel preferences",description:"Private transport is per journey leg; train and floatplane bands are per billable traveller per leg."},
     {category:"guide",title:"Guide preferences",description:"Cost per guide service day."},
     {category:"experience",title:"Experience fallback",description:"Cost per participant when a selected ticket does not yet have a usable rate."}
   ];

@@ -19,7 +19,9 @@ Admin → Business Pricing → Public Estimates now contains:
 - Primary and specialist guide bands, priced per service day.
 - An experience fallback band, priced per participant.
 
-All band definitions were created inactive and without invented values. An administrator must enter reviewed internal planning costs and activate only the bands Roam Ceylon is prepared to use.
+The definitions were initially created inactive. Migration `202608100002_seed_journey_estimate_benchmarks.sql` then adds and activates conservative 2026 starter benchmarks for development. These are planning assumptions—not contracted supplier rates—and remain editable in Admin.
+
+The starter ranges were informed by published 2025–2026 Sri Lankan market examples, including Sri Lanka Tourism accommodation classifications, published boutique hotel rates, current private-driver market ranges and Sri Lanka Railways fares. Train and floatplane bands scale per traveller; private vehicle bands scale per journey leg.
 
 ## Family handling
 
@@ -45,6 +47,13 @@ This safeguard does not modify supplier allocation, exact proposal pricing, Acco
 - 97 automated tests passed.
 - Next.js production build passed with all 38 static pages generated.
 
-## Required Admin action
+## Required review before launch
 
-Review and activate the fallback bands in Business Pricing before relying on them publicly. Published supplier rates already work without this step; inactive fallback bands deliberately cause the builder to ask for more journey detail rather than inventing a price.
+Review every starter band in Business Pricing against Roam Ceylon’s contracted supplier rates, inclusions, seasonal rules and target market before live launch. Published supplier rates continue to take priority automatically.
+
+Reference points used for development benchmarking:
+
+- https://www.sltda.gov.lk/storage/common_media/Year_in_Review_2025_Final_updated_Report_2026_04_02-1.pdf
+- https://wirresorts.com/wirdana/reserve/
+- https://srilankacaranddriverhire.com/trip-cost-calculator/
+- https://www.railway.gov.lk/web/images/pdf/list_ticket_fare_and_charges.pdf

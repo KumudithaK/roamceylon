@@ -128,7 +128,7 @@ export class JourneyEstimateService{
       const candidates=vehicles.filter(vehicle=>vehicleMatches(vehicle,preference,travellers)&& (vehicle.nationwide||relevantDestinations.every(id=>vehicleDestinationIds(vehicle.id).includes(id))));
       const values=candidates.flatMap(vehicle=>plansFor(plans,"vehicle",vehicle.id,config.currency).flatMap(plan=>{const value=transportCost(plan,distanceKm,leg.fromLocationKey==="pickup"||leg.toLocationKey==="dropoff");return value===null?[]:[value]}));
       const component=bounds(`Transport ${leg.key}`,values);
-      const fallback=bandComponent(bands,`transport:${preference}`,`Transport ${leg.key}`,1);
+      const fallback=bandComponent(bands,`transport:${preference}`,`Transport ${leg.key}`,["scenic_train","domestic_floatplane"].includes(preference)?travellers:1);
       if(component)components.push(component);else if(fallback)components.push(fallback);else unavailable.push(`transport planning range for ${preference}`);
       if(["private_chauffeur_car_suv","high_roof_van","mini_coach_bus","tuk_tuk","recommend"].includes(preference))chauffeurLegs+=1;
     }
