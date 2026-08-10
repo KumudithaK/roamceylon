@@ -25,7 +25,7 @@ const schema=z.object({
 const safeName=(name:string)=>name.toLowerCase().replace(/[^a-z0-9._-]+/g,"-").slice(-100);
 
 export async function POST(request:Request){
-  const actor=await authenticatedStaff(request);
+  const actor=await authenticatedStaff(request,"finance.payments.manage");
   if(!actor)return NextResponse.json({error:"Unauthorized."},{status:401});
   const {database,user}=actor;
   const contentType=request.headers.get("content-type")??"";

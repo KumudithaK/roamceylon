@@ -2,7 +2,7 @@ import {NextResponse} from "next/server";
 import {z} from "zod";
 import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
 import {syncAllocationAccounting} from "@/lib/accounting/allocation-accounting";
-import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
+import {resolveJourneyDesign} from "@/lib/journey/curated-journey-server";
 import {completeJourneyLegs} from "@/lib/journey/travel-preferences";
 import {completeCustomJourneyRate,usesCustomJourneyRate} from "@/lib/admin/allocation-rate";
 import type {Database,Json} from "@/lib/database.types";
@@ -40,18 +40,42 @@ const key=(row:z.infer<typeof allocationSchema>)=>row.allocationType==="vehicle"
   ?`vehicle:${row.fromLocationKey}:${row.toLocationKey}`
   :row.allocationType==="experience"?`experience:${row.experienceId}`:row.allocationType==="guide"&&!row.destinationId?"guide:journey":`${row.allocationType}:${row.destinationId}`;
 
-export async function POST(request:Request){
+export async function GET(request:Request){
   const actor=await authenticatedStaff(request);
+  if(!actor)return NextResponse.json({error:"Unauthorized."},{status:401});
+  const allowed=actor.permissions.some(permission=>["suppliers.allocate","journey.proposal.view","operations.view","finance.costs.view","finance.revenue.view"].includes(permission));
+  if(!allowed)return NextResponse.json({error:"You do not have permission to view journey allocations."},{status:403});
+  const enquiryId=new URL(request.url).searchParams.get("enquiryId");
+  if(!z.uuid().safeParse(enquiryId).success)return NextResponse.json({error:"Choose a valid journey."},{status:400});
+  const {data,error}=await actor.database.from("journey_supplier_allocations").select("*").eq("enquiry_id",enquiryId!).order("created_at");
+  if(error)return NextResponse.json({error:error.message},{status:500});
+  const canSeeCosts=actor.permissions.includes("finance.costs.view")||actor.permissions.includes("suppliers.allocate");
+  const canSeePayments=actor.permissions.includes("finance.payments.manage")||actor.permissions.includes("operations.view");
+  const canSeeContacts=actor.permissions.includes("suppliers.allocate")||actor.permissions.includes("operations.view");
+  const commercialCompleteIds=(data??[]).filter(row=>row.confirmation_status==="cancelled"||(row.supplier_cost!==null&&row.service_name&&row.quantity&&row.quantity_label)).map(row=>row.id);
+  const allocations=(data??[]).map(row=>canSeeCosts&&canSeePayments&&canSeeContacts?row:{...row,
+    supplier_cost:canSeeCosts?row.supplier_cost:null,
+    pricing_plan_snapshot:canSeeCosts?row.pricing_plan_snapshot:{},
+    supplier_contact:canSeeContacts?row.supplier_contact:null,
+    invoice_status:canSeePayments?row.invoice_status:"not_requested" as const,
+    payment_status:canSeePayments?row.payment_status:"pending" as const,
+    arrival_instructions:canSeeContacts?row.arrival_instructions:null,
+    special_notes:canSeeContacts?row.special_notes:null
+  });
+  return NextResponse.json({allocations,commercialCompleteIds});
+}
+
+export async function POST(request:Request){
+  const actor=await authenticatedStaff(request,"suppliers.allocate");
   if(!actor)return NextResponse.json({error:"Unauthorized."},{status:401});
   const parsed=requestSchema.safeParse(await request.json().catch(()=>null));
   if(!parsed.success)return NextResponse.json({error:parsed.error.issues[0]?.message??"Check the supplier allocations."},{status:400});
   const {database}=actor;const {enquiryId,allocations}=parsed.data;
   if(new Set(allocations.map(key)).size!==allocations.length)return NextResponse.json({error:"Each destination, route leg, and experience can have only one allocation."},{status:400});
-  const {data:enquiry,error:enquiryError}=await database.from("enquiries").select("selected_destinations,selected_experiences,trip_state").eq("id",enquiryId).maybeSingle();
+  const {data:enquiry,error:enquiryError}=await database.from("enquiries").select("*").eq("id",enquiryId).maybeSingle();
   if(enquiryError||!enquiry)return NextResponse.json({error:"Traveller enquiry not found."},{status:404});
-  const selectedDestinationIds=ids(enquiry.selected_destinations);const destinationIds=new Set(selectedDestinationIds);const experienceIds=new Set(ids(enquiry.selected_experiences));
-  const handoff=parseJourneyHandoff(enquiry.trip_state);
-  const expectedTransportLegs=completeJourneyLegs(selectedDestinationIds,Boolean(handoff?.state.pickup.type),Boolean(handoff?.state.dropoff.type));
+  const design=await resolveJourneyDesign(database,enquiry);const selectedDestinationIds=design.state?.selectedDestinationIds??ids(enquiry.selected_destinations);const destinationIds=new Set(selectedDestinationIds);const experienceIds=new Set(design.state?.selectedExperienceIds??ids(enquiry.selected_experiences));
+  const expectedTransportLegs=completeJourneyLegs(selectedDestinationIds,Boolean(design.state?.pickup.type),Boolean(design.state?.dropoff.type));
   const expectedTransportKeys=new Set(expectedTransportLegs.map(leg=>`${leg.fromLocationKey}:${leg.toLocationKey}`));
   for(const row of allocations){
     if(row.allocationType==="vehicle"){
@@ -113,16 +137,12 @@ export async function POST(request:Request){
     :{data:[],error:null};
   if(financialError)return NextResponse.json({error:financialError.message},{status:500});
   const activityByAllocation=new Map((financialActivity??[]).map(row=>[row.allocation_id,(row.amount_paid??0)+(row.waived_amount??0)]));
-  const desiredKeys=new Set(allocations.map(key));
   for(const row of allocations){
     const current=existing.find(item=>existingKey(item)===key(row));
     const resolved=current?activityByAllocation.get(current.id)??0:0;
     const plan=row.pricingPlanId?plans.find(item=>item.id===row.pricingPlanId):null;
     const supplierCost=plan?Number(plan.price)*(row.quantity??1):row.supplierCost??0;
     if(resolved>0&&supplierCost+0.005<resolved)return NextResponse.json({error:`${current?.provider_name||"A supplier"}: supplier cost cannot be lower than payments and waivers already recorded.`},{status:409});
-  }
-  for(const stale of existing.filter(row=>!desiredKeys.has(existingKey(row)))){
-    if((activityByAllocation.get(stale.id)??0)>0)return NextResponse.json({error:`${stale.provider_name||"A supplier"} has financial activity and cannot be removed. Mark the allocation cancelled instead.`},{status:409});
   }
   for(const row of allocations){
     const current=existing.find(item=>existingKey(item)===key(row));
@@ -133,7 +153,7 @@ export async function POST(request:Request){
     const accommodation=accommodations.data?.find(item=>item.id===row.accommodationId);
     const serviceDetails=row.allocationType==="accommodation"&&accommodation?.destination_id!==row.destinationId?{...row.serviceDetails,destinationOverrideConfirmed:true,catalogueDestinationId:accommodation?.destination_id??null}:row.serviceDetails;
     const stored={
-      enquiry_id:enquiryId,allocation_type:row.allocationType,destination_id:row.destinationId,
+      enquiry_id:enquiryId,curated_journey_id:design.curated?.id??current?.curated_journey_id??null,allocation_type:row.allocationType,destination_id:row.destinationId,
       from_destination_id:row.fromDestinationId,to_destination_id:row.toDestinationId,from_location_key:row.fromLocationKey,to_location_key:row.toLocationKey,
       accommodation_id:row.accommodationId,guide_id:row.guideId,vehicle_id:row.vehicleId,experience_id:row.experienceId,
       pricing_plan_id:plan?.id??null,
@@ -143,17 +163,35 @@ export async function POST(request:Request){
       supplier_cost:supplierCost,selling_price:row.sellingPrice,currency:plan?.currency??row.currency,
       confirmation_status:row.confirmationStatus,invoice_status:row.invoiceStatus,
       payment_status:paymentStatus,
+      review_required:false,review_reason:null,reviewed_at:current?.review_required?new Date().toISOString():current?.reviewed_at??null,reviewed_by:current?.review_required?actor.user.id:current?.reviewed_by??null,
       arrival_instructions:row.arrivalInstructions||null,special_notes:row.specialNotes||null,updated_at:new Date().toISOString()
     };
     const result=current?await database.from("journey_supplier_allocations").update(stored).eq("id",current.id):await database.from("journey_supplier_allocations").insert(stored);
     if(result.error)return NextResponse.json({error:result.error.message},{status:500});
   }
-  for(const stale of existing.filter(row=>!desiredKeys.has(existingKey(row)))){
-    const {error}=await database.from("journey_supplier_allocations").delete().eq("id",stale.id);
-    if(error)return NextResponse.json({error:error.message},{status:500});
-  }
+  // Allocations outside the current curated scope remain as reviewable history.
+  // Journey Studio flags them; staff must explicitly retire or reconfirm them.
+  if(design.curated)await database.from("curated_journeys").update({status:"allocation_in_progress",updated_by:actor.user.id}).eq("id",design.curated.id);
   try{await syncAllocationAccounting(enquiryId,actor.user.id)}catch(error){return NextResponse.json({error:error instanceof Error?error.message:"Accounting could not be synchronized."},{status:409})}
   const {data:result,error:resultError}=await database.from("journey_supplier_allocations").select("*").eq("enquiry_id",enquiryId).order("created_at");
   if(resultError)return NextResponse.json({error:resultError.message},{status:500});
   return NextResponse.json({allocations:result});
+}
+
+const reviewSchema=z.object({allocationId:z.uuid(),action:z.literal("retire")});
+export async function PATCH(request:Request){
+  const actor=await authenticatedStaff(request,"suppliers.allocate");
+  if(!actor)return NextResponse.json({error:"You do not have permission to review supplier allocations."},{status:403});
+  const parsed=reviewSchema.safeParse(await request.json().catch(()=>null));
+  if(!parsed.success)return NextResponse.json({error:"Choose a valid allocation review action."},{status:400});
+  const {data:allocation,error}=await actor.database.from("journey_supplier_allocations").select("*").eq("id",parsed.data.allocationId).maybeSingle();
+  if(error||!allocation)return NextResponse.json({error:"Supplier allocation not found."},{status:404});
+  if(!allocation.review_required)return NextResponse.json({error:"This allocation no longer requires review."},{status:409});
+  const {data:settlements,error:settlementError}=await actor.database.from("journey_settlements").select("amount_paid,waived_amount").eq("allocation_id",allocation.id);
+  if(settlementError)return NextResponse.json({error:settlementError.message},{status:500});
+  if((settlements??[]).some(row=>Number(row.amount_paid)+Number(row.waived_amount)>0))return NextResponse.json({error:"This service has financial activity and cannot be retired here. Finance must reverse or resolve it first."},{status:409});
+  const {data:updated,error:updateError}=await actor.database.from("journey_supplier_allocations").update({confirmation_status:"cancelled",payment_status:allocation.payment_status==="paid"?"paid":"cancelled",review_required:false,review_reason:`Retired after Journey Studio review. ${allocation.review_reason??""}`.trim(),reviewed_at:new Date().toISOString(),reviewed_by:actor.user.id}).eq("id",allocation.id).select("*").single();
+  if(updateError)return NextResponse.json({error:updateError.message},{status:500});
+  try{await syncAllocationAccounting(allocation.enquiry_id,actor.user.id)}catch(error){return NextResponse.json({error:error instanceof Error?error.message:"Accounting could not be synchronized."},{status:409})}
+  return NextResponse.json({allocation:updated});
 }

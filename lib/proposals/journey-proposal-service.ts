@@ -5,6 +5,7 @@ import type {AllocationCommercialOverrides} from "@/lib/pricing/allocation-comme
 import {experienceAllocationKey,hasOwnJourneyGuideSnapshot,journeyAllocationScopes,journeyGuideAllocationKey} from "@/lib/admin/journey-allocations";
 import {endpointLabel} from "@/lib/journey/journey-endpoints";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
+import {resolveJourneyDesign} from "@/lib/journey/curated-journey-server";
 import {completeJourneyLegs} from "@/lib/journey/travel-preferences";
 import {reviewProposalAgainstEstimate} from "./proposal-range-review";
 import type {Database,Json} from "@/lib/database.types";
@@ -26,7 +27,9 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
   const {data:enquiry,error}=await database.from("enquiries").select("*").eq("id",enquiryId).maybeSingle();
   if(error)throw new ProposalError("DATABASE",error.message);
   if(!enquiry)throw new ProposalError("NOT_FOUND","Traveller enquiry not found.");
-  const destinationIds=ids(enquiry.selected_destinations);const experienceIds=ids(enquiry.selected_experiences);
+  const design=await resolveJourneyDesign(database,enquiry);
+  const destinationIds=design.state?.selectedDestinationIds??ids(enquiry.selected_destinations);const experienceIds=design.state?.selectedExperienceIds??ids(enquiry.selected_experiences);
+  if(design.curated&&!["ready_for_allocation","allocation_in_progress","ready_for_proposal"].includes(design.curated.status))throw new ProposalError("INCOMPLETE","Mark the Curated Journey ready for allocation before preparing a proposal.");
   const {data:experienceLinks,error:linkError}=experienceIds.length?await database.from("experience_destinations").select("experience_id,destination_id").in("experience_id",experienceIds):{data:[],error:null};
   if(linkError)throw new ProposalError("DATABASE",linkError.message);
   const experienceScopes=experienceIds.flatMap(experienceId=>{
@@ -34,17 +37,20 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
     return destinationId?[{experienceId,destinationId}]:[];
   });
   if(experienceScopes.length!==experienceIds.length)throw new ProposalError("INCOMPLETE","Every selected experience must have a selected destination relationship before a proposal can be generated.");
-  const handoff=parseJourneyHandoff(enquiry.trip_state);
-  const destinationPreferences=handoff?.state.destinationPreferences;
-  const hasGlobalGuide=hasOwnJourneyGuideSnapshot(enquiry.trip_state);
-  const transportLegs=completeJourneyLegs(destinationIds,Boolean(handoff?.state.pickup.type),Boolean(handoff?.state.dropoff.type));
+  const handoff=parseJourneyHandoff(enquiry.trip_state),effectiveState=design.state??handoff?.state;
+  const destinationPreferences=effectiveState?.destinationPreferences;
+  const hasGlobalGuide=Boolean(design.curated)||hasOwnJourneyGuideSnapshot(enquiry.trip_state);
+  const transportLegs=completeJourneyLegs(destinationIds,Boolean(effectiveState?.pickup.type),Boolean(effectiveState?.dropoff.type));
   const required=journeyAllocationScopes(destinationIds,experienceScopes,{
     nightsByDestination:destinationPreferences?Object.fromEntries(destinationIds.map(id=>[id,destinationPreferences[id]?.nights??null])):undefined,
     guidePreferencesByDestination:!hasGlobalGuide&&destinationPreferences?Object.fromEntries(destinationIds.map(id=>[id,destinationPreferences[id]?.guidePreference??"recommend"])):undefined,
-    journeyGuidePreference:hasGlobalGuide?handoff?.state.journeyGuidePreference:undefined,
+    journeyGuidePreference:hasGlobalGuide?effectiveState?.journeyGuidePreference:undefined,
     specialistGuidePreferencesByDestination:hasGlobalGuide&&destinationPreferences?Object.fromEntries(destinationIds.map(id=>[id,destinationPreferences[id]?.specialistGuidePreference??"none"])):undefined,
     transportLegs
   });
+  const {count:reviewCount,error:reviewError}=await database.from("journey_supplier_allocations").select("id",{count:"exact",head:true}).eq("enquiry_id",enquiryId).eq("review_required",true).neq("confirmation_status","cancelled");
+  if(reviewError)throw new ProposalError("DATABASE",reviewError.message);
+  if(reviewCount)throw new ProposalError("INCOMPLETE",`Review ${reviewCount} supplier allocation${reviewCount===1?"":"s"} affected by the Curated Journey before generating the proposal.`);
   const commercial=await allocationCommercialSnapshot(enquiryId,details.commercialOverrides);
   const active=commercial.allocations.filter(row=>row.confirmation_status!=="cancelled");
   const available=new Set(active.map(allocationKey));
@@ -56,7 +62,7 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
     ]);
     const destinationNames=new Map((destinationResult.data??[]).map(item=>[item.id,item.name]));
     const experienceNames=new Map((experienceResult.data??[]).map(item=>[item.id,item.name]));
-    const locationName=(key:string|null)=>key==="pickup"&&handoff?endpointLabel(handoff.state.pickup,"pickup"):key==="dropoff"&&handoff?endpointLabel(handoff.state.dropoff,"dropoff"):destinationNames.get(key?.replace(/^destination:/,"")??"")??"journey point";
+    const locationName=(key:string|null)=>key==="pickup"&&effectiveState?endpointLabel(effectiveState.pickup,"pickup"):key==="dropoff"&&effectiveState?endpointLabel(effectiveState.dropoff,"dropoff"):destinationNames.get(key?.replace(/^destination:/,"")??"")??"journey point";
     const label=(scope:typeof missing[number])=>scope.type==="accommodation"?`Stay in ${destinationNames.get(scope.destinationId??"")??"a selected destination"}`:scope.type==="guide"?(scope.guideRole==="specialist"?`${scope.guideSpeciality?.replaceAll("_"," ")??"Specialist guide"} for ${destinationNames.get(scope.destinationId??"")??"a selected destination"}`:"Primary journey guide"):scope.type==="vehicle"?`Transport from ${locationName(scope.fromLocationKey)} to ${locationName(scope.toLocationKey)}`:`Provider for ${experienceNames.get(scope.key.slice("experience:".length))??"a selected experience"}`;
     throw new ProposalError("INCOMPLETE",`Complete and save these allocations first: ${missing.map(label).join("; ")}.`);
   }
@@ -75,7 +81,7 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
   const rangeReview=reviewProposalAgainstEstimate(handoff?.quote??enquiry.estimate_snapshot,commercial.summary.totalSellingPrice,details.rangeOverrideReason);
   if(rangeReview.status==="outside_range"&&(!rangeReview.reason||rangeReview.reason.length<10))throw new ProposalError("INCOMPLETE",`This proposal is outside the traveller's submitted planning range (${rangeReview.currency} ${rangeReview.estimateTotalMin?.toLocaleString()}–${rangeReview.estimateTotalMax?.toLocaleString()}). Add a clear internal explanation before generating it.`);
   const {data:proposal,error:proposalError}=await database.from("journey_proposals").insert({
-    enquiry_id:enquiryId,version,proposal_reference:reference,status:"ready",
+    enquiry_id:enquiryId,curated_journey_id:design.curated?.id??null,curated_journey_snapshot:design.curated?.itinerary??null,version,proposal_reference:reference,status:"ready",
     currency:activeSnapshot[0]?.currency??"USD",total_supplier_cost:commercial.summary.totalSupplierCost,
     total_selling_price:commercial.summary.totalSellingPrice,gross_profit:commercial.summary.grossProfit,
     profit_margin:commercial.summary.profitMargin,introduction:details.introduction||null,
@@ -85,6 +91,7 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
   if(proposalError||!proposal)throw new ProposalError("DATABASE",proposalError?.message??"The proposal could not be generated.");
   const {error:statusError}=await database.from("enquiries").update({status:"preparing_proposal"}).eq("id",enquiryId);
   if(statusError)throw new ProposalError("DATABASE",statusError.message);
+  if(design.curated)await database.from("curated_journeys").update({status:"ready_for_proposal",updated_by:userId}).eq("id",design.curated.id);
   return proposal;
 }
 

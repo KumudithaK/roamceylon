@@ -4,7 +4,7 @@ import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
 
 const schema=z.object({accountId:z.uuid(),reason:z.string().trim().min(10).max(1000),overrideSupplierBalance:z.boolean().default(false)});
 export async function POST(request:Request){
-  const actor=await authenticatedStaff(request);if(!actor)return NextResponse.json({error:"Unauthorized."},{status:401});
+  const actor=await authenticatedStaff(request,"finance.payments.manage");if(!actor)return NextResponse.json({error:"Unauthorized."},{status:401});
   if(actor.profile.role!=="admin")return NextResponse.json({error:"Only an administrator can close an account with a balance adjustment."},{status:403});
   const parsed=schema.safeParse(await request.json().catch(()=>null));if(!parsed.success)return NextResponse.json({error:parsed.error.issues[0]?.message??"Explain why this account is being closed."},{status:400});
   const {database,user}=actor,{accountId,reason,overrideSupplierBalance}=parsed.data;

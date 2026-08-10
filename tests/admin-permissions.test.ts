@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+import test from "node:test";
+import {defaultRolePermissions,staffPermissions} from "../lib/admin/permissions.ts";
+
+test("Super Admin retains every capability",()=>assert.deepEqual(defaultRolePermissions.super_admin,staffPermissions));
+test("Journey Designer can curate and prepare proposals without direct accounting, cost, margin or payment access",()=>{const role=defaultRolePermissions.journey_designer;assert(role.includes("journey.design.edit"));assert(role.includes("journey.proposal.create"));assert(!role.includes("finance.revenue.view"));assert(!role.includes("finance.costs.view"));assert(!role.includes("finance.margin.view"));assert(!role.includes("finance.payments.manage"))});
+test("Finance can manage accounting while Content cannot read traveller finance",()=>{assert(defaultRolePermissions.finance.includes("finance.payments.manage"));assert(defaultRolePermissions.finance.includes("finance.costs.view"));assert.deepEqual(defaultRolePermissions.content_marketing,["cms.view","cms.edit"])});
+test("Partner Manager allocates suppliers without company margin reporting",()=>{assert(defaultRolePermissions.partner_manager.includes("suppliers.allocate"));assert(!defaultRolePermissions.partner_manager.includes("finance.margin.view"))});
+test("server APIs and RLS enforce capabilities instead of relying on hidden UI",()=>{const migration=readFileSync(new URL("../supabase/migrations/202608100003_journey_studio_and_rbac.sql",import.meta.url),"utf8"),allocations=readFileSync(new URL("../app/api/admin/journey-allocations/route.ts",import.meta.url),"utf8"),accounting=readFileSync(new URL("../app/api/admin/accounting/transactions/route.ts",import.meta.url),"utf8");assert.match(migration,/journey_supplier_allocations_capability_select/);assert.match(migration,/finance\.costs\.view/);assert.match(migration,/accounting_transactions_finance_read/);assert.match(allocations,/supplier_cost:canSeeCosts/);assert.match(accounting,/finance\.payments\.manage/)});

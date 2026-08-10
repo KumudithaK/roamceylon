@@ -4,6 +4,7 @@ import {getRouteEstimate} from "@/lib/journey/route";
 import {endpointRouteLocation} from "@/lib/journey/journey-endpoints";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import {calculateAllocationCommercials,type AllocationCommercialConfig,type AllocationCommercialOverrides} from "@/lib/pricing/allocation-commercial";
+import {resolveJourneyDesign} from "@/lib/journey/curated-journey-server";
 import type {Database,Json} from "@/lib/database.types";
 
 type Allocation=Database["public"]["Tables"]["journey_supplier_allocations"]["Row"];
@@ -51,7 +52,7 @@ export async function allocationCommercialSnapshot(enquiryId:string,overrides:Al
   if(!database)throw new Error("Supabase server credentials are unavailable.");
   const [{data:rows,error},{data:enquiry,error:enquiryError},{data:config,error:configError}]=await Promise.all([
     database.from("journey_supplier_allocations").select("*").eq("enquiry_id",enquiryId).order("created_at"),
-    database.from("enquiries").select("selected_destinations,travel_start_date,travel_end_date,trip_state").eq("id",enquiryId).maybeSingle(),
+    database.from("enquiries").select("*").eq("id",enquiryId).maybeSingle(),
     database.from("tour_pricing_config").select("*").eq("id",true).eq("active",true).maybeSingle()
   ]);
   if(error)throw new Error(error.message);
@@ -97,15 +98,17 @@ export async function allocationCommercialSnapshot(enquiryId:string,overrides:Al
       arrivalInstructions:row.arrival_instructions,specialNotes:row.special_notes
     };
   });
-  const selectedDestinationIds=Array.isArray(enquiry.selected_destinations)?enquiry.selected_destinations.filter((value):value is string=>typeof value==="string"):[];
+  const design=await resolveJourneyDesign(database,enquiry);
+  const selectedDestinationIds=design.state?.selectedDestinationIds??(Array.isArray(enquiry.selected_destinations)?enquiry.selected_destinations.filter((value):value is string=>typeof value==="string"):[]);
   const routeDestinations=(destinations.data??[]).map(item=>({...item,latitude:item.latitude===null?null:Number(item.latitude),longitude:item.longitude===null?null:Number(item.longitude)}));
-  const handoff=parseJourneyHandoff(enquiry.trip_state);
-  const pickup=handoff?.state.pickup.type?endpointRouteLocation(handoff.state.pickup,"pickup",routeDestinations):null;
-  const dropoff=handoff?.state.dropoff.type?endpointRouteLocation(handoff.state.dropoff,"dropoff",routeDestinations):null;
+  const handoff=parseJourneyHandoff(enquiry.trip_state),effectiveState=design.state??handoff?.state;
+  const pickup=effectiveState?.pickup.type?endpointRouteLocation(effectiveState.pickup,"pickup",routeDestinations):null;
+  const dropoff=effectiveState?.dropoff.type?endpointRouteLocation(effectiveState.dropoff,"dropoff",routeDestinations):null;
   const completeRouteDestinations=[...routeDestinations,...(pickup?[pickup]:[]),...(dropoff?[dropoff]:[])];
   const route=getRouteEstimate(completeRouteDestinations,[...(pickup?[pickup.id]:[]),...selectedDestinationIds,...(dropoff?[dropoff.id]:[])]);
-  const start=enquiry.travel_start_date?new Date(`${enquiry.travel_start_date}T00:00:00Z`).getTime():NaN;
-  const end=enquiry.travel_end_date?new Date(`${enquiry.travel_end_date}T00:00:00Z`).getTime():NaN;
+  const startDate=effectiveState?.travelDates.start??enquiry.travel_start_date,endDate=effectiveState?.travelDates.end??enquiry.travel_end_date;
+  const start=startDate?new Date(`${startDate}T00:00:00Z`).getTime():NaN;
+  const end=endDate?new Date(`${endDate}T00:00:00Z`).getTime():NaN;
   const days=Number.isFinite(start)&&Number.isFinite(end)&&end>=start?Math.max(1,Math.ceil((end-start)/86400000)+1):Math.max(1,selectedDestinationIds.length);
   const pricingConfig:AllocationCommercialConfig={
     driverSalaryPerDay:Number(config.driver_salary_per_day??0),fuelPricePerLitre:Number(config.fuel_price_per_litre??0),vehicleKmPerLitre:Number(config.vehicle_km_per_litre??0),

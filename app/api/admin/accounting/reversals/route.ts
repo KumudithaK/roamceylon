@@ -5,7 +5,7 @@ import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
 const schema=z.object({accountId:z.uuid(),settlementId:z.uuid(),paymentAmount:z.coerce.number().min(0),waiverAmount:z.coerce.number().min(0),paymentDate:z.iso.date(),reason:z.string().trim().min(10).max(500)}).superRefine((value,context)=>{if(value.paymentAmount+value.waiverAmount<=0)context.addIssue({code:"custom",message:"Enter a payment or waiver amount to reverse."})});
 
 export async function POST(request:Request){
-  const actor=await authenticatedStaff(request);if(!actor)return NextResponse.json({error:"Unauthorized."},{status:401});
+  const actor=await authenticatedStaff(request,"finance.payments.manage");if(!actor)return NextResponse.json({error:"Unauthorized."},{status:401});
   if(actor.profile.role!=="admin")return NextResponse.json({error:"Only an administrator can reverse posted supplier settlements."},{status:403});
   const parsed=schema.safeParse(await request.json().catch(()=>null));if(!parsed.success)return NextResponse.json({error:parsed.error.issues[0]?.message??"Check the correction."},{status:400});
   const {database,user}=actor,value=parsed.data;

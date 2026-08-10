@@ -12,6 +12,8 @@ import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import {isJourneyEstimate} from "@/lib/pricing/journey-estimate-types";
 import {pricingPlanKey} from "@/features/journey/journey-store";
 import {JourneyLifecycleWorkspace} from "./journey-lifecycle-workspace";
+import {curatedItineraryToJourneyState,normaliseCuratedItinerary} from "@/lib/journey/curated-journey";
+import type {JourneyQuotationHandoff} from "@/lib/journey/quotation-handoff";
 import type {Database,EnquiryStatus,Json} from "@/lib/database.types";
 import type {ParticipantCounts} from "@/lib/types";
 
@@ -36,6 +38,9 @@ export function EnquiryReview({id}:{id:string}){
   const [enquiry,setEnquiry]=useState<Enquiry|null>(null);
   const [account,setAccount]=useState<Account|null>(null);
   const [selectionNames,setSelectionNames]=useState<SelectionNames>(emptyNames);
+  const [designNames,setDesignNames]=useState<SelectionNames>(emptyNames);
+  const [designHandoff,setDesignHandoff]=useState<JourneyQuotationHandoff|null>(null);
+  const [hasCuratedJourney,setHasCuratedJourney]=useState(false);
   const [pricingPlanNames,setPricingPlanNames]=useState<Record<string,string>>({});
   const [experienceDestinations,setExperienceDestinations]=useState<Record<string,string[]>>({});
   const [notes,setNotes]=useState("");
@@ -51,17 +56,22 @@ export function EnquiryReview({id}:{id:string}){
     setEnquiry(row);setNotes(row.internal_notes||"");
     const themeIds=ids(row.selected_themes);const destinationIds=ids(row.selected_destinations);const experienceIds=ids(row.selected_experiences);const stayIds=ids(row.selected_stays);
     const handoff=parseJourneyHandoff(row.trip_state);
+    const {data:curated}=await database.from("curated_journeys").select("*").eq("enquiry_id",id).maybeSingle();
+    setHasCuratedJourney(Boolean(curated));
+    const curatedState=curated&&handoff?curatedItineraryToJourneyState(normaliseCuratedItinerary(curated.itinerary,handoff.state),handoff.state):handoff?.state??null;
+    const designDestinationIds=curatedState?.selectedDestinationIds??destinationIds,designExperienceIds=curatedState?.selectedExperienceIds??experienceIds;
+    setDesignHandoff(handoff&&curatedState?{...handoff,state:curatedState}:handoff);
     const selectedPlanIds=Object.values(handoff?.state.selectedPricingPlanIds??{});
     const [themes,destinations,experiences,stays,vehicle,guide,pricingPlans,accountResult,experienceLinks]=await Promise.all([
       themeIds.length?database.from("themes").select("id,name").in("id",themeIds):Promise.resolve({data:[]}),
-      destinationIds.length?database.from("destinations").select("id,name").in("id",destinationIds):Promise.resolve({data:[]}),
-      experienceIds.length?database.from("experiences").select("id,name").in("id",experienceIds):Promise.resolve({data:[]}),
+      [...new Set([...destinationIds,...designDestinationIds])].length?database.from("destinations").select("id,name").in("id",[...new Set([...destinationIds,...designDestinationIds])]):Promise.resolve({data:[]}),
+      [...new Set([...experienceIds,...designExperienceIds])].length?database.from("experiences").select("id,name").in("id",[...new Set([...experienceIds,...designExperienceIds])]):Promise.resolve({data:[]}),
       stayIds.length?database.from("accommodations").select("id,name").in("id",stayIds):Promise.resolve({data:[]}),
       row.selected_vehicle?database.from("vehicles").select("listing_title").eq("id",row.selected_vehicle).maybeSingle():Promise.resolve({data:null}),
       row.selected_guide?database.from("guides").select("name").eq("id",row.selected_guide).maybeSingle():Promise.resolve({data:null}),
       selectedPlanIds.length?database.from("pricing_plans").select("id,name").in("id",selectedPlanIds):Promise.resolve({data:[]}),
       database.from("journey_accounts").select("*").eq("enquiry_id",id).maybeSingle(),
-      experienceIds.length?database.from("experience_destinations").select("experience_id,destination_id").in("experience_id",experienceIds):Promise.resolve({data:[]})
+      designExperienceIds.length?database.from("experience_destinations").select("experience_id,destination_id").in("experience_id",designExperienceIds):Promise.resolve({data:[]})
     ]);
     const order=(values:Named[]|null,orderedIds:string[])=>orderedIds.map(value=>values?.find(item=>item.id===value)).filter((item):item is Named=>Boolean(item));
     setSelectionNames({
@@ -72,9 +82,10 @@ export function EnquiryReview({id}:{id:string}){
       vehicle:vehicle.data?.listing_title??null,
       guide:guide.data?.name??null
     });
+    setDesignNames({themes:order(themes.data,themeIds),destinations:order(destinations.data,designDestinationIds),experiences:order(experiences.data,designExperienceIds),stays:[],vehicle:null,guide:null});
     setPricingPlanNames(Object.fromEntries((pricingPlans.data??[]).map(plan=>[plan.id,plan.name])));
     setAccount(accountResult.data??null);
-    setExperienceDestinations(Object.fromEntries(experienceIds.map(experienceId=>[
+    setExperienceDestinations(Object.fromEntries(designExperienceIds.map(experienceId=>[
       experienceId,(experienceLinks.data??[]).filter(item=>item.experience_id===experienceId).map(item=>item.destination_id)
     ])));
   })()},[id,router]);
@@ -114,7 +125,7 @@ export function EnquiryReview({id}:{id:string}){
     setAccount(result.account);setEnquiry({...enquiry,status:"deposit_paid"});setDepositOpen(false);
     setMessage("Deposit recorded and Accounting activated.");
   };
-  if(!enquiry)return <AdminShell><div className="grid min-h-[60vh] place-items-center text-stone">{message||"Loading enquiry…"}</div></AdminShell>;
+  if(!enquiry)return <AdminShell requiredPermission="journey.requests.view"><div className="grid min-h-[60vh] place-items-center text-stone">{message||"Loading enquiry…"}</div></AdminShell>;
   const travellerCounts=handoff?.state.travellerCounts??{adults:enquiry.adults,children:enquiry.children,infants:0};
   const travellers=travellerCounts.adults+travellerCounts.children+travellerCounts.infants;
   const experienceParticipants=participantMap(enquiry.experience_participants);
@@ -123,13 +134,13 @@ export function EnquiryReview({id}:{id:string}){
     const planId=handoff?.state.selectedPricingPlanIds[pricingPlanKey(type,entityId)];
     return planId?pricingPlanNames[planId]??null:null;
   };
-  return <AdminShell><div className="mx-auto max-w-7xl">
-    <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">Traveller enquiry · {enquiry.journey_reference}</p><h1 className="font-serif text-4xl md:text-5xl">{enquiry.name}</h1><p className="mt-2 text-sm text-stone">Received {new Date(enquiry.created_at).toLocaleString("en-GB")}</p></div><select value={enquiry.status} onChange={event=>void save(event.target.value as EnquiryStatus)} disabled={saving} className="rounded-full border border-stone/25 bg-white px-5 py-3 text-sm font-semibold">{enquiryWorkflow.map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></div>
+  return <AdminShell requiredPermission="journey.requests.view"><div className="mx-auto max-w-7xl">
+    <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">Traveller enquiry · {enquiry.journey_reference}</p><h1 className="font-serif text-4xl md:text-5xl">{enquiry.name}</h1><p className="mt-2 text-sm text-stone">Received {new Date(enquiry.created_at).toLocaleString("en-GB")}</p></div><div className="flex flex-wrap gap-3"><Link href={`/admin/journey-studio/${enquiry.id}`} className="rounded-full bg-gold px-5 py-3 text-sm font-bold text-slate">Open Journey Studio</Link><select value={enquiry.status} onChange={event=>void save(event.target.value as EnquiryStatus)} disabled={saving} className="rounded-full border border-stone/25 bg-white px-5 py-3 text-sm font-semibold">{enquiryWorkflow.map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></div></div>
     {message&&<p className="mt-5 rounded-xl bg-white p-4 text-sm">{message}</p>}
     <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]"><div className="grid gap-6">
       <Section title="Journey at a glance"><div className="grid gap-4 sm:grid-cols-3"><Metric icon={Users} label="Travellers" value={`${travellers}`} detail={`${travellerCounts.adults} adults · ${travellerCounts.children} children · ${travellerCounts.infants} infants`}/><Metric icon={CalendarDays} label="Travel dates" value={enquiry.travel_start_date||"Flexible"} detail={enquiry.travel_end_date?`to ${enquiry.travel_end_date}`:"Departure not selected"}/><Metric icon={MapPin} label="Destinations" value={`${selectionNames.destinations.length}`} detail={selectionNames.destinations.map(item=>item.name).join(" · ")||"Not selected"}/></div></Section>
       <Section title="Selected journey"><Selection label="Themes" values={selectionNames.themes.map(item=>item.name)}/><Selection label="Destinations and route order" values={selectionNames.destinations.map((item,index)=>`${index+1}. ${item.name}`)}/><Selection label="Experiences" values={selectionNames.experiences.map(item=>{const counts=experienceParticipants[item.id];const count=counts?counts.adults+counts.children+counts.infants:0;const plan=planName("experience",item.id);return `${item.name}${count?` · ${count} participant${count===1?"":"s"}`:""}${plan?` · ${plan}`:""}`})}/><Selection label="Accommodation" values={selectionNames.stays.map(item=>`${item.name}${planName("accommodation",item.id)?` · ${planName("accommodation",item.id)}`:""}`)}/><Selection label="Transport" values={selectionNames.vehicle?[`${selectionNames.vehicle}${enquiry.selected_vehicle&&planName("vehicle",enquiry.selected_vehicle)?` · ${planName("vehicle",enquiry.selected_vehicle)}`:""}`]:[]}/><Selection label="Local guide" values={selectionNames.guide?[`${selectionNames.guide}${enquiry.selected_guide&&planName("guide",enquiry.selected_guide)?` · ${planName("guide",enquiry.selected_guide)}`:""}`]:[]}/></Section>
-      <JourneyLifecycleWorkspace enquiry={enquiry} handoff={handoff} destinations={selectionNames.destinations} experiences={selectionNames.experiences} experienceDestinations={experienceDestinations} legacySelections={[...selectionNames.stays.map(item=>item.name),selectionNames.vehicle,selectionNames.guide].filter((value):value is string=>Boolean(value))} account={account} onEnquiryStatusChange={status=>setEnquiry(current=>current?{...current,status}:current)}/>
+      <div id="supplier-allocation"><JourneyLifecycleWorkspace enquiry={enquiry} handoff={designHandoff??handoff} destinations={hasCuratedJourney?designNames.destinations:selectionNames.destinations} experiences={hasCuratedJourney?designNames.experiences:selectionNames.experiences} experienceDestinations={experienceDestinations} legacySelections={[...selectionNames.stays.map(item=>item.name),selectionNames.vehicle,selectionNames.guide].filter((value):value is string=>Boolean(value))} account={account} onEnquiryStatusChange={status=>setEnquiry(current=>current?{...current,status}:current)}/></div>
       <Section title="Traveller notes"><p className="whitespace-pre-wrap text-sm leading-7 text-slate/70">{enquiry.traveller_notes||enquiry.summary||"No additional notes were supplied."}</p></Section>
       <Section title="What the traveller saw at submission">{submittedRange?<div><div className="grid gap-4 sm:grid-cols-2"><Price label="Estimated range per adult" value={`${submittedRange.currency} ${submittedRange.minimum?.toLocaleString("en-US",{maximumFractionDigits:0})} – ${submittedRange.maximum?.toLocaleString("en-US",{maximumFractionDigits:0})}`}/>{submittedRange.totalMin!==null&&submittedRange.totalMax!==null?<Price label="Estimated journey total" value={`${submittedRange.currency} ${submittedRange.totalMin.toLocaleString("en-US",{maximumFractionDigits:0})} – ${submittedRange.totalMax.toLocaleString("en-US",{maximumFractionDigits:0})}`}/>:null}</div><p className="mt-4 text-sm leading-6 text-stone">Snapshot taken {new Date(submittedRange.estimatedAt).toLocaleString("en-GB")}. This is informational only and never drives supplier allocation, proposal pricing or Accounting.</p></div>:isJourneyEstimate(quote)||enquiry.estimated_at?<div><p className="font-serif text-xl text-forest">Price tailored in Journey Proposal</p><p className="mt-2 text-sm leading-6 text-stone">The public estimate could not be shown reliably. The journey designer should prepare the commercial proposal from allocated suppliers.</p></div>:quote?.status==="ready"?<div><Price label="Legacy fixed estimate at submission" value={`${quote.currency} ${quote.totalPackagePrice?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/><p className="mt-4 text-sm text-stone">Legacy snapshot retained for backwards compatibility. It does not replace the current supplier-led proposal.</p></div>:<p className="text-sm text-stone">No public estimate was stored with this enquiry.</p>}</Section>
     </div><aside className="grid h-fit gap-6">

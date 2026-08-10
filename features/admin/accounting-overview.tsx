@@ -57,8 +57,8 @@ export function AccountingOverview(){
     const rows=activeSettlements.filter(row=>row.payee_type===type);
     return {type:type as keyof typeof payeeLabels,due:rows.reduce((sum,row)=>sum+row.amount_due,0),paid:rows.reduce((sum,row)=>sum+row.amount_paid,0),waived:rows.reduce((sum,row)=>sum+row.waived_amount,0)};
   }).filter(item=>item.due>0);
-  if(loading)return <AdminShell><div className="min-h-[70vh] animate-pulse rounded-3xl bg-white"/></AdminShell>;
-  return <AdminShell><div className="mx-auto max-w-[1500px]">
+  if(loading)return <AdminShell requiredPermission="finance.revenue.view"><div className="min-h-[70vh] animate-pulse rounded-3xl bg-white"/></AdminShell>;
+  return <AdminShell requiredPermission="finance.revenue.view"><div className="mx-auto max-w-[1500px]">
     <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">Financial control</p><h1 className="font-serif text-4xl md:text-5xl">Journey accounting</h1><p className="mt-3 max-w-2xl text-sm text-slate/55">Revenue, receipts, supplier obligations and profitability from the moment a traveller deposit is paid.</p></div><span className="rounded-full bg-forest px-5 py-3 text-sm font-bold text-white">Deposit-activated accounts</span></div>
     {message&&<div className="mt-6 rounded-2xl border border-gold/25 bg-gold/10 p-4 text-sm text-slate">{message}</div>}
     <section className="mt-9 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">

@@ -57,7 +57,7 @@ export function EnquiryInbox(){
   })()},[router]);
   const visible=useMemo(()=>rows.filter(row=>(filter==="all"||row.status===filter)&&`${row.journey_reference} ${row.name} ${row.email} ${row.phone||""} ${row.nationality||""}`.toLowerCase().includes(search.toLowerCase())),[rows,filter,search]);
   const openCount=rows.filter(row=>!["completed","cancelled","archived"].includes(row.status)).length;
-  return <AdminShell><div className="mx-auto max-w-7xl">
+  return <AdminShell requiredPermission="journey.requests.view"><div className="mx-auto max-w-7xl">
     <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">Sales pipeline</p><h1 className="font-serif text-4xl md:text-5xl">Traveller enquiries</h1><p className="mt-3 max-w-2xl text-slate/60">Every quotation request, its complete journey and the next follow-up action in one place.</p></div><div className="rounded-2xl bg-forest px-6 py-4 text-ivory"><span className="block text-xs text-ivory/55">Open opportunities</span><strong className="font-serif text-3xl">{openCount}</strong></div></div>
     {loadError&&<div role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">Enquiries could not be loaded: {loadError}</div>}
     <div className="mt-8 flex flex-wrap gap-2">{filters.map(([key,label])=><button key={key} onClick={()=>setFilter(key)} className={`rounded-full px-4 py-2 text-xs font-semibold ${filter===key?"bg-forest text-white":"bg-white text-stone"}`}>{label}{key!=="all"&&<span className="ml-2 opacity-60">{rows.filter(row=>row.status===key).length}</span>}</button>)}</div>

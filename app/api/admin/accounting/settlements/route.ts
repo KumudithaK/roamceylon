@@ -12,7 +12,7 @@ const schema=z.object({
 });
 
 export async function POST(request:Request){
-  const actor=await authenticatedStaff(request);
+  const actor=await authenticatedStaff(request,"finance.payments.manage");
   if(!actor)return NextResponse.json({error:"Unauthorized."},{status:401});
   const {database}=actor;
   const parsed=schema.safeParse(await request.json().catch(()=>null));

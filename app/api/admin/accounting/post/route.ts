@@ -13,7 +13,7 @@ const schema=z.object({
 });
 
 export async function POST(request:Request){
-  const actor=await authenticatedStaff(request);
+  const actor=await authenticatedStaff(request,"finance.payments.manage");
   if(!actor)return NextResponse.json({error:"Unauthorized."},{status:401});
   const parsed=schema.safeParse(await request.json().catch(()=>({})));
   if(!parsed.success)return NextResponse.json({error:parsed.error.issues[0]?.message??"Check the deposit details."},{status:400});
