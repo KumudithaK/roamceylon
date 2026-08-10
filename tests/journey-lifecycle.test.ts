@@ -11,14 +11,35 @@ test("supplier allocations remain independent from immutable traveller preferenc
   assert.doesNotMatch(route,/destinationPreferences\s*:/);
 });
 
-test("proposal snapshots use allocated suppliers and enforce sent before approval",()=>{
+test("proposal snapshots use allocated suppliers and require internal approval before sending",()=>{
   const service=read("../lib/proposals/journey-proposal-service.ts");
   const workspace=read("../features/admin/journey-lifecycle-workspace.tsx");
   assert.match(service,/allocationCommercialSnapshot/);
   assert.match(service,/allocation_snapshot/);
-  assert.match(service,/proposal\.status!=="sent"/);
+  assert.match(service,/proposal\.status!=="internal_approved"/);
+  assert.match(service,/sent_snapshot:proposal\.customer_snapshot/);
+  assert.match(service,/customer_snapshot:customerProposalJson/);
   assert.match(service,/"proposal_accepted"/);
-  assert.match(workspace,/onEnquiryStatusChange\?\.\(action==="generate"\?"preparing_proposal":action==="sent"\?"proposal_sent":"proposal_accepted"\)/);
+  assert.match(workspace,/action==="sent"\?"proposal_sent":"preparing_proposal"/);
+});
+
+test("phase ten preserves sent versions and provides traveller acceptance and changes",()=>{
+  const migration=read("../supabase/migrations/202608100005_premium_journey_proposals.sql");
+  const guards=read("../supabase/migrations/202608100006_proposal_snapshot_guards.sql");
+  const travellerService=read("../lib/proposals/traveller-proposal-service.ts");
+  const document=read("../components/proposal/proposal-document.tsx");
+  for(const field of ["public_token","customer_snapshot","sent_snapshot","journey_proposal_change_requests","journey_proposal_acceptances"])assert.match(migration,new RegExp(field));
+  assert.match(travellerService,/proposal_version:proposal\.version/);
+  assert.match(travellerService,/accepted_total:proposal\.total_selling_price/);
+  assert.match(travellerService,/status:"changes_requested"/);
+  assert.match(guards,/protect_sent_proposal_snapshot/);
+  assert.match(guards,/requires_new_version=true/);
+  assert.match(guards,/mark_proposal_after_curated_change/);
+  assert.match(guards,/mark_proposal_after_allocation_change/);
+  assert.match(document,/What your journey includes/);
+  assert.match(document,/Your journey investment/);
+  assert.match(document,/Payment schedule/);
+  assert.doesNotMatch(document,/supplierCost|grossProfit|profitMargin|commission/i);
 });
 
 test("allocation accounting preserves the legacy quote path and activates only after payment",()=>{

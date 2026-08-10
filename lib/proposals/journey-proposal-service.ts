@@ -8,6 +8,8 @@ import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import {resolveJourneyDesign} from "@/lib/journey/curated-journey-server";
 import {completeJourneyLegs} from "@/lib/journey/travel-preferences";
 import {reviewProposalAgainstEstimate} from "./proposal-range-review";
+import {composeCustomerProposal,customerProposalJson} from "./customer-proposal";
+import {proposalSnapshot,validateCustomerProposal} from "./customer-proposal-types";
 import type {Database,Json} from "@/lib/database.types";
 
 type Proposal=Database["public"]["Tables"]["journey_proposals"]["Row"];
@@ -21,7 +23,7 @@ export class ProposalError extends Error{
   constructor(public code:"NOT_FOUND"|"INCOMPLETE"|"DATABASE",message:string){super(message);this.name="ProposalError"}
 }
 
-export async function generateJourneyProposal(enquiryId:string,userId:string,details:{introduction?:string;terms?:string;validUntil?:string;rangeOverrideReason?:string;commercialOverrides?:AllocationCommercialOverrides}){
+export async function generateJourneyProposal(enquiryId:string,userId:string,details:{introduction?:string;terms?:string;validUntil?:string;rangeOverrideReason?:string;commercialOverrides?:AllocationCommercialOverrides;depositAmount?:number|null;depositDueDate?:string;balanceDueDate?:string;additionalInclusions?:string[];additionalExclusions?:string[];importantInformation?:string[];optionalItems?:Array<{name:string;description:string;price?:number;currency?:string}>}){
   const database=createAdminClient();
   if(!database)throw new ProposalError("DATABASE","Supabase server credentials are unavailable.");
   const {data:enquiry,error}=await database.from("enquiries").select("*").eq("id",enquiryId).maybeSingle();
@@ -75,39 +77,51 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
   if(lastError)throw new ProposalError("DATABASE",lastError.message);
   const version=(last?.version??0)+1;
   const reference=`${enquiry.journey_reference}-P${version}`;
-  const {error:supersedeError}=await database.from("journey_proposals").update({status:"superseded"}).eq("enquiry_id",enquiryId).in("status",["ready","sent"]);
-  if(supersedeError)throw new ProposalError("DATABASE",supersedeError.message);
   const activeSnapshot=commercial.snapshot.filter(line=>line.confirmationStatus!=="cancelled");
   const rangeReview=reviewProposalAgainstEstimate(handoff?.quote??enquiry.estimate_snapshot,commercial.summary.totalSellingPrice,details.rangeOverrideReason);
   if(rangeReview.status==="outside_range"&&(!rangeReview.reason||rangeReview.reason.length<10))throw new ProposalError("INCOMPLETE",`This proposal is outside the traveller's submitted planning range (${rangeReview.currency} ${rangeReview.estimateTotalMin?.toLocaleString()}–${rangeReview.estimateTotalMax?.toLocaleString()}). Add a clear internal explanation before generating it.`);
+  let customerSnapshot;
+  try{customerSnapshot=await composeCustomerProposal(database,enquiry,design.curated,activeSnapshot,commercial.summary,{reference,version,currency:activeSnapshot[0]?.currency??"USD"},details)}
+  catch(error){throw new ProposalError("INCOMPLETE",error instanceof Error?error.message:"The customer-facing proposal could not be prepared.")}
+  const readiness=validateCustomerProposal(customerSnapshot);
+  if(!readiness.ready)throw new ProposalError("INCOMPLETE",readiness.issues.join(" "));
   const {data:proposal,error:proposalError}=await database.from("journey_proposals").insert({
     enquiry_id:enquiryId,curated_journey_id:design.curated?.id??null,curated_journey_snapshot:design.curated?.itinerary??null,version,proposal_reference:reference,status:"ready",
     currency:activeSnapshot[0]?.currency??"USD",total_supplier_cost:commercial.summary.totalSupplierCost,
     total_selling_price:commercial.summary.totalSellingPrice,gross_profit:commercial.summary.grossProfit,
     profit_margin:commercial.summary.profitMargin,introduction:details.introduction||null,
     terms:details.terms||null,valid_until:details.validUntil||null,
-    allocation_snapshot:asJson(activeSnapshot),commercial_snapshot:asJson({summary:commercial.summary,context:commercial.commercialContext,rangeReview}),created_by:userId
+    allocation_snapshot:asJson(activeSnapshot),commercial_snapshot:asJson({summary:commercial.summary,context:commercial.commercialContext,rangeReview}),customer_snapshot:customerProposalJson(customerSnapshot),created_by:userId
   }).select("*").single();
   if(proposalError||!proposal)throw new ProposalError("DATABASE",proposalError?.message??"The proposal could not be generated.");
+  const {error:supersedeError}=await database.from("journey_proposals").update({status:"superseded"}).eq("enquiry_id",enquiryId).neq("id",proposal.id).in("status",["ready","internal_approved","sent","viewed","changes_requested"]);
+  if(supersedeError){await database.from("journey_proposals").delete().eq("id",proposal.id);throw new ProposalError("DATABASE",supersedeError.message)}
   const {error:statusError}=await database.from("enquiries").update({status:"preparing_proposal"}).eq("id",enquiryId);
   if(statusError)throw new ProposalError("DATABASE",statusError.message);
   if(design.curated)await database.from("curated_journeys").update({status:"ready_for_proposal",updated_by:userId}).eq("id",design.curated.id);
   return proposal;
 }
 
-export async function transitionJourneyProposal(proposalId:string,action:"sent"|"approved"){
+export async function transitionJourneyProposal(proposalId:string,action:"internal_approve"|"sent"|"approved",userId?:string){
   const database=createAdminClient();
   if(!database)throw new ProposalError("DATABASE","Supabase server credentials are unavailable.");
   const {data:proposal,error}=await database.from("journey_proposals").select("*").eq("id",proposalId).maybeSingle();
   if(error)throw new ProposalError("DATABASE",error.message);
   if(!proposal)throw new ProposalError("NOT_FOUND","Journey proposal not found.");
-  if(action==="sent"&&proposal.status!=="ready")throw new ProposalError("INCOMPLETE","Only a ready proposal can be marked sent.");
-  if(action==="approved"&&proposal.status!=="sent")throw new ProposalError("INCOMPLETE","Mark the proposal as sent before recording traveller approval.");
+  if(proposal.requires_new_version)throw new ProposalError("INCOMPLETE","The curated journey or a supplier allocation changed after this proposal was prepared. Generate and review a new proposal version.");
+  if(action==="internal_approve"&&proposal.status!=="ready")throw new ProposalError("INCOMPLETE","Only a ready proposal can be approved internally.");
+  if(action==="sent"&&proposal.status!=="internal_approved")throw new ProposalError("INCOMPLETE","Approve the proposal internally before sending it to the traveller.");
+  if(action==="approved"&&!['sent','viewed'].includes(proposal.status))throw new ProposalError("INCOMPLETE","Only the sent proposal version can be accepted.");
+  if(action==="internal_approve"||action==="sent"){
+    const customer=proposalSnapshot(proposal.customer_snapshot);if(!customer)throw new ProposalError("INCOMPLETE","This legacy proposal has no Phase 10 customer snapshot. Create a new proposal version before approval or sending.");
+    const readiness=validateCustomerProposal(customer);if(!readiness.ready)throw new ProposalError("INCOMPLETE",readiness.issues.join(" "));
+  }
   const now=new Date().toISOString();
-  const changes=action==="sent"?{status:"sent" as const,sent_at:now}:{status:"approved" as const,approved_at:now};
+  const changes=action==="internal_approve"?{status:"internal_approved" as const,internally_approved_at:now,internally_approved_by:userId??null}:action==="sent"?{status:"sent" as const,sent_at:now,sent_snapshot:proposal.customer_snapshot,requires_new_version:false,out_of_date_at:null}:{status:"approved" as const,approved_at:now,accepted_at:now};
   const {data:updated,error:updateError}=await database.from("journey_proposals").update(changes).eq("id",proposalId).select("*").single();
   if(updateError||!updated)throw new ProposalError("DATABASE",updateError?.message??"Proposal status could not be changed.");
-  const {error:statusError}=await database.from("enquiries").update({status:action==="sent"?"proposal_sent":"proposal_accepted"}).eq("id",proposal.enquiry_id);
+  const enquiryStatus=action==="internal_approve"?"preparing_proposal":action==="sent"?"proposal_sent":"proposal_accepted";
+  const {error:statusError}=await database.from("enquiries").update({status:enquiryStatus}).eq("id",proposal.enquiry_id);
   if(statusError)throw new ProposalError("DATABASE",statusError.message);
   return updated as Proposal;
 }
