@@ -80,6 +80,13 @@ export const curatedJourneyDuration=(itinerary:CuratedItinerary)=>{const start=n
 export function validateCuratedJourney(itinerary:CuratedItinerary){
   const duration=curatedJourneyDuration(itinerary),plannedNights=curatedJourneyNights(itinerary),availableNights=Math.max(0,duration-1),errors:string[]=[],warnings:string[]=[];
   if(!duration)errors.push("Choose valid journey start and end dates.");
+  const totalTravellers=itinerary.travellerCounts.adults+itinerary.travellerCounts.children+itinerary.travellerCounts.infants;
+  if(totalTravellers<1)errors.push("Add at least one traveller.");
+  for(const experienceId of itinerary.selectedExperienceIds){
+    const participants=itinerary.experienceParticipants[experienceId];
+    if(!participants)continue;
+    if(participants.adults>itinerary.travellerCounts.adults||participants.children>itinerary.travellerCounts.children||participants.infants>itinerary.travellerCounts.infants)errors.push("Experience participants cannot exceed the journey traveller counts.");
+  }
   if(!itinerary.selectedDestinationIds.length)errors.push("Add at least one destination.");
   if(plannedNights>availableNights)errors.push(`Planned stays use ${plannedNights} nights, but the journey has ${availableNights}.`);
   if(duration&&plannedNights<availableNights)warnings.push(`${availableNights-plannedNights} journey night${availableNights-plannedNights===1?" is":"s are"} still open for planning.`);
@@ -102,11 +109,12 @@ export function curatedJourneyChanges(previous:CuratedItinerary,next:CuratedItin
     if(!same(previous.experienceNotes[id],next.experienceNotes[id]))changes.push({changeType:"experience_note_changed",subjectType:"experience",subjectId:id,fieldName:"notes",previousValue:json(previous.experienceNotes[id]),newValue:json(next.experienceNotes[id]),summary:`Experience note changed: ${experienceName(id)}`});
     if(!same(previous.experienceParticipants[id],next.experienceParticipants[id]))changes.push({changeType:"experience_participants_changed",subjectType:"experience",subjectId:id,fieldName:"participants",previousValue:json(previous.experienceParticipants[id]),newValue:json(next.experienceParticipants[id]),summary:`Experience participants changed: ${experienceName(id)}`});
   }
-  for(const field of ["pickup","dropoff","globalTravelPreference","travelPreferencesByLeg","journeyGuidePreference","journeyGuideLanguages","journeyGuideNotes","travelDates"] as const)if(!same(previous[field],next[field]))changes.push({changeType:`${field}_changed`,subjectType:"journey",subjectId:null,fieldName:field,previousValue:json(previous[field]),newValue:json(next[field]),summary:`${field.replaceAll(/([A-Z])/g," $1").toLowerCase()} changed`});
+  for(const field of ["pickup","dropoff","globalTravelPreference","travelPreferencesByLeg","journeyGuidePreference","journeyGuideLanguages","journeyGuideNotes","travelDates","travellerCounts"] as const)if(!same(previous[field],next[field]))changes.push({changeType:`${field}_changed`,subjectType:"journey",subjectId:null,fieldName:field,previousValue:json(previous[field]),newValue:json(next[field]),summary:`${field.replaceAll(/([A-Z])/g," $1").toLowerCase()} changed`});
   return changes;
 }
 
 export function allocationReviewReason(allocation:{allocation_type:string;destination_id:string|null;experience_id:string|null;from_location_key:string|null;to_location_key:string|null},previous:CuratedItinerary,next:CuratedItinerary){
+  if(!same(previous.travelDates,next.travelDates)||!same(previous.travellerCounts,next.travellerCounts))return "Journey dates or traveller counts changed in Journey Studio.";
   const destinationChanged=(id:string|null)=>Boolean(id&&(!next.selectedDestinationIds.includes(id)||!same(previous.destinationPreferences[id],next.destinationPreferences[id])));
   if(allocation.allocation_type==="accommodation"&&destinationChanged(allocation.destination_id))return "Destination stay requirements changed in Journey Studio.";
   if(allocation.allocation_type==="guide"&&(destinationChanged(allocation.destination_id)||!same(previous.journeyGuidePreference,next.journeyGuidePreference)||!same(previous.journeyGuideLanguages,next.journeyGuideLanguages)))return "Guide requirements changed in Journey Studio.";

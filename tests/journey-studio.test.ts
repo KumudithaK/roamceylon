@@ -12,6 +12,17 @@ test("curation supports destination and experience additions, removals and order
 
 test("participant normalization permits zero adults for a child-only experience group",()=>{const curated=normaliseCuratedItinerary({...createCuratedItinerary(state),experienceParticipants:{fort:{adults:0,children:2,infants:0}}},state);assert.deepEqual(curated.experienceParticipants.fort,{adults:0,children:2,infants:0})});
 
+test("journey dates and traveller counts can be revised without mutating the original brief",()=>{const original=createCuratedItinerary(state),next=normaliseCuratedItinerary({...original,travelDates:{start:"2027-03-01",end:"2027-03-06"},pickup:{...original.pickup,date:"2027-03-01"},dropoff:{...original.dropoff,date:"2027-03-06"},travellerCounts:{adults:3,children:1,infants:0}},state),changes=curatedJourneyChanges(original,next,{destinations:{},experiences:{}});assert.deepEqual(state.travelDates,{start:"2027-02-12",end:"2027-02-16"});assert.deepEqual(state.travellerCounts,{adults:2,children:0,infants:0});assert(changes.some(change=>change.fieldName==="travelDates"));assert(changes.some(change=>change.fieldName==="travellerCounts"));assert(allocationReviewReason({allocation_type:"accommodation",destination_id:"galle",experience_id:null,from_location_key:null,to_location_key:null},original,next))});
+
+test("experience participants cannot exceed revised journey traveller counts",()=>{
+  const itinerary=normaliseCuratedItinerary({
+    ...createCuratedItinerary(state),
+    travellerCounts:{adults:1,children:0,infants:0},
+    experienceParticipants:{fort:{adults:2,children:0,infants:0}}
+  },state);
+  assert(validateCuratedJourney(itinerary).errors.some(error=>error.includes("Experience participants")));
+});
+
 test("route, stay, guide, experience and transport changes require allocation review",()=>{const before=createCuratedItinerary(state),after=normaliseCuratedItinerary({...before,selectedDestinationIds:["kandy","galle"],destinationPreferences:{...before.destinationPreferences,galle:{...before.destinationPreferences.galle,nights:2}},selectedExperienceIds:[],journeyGuideLanguages:["English","Italian"]},state);assert(allocationReviewReason({allocation_type:"accommodation",destination_id:"galle",experience_id:null,from_location_key:null,to_location_key:null},before,after));assert(allocationReviewReason({allocation_type:"experience",destination_id:"galle",experience_id:"fort",from_location_key:null,to_location_key:null},before,after));assert(allocationReviewReason({allocation_type:"guide",destination_id:null,experience_id:null,from_location_key:null,to_location_key:null},before,after));assert(allocationReviewReason({allocation_type:"vehicle",destination_id:null,experience_id:null,from_location_key:"pickup",to_location_key:"destination:galle"},before,after))});
 
 test("migration protects the brief and proposal generation resolves curated state",()=>{
