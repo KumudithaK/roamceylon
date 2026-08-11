@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {usePathname,useRouter} from "next/navigation";
-import {BedDouble,CarFront,Compass,Handshake,Inbox,LayoutDashboard,LogOut,Map,Route,Settings,Sparkles,UsersRound,WalletCards} from "lucide-react";
+import {BedDouble,CarFront,Compass,Gift,Handshake,Inbox,LayoutDashboard,LogOut,Map,Route,Settings,Sparkles,UsersRound,WalletCards} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
 import {useStaffPermissions} from "@/lib/admin/use-staff-permissions";
@@ -21,6 +21,7 @@ const navigation=[
   [CarFront,"Vehicles","/admin/resources/vehicles",adminNavigationPermissions.vehicles],
   [UsersRound,"Local Guides","/admin/resources/guides",adminNavigationPermissions.guides],
   [Handshake,"Partner Applications","/admin/partner-applications",adminNavigationPermissions.partners],
+  [Gift,"Benefits & Privileges","/admin/benefits",adminNavigationPermissions.benefits],
   [Settings,"Business Pricing","/admin/settings/pricing",adminNavigationPermissions.pricing],
   [Settings,"Partner Settings","/admin/settings/partners",adminNavigationPermissions.partnerSettings]
 ] as const;

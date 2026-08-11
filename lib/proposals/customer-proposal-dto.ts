@@ -9,6 +9,7 @@ const stay=z.object({name:z.string(),destination:z.string(),nights:z.number(),ch
 const transport=z.object({from:z.string(),to:z.string(),service:z.string(),details:z.array(z.string()),confirmation:z.string()});
 const guide=z.object({name:z.string(),role:z.string(),destination:optionalText,languages:z.array(z.string()),service:z.string(),confirmation:z.string()});
 const experience=z.object({name:z.string(),destination:z.string(),description:z.string(),image:optionalText,duration:optionalText,admission:z.string(),guide:z.string(),thingsToKnow:z.array(z.string()),status:z.enum(["included","optional","not_included","subject_to_confirmation"])});
+const benefit=z.object({code:z.string(),type:z.enum(["roam_ceylon_complimentary","preferred_rate","partner_privilege","complimentary_upgrade","meal_benefit","arrival_departure_benefit","celebration_benefit","experience_benefit","roam_ceylon_service_benefit","other"]),scope:z.enum(["journey","traveller","stay","destination","experience","transport","guide","day"]),title:z.string(),description:z.string(),confidence:z.enum(["guaranteed_by_roam_ceylon","confirmed_partner_benefit","subject_to_availability"]),scopeLabel:optionalText,quantity:z.number(),preferredRate:z.number().optional(),referenceRate:z.number().optional(),currency:optionalText,rateUnit:optionalText,verifiedSavings:z.number()});
 const day=z.object({day:z.number(),date:optionalText,title:z.string(),destination:z.string(),route:optionalText,arrival:optionalText,transport:z.array(z.string()),stay:optionalText,room:optionalText,meals:z.array(z.string()),experiences:z.array(z.object({name:z.string(),timing:z.string()})),guides:z.array(z.string()),notes:z.array(z.string())});
 
 const customerProposalSchema=z.object({
@@ -17,7 +18,7 @@ const customerProposalSchema=z.object({
   traveller:z.object({name:z.string(),email:z.string(),country:optionalText,adults:z.number(),children:z.number(),infants:z.number(),total:z.number(),requirements:z.array(z.string())}),
   journey:z.object({startDate:z.string(),endDate:z.string(),days:z.number(),nights:z.number(),pickup:z.string(),dropoff:z.string(),route:z.array(routeStop)}),
   introduction:z.string(),destinations:z.array(z.object({id:z.string(),name:z.string(),nights:z.number(),summary:z.string(),image:optionalText,highlights:z.array(z.string())})),
-  days:z.array(day),stays:z.array(stay),transport:z.array(transport),guides:z.array(guide),experiences:z.array(experience),
+  days:z.array(day),stays:z.array(stay),transport:z.array(transport),guides:z.array(guide),experiences:z.array(experience),benefits:z.array(benefit).optional().default([]),
   inclusions:z.array(z.string()),exclusions:z.array(z.string()),optionalItems:z.array(z.object({name:z.string(),description:z.string(),price:z.number().optional(),currency:z.string().optional()})),
   pricing:z.object({currency:z.string(),total:z.number(),perPerson:z.number(),breakdown:z.array(z.object({key:z.string(),label:z.string(),amount:z.number()})),allInclusive:z.boolean()}),
   payment:z.object({depositAmount:z.number().nullable(),depositDueDate:optionalText,depositDueLabel:z.string(),balanceAmount:z.number().nullable(),balanceDueDate:optionalText,paidAmount:z.number(),status:z.enum(["not_started","part_paid","paid"])}),

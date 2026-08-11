@@ -1,4 +1,5 @@
 import type {Json} from "@/lib/database.types";
+import type {CustomerBenefit} from "@/lib/benefits/preferred-benefits";
 
 export type ProposalContact={
   hotline:string;whatsappUrl:string;facebookUrl:string;address:string;
@@ -17,7 +18,7 @@ export type ProposalSnapshot={
   traveller:{name:string;email:string;country?:string;adults:number;children:number;infants:number;total:number;requirements:string[]};
   journey:{startDate:string;endDate:string;days:number;nights:number;pickup:string;dropoff:string;route:ProposalRouteStop[]};
   introduction:string;destinations:Array<{id:string;name:string;nights:number;summary:string;image?:string;highlights:string[]}>;
-  days:ProposalDay[];stays:ProposalStay[];transport:ProposalTransport[];guides:ProposalGuide[];experiences:ProposalExperience[];
+  days:ProposalDay[];stays:ProposalStay[];transport:ProposalTransport[];guides:ProposalGuide[];experiences:ProposalExperience[];benefits?:CustomerBenefit[];
   inclusions:string[];exclusions:string[];optionalItems:Array<{name:string;description:string;price?:number;currency?:string}>;
   pricing:{currency:string;total:number;perPerson:number;breakdown:ProposalPriceLine[];allInclusive:boolean};
   payment:{depositAmount:number|null;depositDueDate?:string;depositDueLabel:string;balanceAmount:number|null;balanceDueDate?:string;paidAmount:number;status:"not_started"|"part_paid"|"paid"};

@@ -10,6 +10,7 @@ import {resolveJourneyDesign} from "@/lib/journey/curated-journey-server";
 import {completeJourneyLegs} from "@/lib/journey/travel-preferences";
 import {reviewProposalAgainstEstimate} from "./proposal-range-review";
 import {composeCustomerProposal,customerProposalJson} from "./customer-proposal";
+import {customerBenefitsForProposal} from "@/lib/benefits/journey-benefit-service";
 import {validateCustomerProposal} from "./customer-proposal-types";
 import {customerSafeProposalDto} from "./customer-proposal-dto";
 import type {Database,Json} from "@/lib/database.types";
@@ -83,7 +84,7 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
   const rangeReview=reviewProposalAgainstEstimate(handoff?.quote??enquiry.estimate_snapshot,commercial.summary.totalSellingPrice,details.rangeOverrideReason);
   if(rangeReview.status==="outside_range"&&(!rangeReview.reason||rangeReview.reason.length<10))throw new ProposalError("INCOMPLETE",`This proposal is outside the traveller's submitted planning range (${rangeReview.currency} ${rangeReview.estimateTotalMin?.toLocaleString()}–${rangeReview.estimateTotalMax?.toLocaleString()}). Add a clear internal explanation before generating it.`);
   let customerSnapshot;
-  try{customerSnapshot=await composeCustomerProposal(database,enquiry,design.curated,activeSnapshot,commercial.summary,{reference,version,currency:activeSnapshot[0]?.currency??"USD"},details)}
+  try{const [composed,benefits]=await Promise.all([composeCustomerProposal(database,enquiry,design.curated,activeSnapshot,commercial.summary,{reference,version,currency:activeSnapshot[0]?.currency??"USD"},details),customerBenefitsForProposal(database,enquiryId,userId)]);customerSnapshot={...composed,benefits}}
   catch(error){throw new ProposalError("INCOMPLETE",error instanceof Error?error.message:"The customer-facing proposal could not be prepared.")}
   const readiness=validateCustomerProposal(customerSnapshot);
   if(!readiness.ready)throw new ProposalError("INCOMPLETE",readiness.issues.join(" "));
