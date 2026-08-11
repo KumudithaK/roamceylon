@@ -12,7 +12,7 @@ export type ProposalExperience={name:string;destination:string;description:strin
 export type ProposalDay={day:number;date?:string;title:string;destination:string;route?:string;arrival?:string;transport:string[];stay?:string;room?:string;meals:string[];experiences:Array<{name:string;timing:string}>;guides:string[];notes:string[]};
 export type ProposalPriceLine={key:string;label:string;amount:number};
 export type ProposalSnapshot={
-  schemaVersion:1;generatedAt:string;proposalReference:string;version:number;
+  schemaVersion:1;documentStage?:"pre_booking_proposal";generatedAt:string;proposalReference:string;version:number;
   brand:{name:string;line:string;logo:string};coverImage?:string;
   traveller:{name:string;email:string;country?:string;adults:number;children:number;infants:number;total:number;requirements:string[]};
   journey:{startDate:string;endDate:string;days:number;nights:number;pickup:string;dropoff:string;route:ProposalRouteStop[]};

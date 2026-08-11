@@ -4,7 +4,7 @@ import {acceptTravellerProposal,requestTravellerChanges,TravellerProposalError} 
 
 const schema=z.discriminatedUnion("action",[
   z.object({action:z.literal("accept"),name:z.string().trim().min(2).max(150),email:z.email(),termsAcknowledged:z.literal(true)}),
-  z.object({action:z.literal("request_changes"),name:z.string().trim().min(2).max(150),email:z.email(),category:z.enum(["general","destination","accommodation","experience","transport","guide","budget","other"]),message:z.string().trim().min(10).max(5000)})
+  z.object({action:z.literal("request_changes"),name:z.string().trim().min(2).max(150),email:z.email(),category:z.enum(["general","destination","accommodation","experience","transport","guide","dates","budget","other"]),message:z.string().trim().min(10).max(5000)})
 ]);
 
 export async function POST(request:Request,{params}:{params:Promise<{token:string}>}){

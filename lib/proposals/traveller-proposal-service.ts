@@ -1,11 +1,12 @@
 import "server-only";
 import {createHash} from "node:crypto";
 import {createAdminClient} from "@/lib/supabase/admin";
-import {proposalSnapshot} from "./customer-proposal-types";
+import {customerSafeProposalDto} from "./customer-proposal-dto";
 import type {Database,Json} from "@/lib/database.types";
 
 type Proposal=Database["public"]["Tables"]["journey_proposals"]["Row"];
-const visibleStatuses:Proposal["status"][]=["sent","viewed","changes_requested","approved","expired"];
+type ProposalUpdate=Database["public"]["Tables"]["journey_proposals"]["Update"];
+const visibleStatuses:Proposal["status"][]=["sent","viewed","changes_requested","approved","expired","superseded","cancelled"];
 const safeMetadata=(userAgent:string|undefined)=>({userAgent:userAgent?.slice(0,500)??null,confirmationFingerprint:createHash("sha256").update(userAgent||"unknown").digest("hex").slice(0,20)}) as Json;
 
 export class TravellerProposalError extends Error{constructor(public code:"NOT_FOUND"|"INVALID"|"CONFLICT"|"DATABASE",message:string){super(message);this.name="TravellerProposalError"}}
@@ -13,12 +14,11 @@ export class TravellerProposalError extends Error{constructor(public code:"NOT_F
 export async function loadTravellerProposal(token:string,{markViewed=true}:{markViewed?:boolean}={}){
   const database=createAdminClient();if(!database)throw new TravellerProposalError("DATABASE","Proposal service is unavailable.");
   const {data,error}=await database.from("journey_proposals").select("*").eq("public_token",token).maybeSingle();
-  if(error)throw new TravellerProposalError("DATABASE",error.message);if(!data||!visibleStatuses.includes(data.status))throw new TravellerProposalError("NOT_FOUND","This proposal is unavailable.");
-  const snapshot=proposalSnapshot(data.sent_snapshot??data.customer_snapshot);if(!snapshot)throw new TravellerProposalError("NOT_FOUND","This proposal version is not ready for viewing.");
+  if(error)throw new TravellerProposalError("DATABASE",error.message);if(!data||data.access_revoked_at||!visibleStatuses.includes(data.status))throw new TravellerProposalError("NOT_FOUND","This proposal is unavailable.");
+  const snapshot=customerSafeProposalDto(data.sent_snapshot??data.customer_snapshot);if(!snapshot)throw new TravellerProposalError("NOT_FOUND","This proposal version is not ready for viewing.");
   const expired=Boolean(data.valid_until&&new Date(`${data.valid_until}T23:59:59Z`).getTime()<Date.now()&&!['approved','expired'].includes(data.status));
-  let proposal=data;
-  if(expired){const result=await database.from("journey_proposals").update({status:"expired"}).eq("id",data.id).select("*").single();if(result.data)proposal=result.data}
-  else if(markViewed&&data.status==="sent"){const result=await database.from("journey_proposals").update({status:"viewed",viewed_at:new Date().toISOString()}).eq("id",data.id).select("*").single();if(result.data)proposal=result.data}
+  let proposal=data;const now=new Date().toISOString();
+  if(expired||markViewed){const changes:ProposalUpdate={};if(expired)changes.status="expired";else if(data.status==="sent"){changes.status="viewed";changes.viewed_at=data.viewed_at??now}if(markViewed){changes.first_viewed_at=data.first_viewed_at??now;changes.last_viewed_at=now;changes.view_count=data.view_count+1}const result=await database.from("journey_proposals").update(changes).eq("id",data.id).select("*").single();if(result.error)throw new TravellerProposalError("DATABASE",result.error.message);proposal=result.data}
   return {proposal,snapshot};
 }
 

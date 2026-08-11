@@ -1,7 +1,7 @@
 import {NextResponse} from "next/server";
 import {z} from "zod";
 import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
-import {generateJourneyProposal,ProposalError,transitionJourneyProposal} from "@/lib/proposals/journey-proposal-service";
+import {generateJourneyProposal,ProposalError,revokeJourneyProposalAccess,transitionJourneyProposal} from "@/lib/proposals/journey-proposal-service";
 import type {Database,Json} from "@/lib/database.types";
 
 type Proposal=Database["public"]["Tables"]["journey_proposals"]["Row"];
@@ -18,6 +18,7 @@ const generateSchema=z.object({
   }).optional()
 });
 const transitionSchema=z.object({action:z.enum(["internal_approve","sent","approved"]),proposalId:z.uuid()});
+const revokeSchema=z.object({action:z.literal("revoke"),proposalId:z.uuid(),reason:z.string().trim().min(5).max(500)});
 
 const redactProposal=(proposal:Proposal,permissions:string[]):Proposal=>{
   const canSeeCosts=permissions.includes("finance.costs.view"),canSeeMargins=permissions.includes("finance.margin.view"),canSeePayments=permissions.includes("finance.payments.manage");
@@ -48,11 +49,13 @@ export async function POST(request:Request){
   const body=await request.json().catch(()=>null);
   const generate=generateSchema.safeParse(body);
   const transition=transitionSchema.safeParse(body);
-  if(!generate.success&&!transition.success)return NextResponse.json({error:"Invalid proposal action."},{status:400});
+  const revoke=revokeSchema.safeParse(body);
+  if(!generate.success&&!transition.success&&!revoke.success)return NextResponse.json({error:"Invalid proposal action."},{status:400});
   try{
     const proposal=generate.success
       ?await generateJourneyProposal(generate.data.enquiryId,actor.user.id,generate.data)
-      :transition.success?await transitionJourneyProposal(transition.data.proposalId,transition.data.action,actor.user.id):null;
+      :transition.success?await transitionJourneyProposal(transition.data.proposalId,transition.data.action,actor.user.id)
+      :revoke.success?await revokeJourneyProposalAccess(revoke.data.proposalId,actor.user.id,revoke.data.reason):null;
     if(!proposal)return NextResponse.json({error:"Invalid proposal action."},{status:400});
     return NextResponse.json({proposal:redactProposal(proposal,actor.permissions)},{status:generate.success?201:200});
   }catch(error){

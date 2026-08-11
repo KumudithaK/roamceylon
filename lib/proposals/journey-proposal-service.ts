@@ -1,4 +1,5 @@
 import "server-only";
+import {randomUUID} from "node:crypto";
 import {createAdminClient} from "@/lib/supabase/admin";
 import {allocationCommercialSnapshot} from "@/lib/accounting/allocation-accounting";
 import type {AllocationCommercialOverrides} from "@/lib/pricing/allocation-commercial";
@@ -9,7 +10,8 @@ import {resolveJourneyDesign} from "@/lib/journey/curated-journey-server";
 import {completeJourneyLegs} from "@/lib/journey/travel-preferences";
 import {reviewProposalAgainstEstimate} from "./proposal-range-review";
 import {composeCustomerProposal,customerProposalJson} from "./customer-proposal";
-import {proposalSnapshot,validateCustomerProposal} from "./customer-proposal-types";
+import {validateCustomerProposal} from "./customer-proposal-types";
+import {customerSafeProposalDto} from "./customer-proposal-dto";
 import type {Database,Json} from "@/lib/database.types";
 
 type Proposal=Database["public"]["Tables"]["journey_proposals"]["Row"];
@@ -113,15 +115,26 @@ export async function transitionJourneyProposal(proposalId:string,action:"intern
   if(action==="sent"&&proposal.status!=="internal_approved")throw new ProposalError("INCOMPLETE","Approve the proposal internally before sending it to the traveller.");
   if(action==="approved"&&!['sent','viewed'].includes(proposal.status))throw new ProposalError("INCOMPLETE","Only the sent proposal version can be accepted.");
   if(action==="internal_approve"||action==="sent"){
-    const customer=proposalSnapshot(proposal.customer_snapshot);if(!customer)throw new ProposalError("INCOMPLETE","This legacy proposal has no Phase 10 customer snapshot. Create a new proposal version before approval or sending.");
+    const customer=customerSafeProposalDto(proposal.customer_snapshot);if(!customer)throw new ProposalError("INCOMPLETE","This legacy proposal has no customer-safe Phase 10 snapshot. Create a new proposal version before approval or sending.");
     const readiness=validateCustomerProposal(customer);if(!readiness.ready)throw new ProposalError("INCOMPLETE",readiness.issues.join(" "));
   }
   const now=new Date().toISOString();
-  const changes=action==="internal_approve"?{status:"internal_approved" as const,internally_approved_at:now,internally_approved_by:userId??null}:action==="sent"?{status:"sent" as const,sent_at:now,sent_snapshot:proposal.customer_snapshot,requires_new_version:false,out_of_date_at:null}:{status:"approved" as const,approved_at:now,accepted_at:now};
+  const changes=action==="internal_approve"?{status:"internal_approved" as const,internally_approved_at:now,internally_approved_by:userId??null}:action==="sent"?{status:"sent" as const,sent_at:now,sent_snapshot:proposal.customer_snapshot,public_token:randomUUID(),requires_new_version:false,out_of_date_at:null,access_revoked_at:null,access_revoked_by:null,access_revocation_reason:null}:{status:"approved" as const,approved_at:now,accepted_at:now};
   const {data:updated,error:updateError}=await database.from("journey_proposals").update(changes).eq("id",proposalId).select("*").single();
   if(updateError||!updated)throw new ProposalError("DATABASE",updateError?.message??"Proposal status could not be changed.");
   const enquiryStatus=action==="internal_approve"?"preparing_proposal":action==="sent"?"proposal_sent":"proposal_accepted";
   const {error:statusError}=await database.from("enquiries").update({status:enquiryStatus}).eq("id",proposal.enquiry_id);
   if(statusError)throw new ProposalError("DATABASE",statusError.message);
+  return updated as Proposal;
+}
+
+export async function revokeJourneyProposalAccess(proposalId:string,userId:string,reason:string){
+  const database=createAdminClient();if(!database)throw new ProposalError("DATABASE","Supabase server credentials are unavailable.");
+  const {data:proposal,error}=await database.from("journey_proposals").select("*").eq("id",proposalId).maybeSingle();
+  if(error)throw new ProposalError("DATABASE",error.message);if(!proposal)throw new ProposalError("NOT_FOUND","Journey proposal not found.");
+  if(!proposal.sent_at)throw new ProposalError("INCOMPLETE","Only a proposal that has been sent can have its traveller link revoked.");
+  if(proposal.access_revoked_at)return proposal;
+  const {data:updated,error:updateError}=await database.from("journey_proposals").update({access_revoked_at:new Date().toISOString(),access_revoked_by:userId,access_revocation_reason:reason.trim()}).eq("id",proposalId).select("*").single();
+  if(updateError||!updated)throw new ProposalError("DATABASE",updateError?.message??"Traveller access could not be revoked.");
   return updated as Proposal;
 }
