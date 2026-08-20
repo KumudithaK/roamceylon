@@ -2,6 +2,7 @@ import {NextResponse} from "next/server";
 import {z} from "zod";
 import {JourneyEstimateService} from "@/lib/pricing/journey-estimate-service";
 import {PackagePricingError} from "@/lib/pricing/package-service";
+import {PublicInputError,readBoundedJson} from "@/lib/security/public-input";
 
 const counts=z.object({adults:z.number().int().min(0).max(100),children:z.number().int().min(0).max(100),infants:z.number().int().min(0).max(100)});
 const endpoint=z.object({type:z.enum(["airport","other"]).nullable(),airportCode:z.string().max(10),location:z.string().max(300),date:z.string().max(10),time:z.string().max(8),flightNumber:z.string().max(40)});
@@ -17,7 +18,8 @@ const estimateSchema=z.object({
 });
 
 export async function POST(request:Request){
-  const parsed=estimateSchema.safeParse(await request.json().catch(()=>null));
+  let raw:unknown;try{raw=await readBoundedJson(request,100_000)}catch(error){return NextResponse.json({error:error instanceof PublicInputError&&error.code==="PAYLOAD_TOO_LARGE"?"The journey estimate request is too large.":"Invalid journey estimate request."},{status:error instanceof PublicInputError&&error.code==="PAYLOAD_TOO_LARGE"?413:400})}
+  const parsed=estimateSchema.strict().safeParse(raw);
   if(!parsed.success)return NextResponse.json({error:"Invalid journey estimate request."},{status:400});
   try{return NextResponse.json(await new JourneyEstimateService().estimate(parsed.data as Parameters<JourneyEstimateService["estimate"]>[0]));}
   catch(error){

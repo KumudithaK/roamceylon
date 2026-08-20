@@ -324,4 +324,389 @@ Only after every Phase 1 exit criterion is satisfied should a separate prompt au
 
 No supplier DTO, settings DTO, RLS, Storage policy or application behavior remediation was implemented here.
 
-STABILIZATION PHASE 1 FINISHED – NO PRODUCTION APPLICATION BEHAVIOR, RLS OR DATABASE SCHEMA CHANGES MADE
+## 18. Phase 1B Completion
+
+Phase 1B resumed on 12 August 2026 after Docker Desktop was started. It completed the Docker and logical-schema-artifact checks, then stopped at the isolated-target gate as required. Phase 2 was not started.
+
+### Docker verification
+
+**READY**
+
+The operator-provided `docker --version` and `docker info` output confirms Docker Desktop 29.7.2 with a live 29.7.2 Linux server on `desktop-linux`. The Supabase PostgreSQL utility image was subsequently pulled and used successfully by the linked schema dump.
+
+### Git safety verification
+
+| Item | Verified value |
+|---|---|
+| Working branch | `agent/premium-experience-showcase` |
+| Phase 1 artifact commit at resumption | `61309e8b553b3563309c87f7f5900c69baf002af` |
+| Backup branch | `backup/pre-stabilization-20260812` -> `d28d81a01eb10cd6341b6df4f2d71d5866774bf1` |
+| Annotated tag target | `pre-stabilization-20260812` -> `d28d81a01eb10cd6341b6df4f2d71d5866774bf1` |
+
+The pre-existing generated `next-env.d.ts` change remains untouched. No reset, checkout or discard operation was used.
+
+### Backup artifacts and verification
+
+The linked Supabase schema dump completed successfully and is stored outside Git:
+
+| Artifact | Path | Size | Timestamp (Asia/Colombo) | SHA-256 | Verification |
+|---|---|---:|---|---|---|
+| Logical schema | `/tmp/roam-stabilization-phase1/pre-stabilization-schema.sql` | 201,177 bytes | `2026-08-12T09:30:43+0530` | `a011e830b757cc74c200c492253270033592d1beba703d3bf15ffda6a8d2e6eb` | Supabase dump exit 0; non-zero ASCII SQL; 4,734 lines, 46 tables, 19 functions and 121 policies detected |
+
+The schema artifact is **VERIFIED AS A SCHEMA ARTIFACT**. It is not by itself a complete recoverable database backup.
+
+Data-only and role-only dump attempts did not run because the Codex execution sandbox cannot read the operator's Supabase CLI login credential stored outside the workspace. They failed before connecting with `Access token not provided`; no database mutation occurred and no incomplete artifact is accepted as a backup.
+
+Provider status was rechecked and remains:
+
+- managed backup restore points returned: none;
+- PITR: disabled;
+- WAL-G capability flag: enabled, but no restorable backup was returned;
+- region: `ap-northeast-2`.
+
+Therefore the Phase 1 **valid database backup gate remains BLOCKED** until schema, data and roles are all preserved, verified and restore-tested. Enabling a paid backup/PITR plan remains a human business decision and was not attempted.
+
+### Isolated restore target and recovery proof
+
+**BLOCKED - HUMAN ACTION REQUIRED**
+
+No `AUTHZ_TEST_*` target values or other clearly disposable Supabase project are configured. The only configured application project is the live project, which the harness correctly refuses. Creating a separate Supabase project requires organization/account selection and may require a billing decision or browser action. Under the Phase 1B stop rule, Codex did not create a project, did not restore over production and did not improvise with the live project.
+
+Because there is no isolated target:
+
+- restore verification was not run;
+- the expected 70 migrations and source aggregate counts were not reconciled in a restored database;
+- no synthetic identities were created;
+- no disposable fixtures were created;
+- the staff or mutation authorization matrix was not run;
+- the legacy API authorization baseline remains blocked;
+- isolated Storage upload/remove probes remain blocked.
+
+### Authorization evidence status
+
+The anonymous, read-only evidence already recorded in Section 13 remains valid. The known findings reproduced without production mutation are:
+
+- `SEC-003`
+- `SEC-013`
+
+`ARC-001/SEC-001`, `SEC-005`, `SEC-008` and closure evidence for `SEC-014/TEST-001` remain execution-blocked until the isolated restore, synthetic identities and fixtures exist.
+
+### Exact remaining human actions
+
+1. From an operator terminal already authenticated with Supabase CLI, create the remaining sensitive dumps outside Git:
+
+   ```bash
+   cd /Users/kumudithakk/Documents/Codex/2026-07-25/use-the-uploaded-roam-ceylon-html/roamceylon
+   SUPABASE_TELEMETRY_DISABLED=1 npx supabase db dump --linked --data-only --use-copy --file /tmp/roam-stabilization-phase1/pre-stabilization-data.sql
+   SUPABASE_TELEMETRY_DISABLED=1 npx supabase db dump --linked --role-only --file /tmp/roam-stabilization-phase1/pre-stabilization-roles.sql
+   ```
+
+2. Create a separate disposable Supabase project, suggested name `roamceylon-stabilization-test`, in the appropriate organization. It must have no production integrations and must not use project ref `fstpfqlgypvktjwdeagu`.
+3. Keep all keys/passwords out of Git and chat. Configure them locally using the variable names in `tests/authorization-baseline.env.example`; provide only the new non-production project ref to identify the target.
+4. Resume Phase 1B so Codex can checksum the remaining dumps, restore them into that isolated project, reconcile the baseline, create synthetic identities/fixtures and execute the authorization matrix.
+
+### Re-evaluated Phase 1 exit gate
+
+- [x] Audit/master plan checkpoint preserved
+- [x] Immutable Git recovery reference exists
+- [ ] Valid complete database backup exists
+- [ ] Database restore proven in isolation
+- [x] Environment inventory contains no secrets in the report
+- [x] Existing test/build baseline recorded
+- [ ] Synthetic role identities available in isolation
+- [x] Executable authorization harness exists
+- [~] Anonymous authorization behavior recorded; staff and mutation behavior blocked
+- [~] `SEC-003` and `SEC-013` reproduced; remaining executable cases blocked
+- [x] No production behavior changed
+
+Final Phase 1 status remains **PARTIAL**. Production mutations: **NONE**. Application remediation: **NONE**. Ready for Phase 2: **NO**.
+
+STABILIZATION PHASE 1B FINISHED — PHASE 2 NOT STARTED
+
+## 19. Phase 1C Completion
+
+Phase 1C resumed on 12 August 2026 after the operator created the isolated Supabase project and completed the two remaining logical dumps. Backup validation passed. The operator then configured an ignored, mode-`600` local environment file for the isolated project. Execution stopped because the Codex filesystem sandbox cannot access Docker Desktop's Unix socket, which the available Supabase/PostgreSQL restore tooling requires. No restore, isolated mutation or production action was attempted.
+
+### Backup validation
+
+**VERIFIED**
+
+All artifacts are non-zero, terminate cleanly, contain no `pg_dump` error/fatal marker and are stored outside Git under `/tmp/roam-stabilization-phase1/`.
+
+| Artifact | Size | Timestamp (Asia/Colombo) | SHA-256 | Structural verification |
+|---|---:|---|---|---|
+| `pre-stabilization-schema.sql` | 201,177 bytes | `2026-08-12T09:30:43+0530` | `a011e830b757cc74c200c492253270033592d1beba703d3bf15ffda6a8d2e6eb` | 4,734 lines; 46 tables; 19 functions; 121 policies |
+| `pre-stabilization-data.sql` | 1,300,700 bytes | `2026-08-12T09:40:51+0530` | `fa250f095a5dc9cdbb9cda52f8fe14640b558a97a8ab66fa45d365ff7e423878` | 2,075 lines; 75 COPY blocks and 75 terminators; includes 46 public tables plus Auth users/identities and Storage buckets/objects |
+| `pre-stabilization-roles.sql` | 370 bytes | `2026-08-12T09:41:08+0530` | `168a95a9c745af5ed4679751f90419ac9dc434240a213b03e32a06d5664c2308` | 15 lines; three role alterations and one grant; structurally complete for the CLI role-only export |
+
+The data artifact does not contain the `supabase_migrations.schema_migrations` catalogue. That hosted Supabase CLI bookkeeping is not part of the logical application dump and is not claimed as restored. The immutable repository inventory of 70 migration files is the historical reference; application/schema fidelity is verified independently below.
+
+These files contain sensitive database material. They remain untracked and must not be committed. `/tmp` is not durable storage; after restore proof, the operator should copy the verified set to an approved encrypted backup location using the recorded checksums.
+
+### Isolation verification
+
+| Check | Result |
+|---|---|
+| Authorized isolated project | `xnsxmwgyugoqanuoyebh` |
+| Production project | `fstpfqlgypvktjwdeagu` |
+| Target differs from production | PASS |
+| Harness production-ref denial retained | PASS |
+| Existing workspace link | Still points to production; not changed or used for restore |
+| Production integrations used | NONE |
+
+The new project is explicitly authorized as disposable. `.env.authz.local` passed all non-secret safety checks: required values are present, the declared ref and URL exactly match the isolated project, the isolated flag is true, the database URL contains the isolated ref, the production ref is absent, permissions are `600`, and Git ignores the file.
+
+### Restore and reconciliation
+
+**BLOCKED - RESTORE COMMAND MUST RUN FROM THE OPERATOR TERMINAL**
+
+The isolated credentials are configured safely, but the Codex sandbox is denied access to `/Users/kumudithakk/.docker/run/docker.sock`. The Docker-backed Supabase connection probe therefore fails before connecting. The repository remains linked to production and was deliberately not relinked. Relinking or substituting production was explicitly rejected.
+
+Consequently:
+
+- schema/data/roles were not restored;
+- 70-migration parity and latest migration `202608110002_preferred_benefits_and_privileges.sql` were not verified on the isolated project;
+- baseline counts, relationships, constraints, functions, grants and policies were not reconciled;
+- no synthetic staff identities or disposable fixtures were created;
+- read-only and mutation staff authorization matrices were not executed;
+- legacy API and isolated Storage baselines were not executed.
+
+### Exact remaining human action
+
+From the normal Mac Terminal, in the repository directory, run the guarded Docker restore command supplied in the Phase 1C handoff. It reads the already-configured ignored environment file, rejects any URL without the isolated ref or containing the production ref, and restores roles, schema and data in one transaction. Return only the command's success/error output; never print the environment file or connection string.
+
+### Re-evaluated Phase 1 exit gate
+
+- [x] Audit/master plan checkpoint preserved
+- [x] Immutable Git recovery reference exists
+- [x] Valid logical backup artifacts exist
+- [x] Backup checksums recorded
+- [ ] Database restore proven in isolation
+- [ ] Migration/schema/data reconciliation completed
+- [x] Existing test/build baseline recorded
+- [ ] Synthetic role identities available
+- [x] Executable authorization harness exists
+- [ ] Staff authorization behavior executed
+- [ ] Mutation authorization behavior executed safely
+- [~] Anonymous known failures reproduced; staff/API/Storage cases remain blocked
+- [x] No production behavior changed
+- [x] No production data/schema/RLS mutated
+
+Final Phase 1 status remains **PARTIAL**. Backups: **VERIFIED**. Isolated project: identified and authorized, connection **BLOCKED**. Production project modified: **NO**. Application remediation: **NONE**. Phase 2 ready: **NO**.
+
+STABILIZATION PHASE 1C FINISHED — PHASE 2 NOT STARTED
+
+### Phase 1C manual restore diagnostics
+
+Two manual isolated restore attempts were reported after the initial Phase 1C handoff:
+
+1. The first attempt failed inside the immutable roles dump at line 13 on `GRANT SET ON PARAMETER "log_min_messages" TO "supabase_realtime_admin"` with permission denied. This is a hosted Supabase provider-role/server-logging grant and is not used by application JWT roles, table grants, RLS, Storage authorization or the staff capability baseline. The original roles artifact remains unchanged at SHA-256 `168a95a9c745af5ed4679751f90419ac9dc434240a213b03e32a06d5664c2308`. A restore-only derivative omitting only that statement was created outside Git at `/tmp/roam-stabilization-phase1/pre-stabilization-roles.restore.sql`, SHA-256 `0867bd8085fd6f1064997ce04fd1fec79e3e91a5dbee8af35b4ce4743ee9e3c8`.
+2. The next invocation passed the exact isolated-project guard and empty-project preflight, then failed during the single-transaction restore. `ON_ERROR_STOP=1` and `--single-transaction` were active. The script's cleanup trap deleted the temporary private log on exit, so the exact PostgreSQL statement/error from this attempt is no longer recoverable and must not be guessed. The failure is currently **unclassified** pending retained diagnostic evidence.
+
+The restore script was corrected without executing another restore. Future output is redirected to `/tmp/roam-stabilization-phase1/restore-diagnostics/restore.log`, stored with mode `600`, outside Git, and never printed by the script. The backup directory remains mounted read-only; only the separate diagnostics subdirectory is writable. Atomic restore behavior, `ON_ERROR_STOP=1`, production-ref rejection, exact isolated-ref validation and zero-state preflight remain intact.
+
+Phase 1 remains **PARTIAL**. Restore proof, reconciliation, synthetic identities and authorization matrix execution remain blocked. Production project modified: **NO**. Application remediation: **NONE**. Phase 2 started: **NO**.
+
+### Phase 1C retained-log diagnosis and correction
+
+A diagnostic retry passed the isolated-project guard and all five zero-state preflight counts, then failed atomically. The retained mode-`600` log was parsed without printing row, detail or context content. It contains one PostgreSQL error:
+
+- artifact: `pre-stabilization-data.sql`;
+- line: 2001;
+- statement: empty `COPY` into provider-managed `storage.buckets_vectors`;
+- error: `permission denied for table buckets_vectors`;
+- classification: Supabase provider-managed object/privilege incompatibility.
+
+The block contained zero rows and consisted only of the `COPY` declaration and its immediate terminator. `storage.buckets_vectors` is part of the hosted Supabase Storage implementation, is not created by the application schema dump, is absent from application migrations/source usage, and does not participate in application roles, capabilities, RLS policies, triggers, functions or authorization behavior. The hosted project database role legitimately cannot write it.
+
+The immutable data backup remains unchanged at SHA-256 `fa250f095a5dc9cdbb9cda52f8fe14640b558a97a8ab66fa45d365ff7e423878`. A restore-only derivative was created outside Git at `/tmp/roam-stabilization-phase1/pre-stabilization-data.restore.sql`, SHA-256 `ecd4900f0b82ca736d3f4a3f052c538f3be670ef417d7030bc56165647068259`. It differs only by omission of the proven-empty two-line `storage.buckets_vectors` COPY block: 74 COPY blocks and 74 terminators remain, compared with 75/75 in the immutable source.
+
+The restore script now uses this data derivative, retains `ON_ERROR_STOP=1` and `--single-transaction`, and verifies SHA-256 for all three immutable backups and both restore-only derivatives before connecting. Production rejection, exact isolated-target validation, empty-project preflight and private diagnostic retention remain unchanged. The script was syntax-checked and was not executed by Codex.
+
+The reported failure was inside the single transaction and the script returned failure, so the attempt rolled back. Restore proof remains pending the next manual isolated retry. Phase 1 remains **PARTIAL** and Phase 2 was not started.
+
+### Phase 1C second retained-log diagnosis
+
+The next manual retry again passed the exact target guard and all zero-state preflight checks, then failed atomically. The current private log contains one error:
+
+- artifact: `pre-stabilization-data.restore.sql`;
+- line: 2049;
+- statement: empty `COPY` into provider-managed `storage.vector_indexes`;
+- error: `permission denied for table vector_indexes`;
+- classification: Supabase provider-managed object/privilege incompatibility.
+
+Inspection proved the block has zero rows. A complete structural scan of every remaining Auth and Storage COPY block showed that the restore had already passed `storage.buckets_analytics`, the four application `storage.buckets` rows, 18 application `storage.objects` rows, and the empty multipart-upload tables. These blocks remain intact. `storage.vector_indexes` was the final COPY block in the artifact, so no later structurally identical provider-managed COPY incompatibility was found proactively.
+
+The immutable data backup is still unchanged at SHA-256 `fa250f095a5dc9cdbb9cda52f8fe14640b558a97a8ab66fa45d365ff7e423878`. The data restore derivative was regenerated directly from that immutable source, omitting only the two independently proven-empty hosted vector-storage COPY blocks (`storage.buckets_vectors` and `storage.vector_indexes`) and their terminators. Its new SHA-256 is `5e1eaa99599f6cb5fb5252aed821f0fe717959d7ccfe919b862114d23a0bf83d`. A mechanical comparison confirms exactly four removed lines and no additions or other differences.
+
+The restore script checksum pin was updated to the new derivative. All safety, atomicity, strict-error and private-log behavior remains unchanged. The script was syntax-checked and not executed by Codex. The failed single transaction rolled back; restore proof remains pending manual retry. Phase 1 remains **PARTIAL** and Phase 2 was not started.
+
+### Phase 1C successful isolated restore and reconciliation gate
+
+The operator reported a successful manual restore after the two narrow provider-managed corrections. The exact isolated-project guard passed; all pre-restore counts were zero; roles, schema and data then completed in one strict transaction. Terminal completion marker: `RESTORE COMPLETED: isolated project only.` Target: `xnsxmwgyugoqanuoyebh`. Production project `fstpfqlgypvktjwdeagu` was not modified.
+
+Restore status is now **PASSED**. The immutable and restore-only checksums remain those recorded above. The provider-managed omissions remain limited to the unsupported server-logging grant and two empty vector-storage COPY blocks; application buckets, Storage object metadata, tables, functions, policies, triggers, grants and application data were retained.
+
+Post-restore reconciliation is the next gate. Codex's execution sandbox cannot reach the isolated network endpoint and cannot access Docker Desktop's socket, so it could not execute the verification itself. A read-only executable verifier was added at `scripts/verify-isolated-checkpoint.sh`. It enforces the exact isolated ref and production rejection, loads only `.env.authz.local`, and checks safe entity counts, 70/latest migration history, schema objects, RLS policies, triggers, foreign keys, unvalidated constraints, aggregate FK orphan count, Auth user count, Storage bucket/object metadata and the presence of application table grants. It runs all temporary verification work inside a transaction that is rolled back and persists only safe aggregate output outside Git.
+
+The verifier was made executable and passed `bash -n` and `git diff --check`. It was not executed by Codex. Until its output is reviewed, reconciliation, migration verification, synthetic identities, fixtures and both authorization matrices remain **BLOCKED**. Phase 1 remains **PARTIAL** and Phase 2 was not started.
+
+### Phase 1C post-restore reconciliation and migration classification
+
+The operator executed the read-only verifier after the successful isolated restore. The application restoration reconciled completely:
+
+- all expected application entity counts passed;
+- `auth.users` passed;
+- 46/46 public application tables, 19/19 public/private functions, 121/121 policies, 46/46 RLS-enabled tables, 98/98 foreign keys and 40/40 triggers passed;
+- unvalidated constraints and foreign-key orphans were both zero;
+- all four Storage buckets and all 18 Storage object metadata rows passed;
+- 966 public table ACL entries were present.
+
+The only missing object was `supabase_migrations.schema_migrations`. Direct inspection confirms that none of the three immutable logical backup artifacts contains either the `supabase_migrations` schema name or a `schema_migrations` object/data block. Supabase CLI maintains this table as migration bookkeeping outside the application schemas included by its logical dump. Its absence is therefore classified as **bookkeeping-only**, not application restore incompleteness. No migration rows were fabricated, no migration was rerun, and the restored schema was not changed.
+
+The repository independently contains exactly 70 ordered SQL migration files. The latest is `202608110002_preferred_benefits_and_privileges.sql`; the aggregate SHA-256 of the sorted per-file SHA-256 manifest is `274c4164b57b3c671e1961403637eff5f53a0d4491942e8aaf350393ab655d73`. Earlier Phase 1 evidence had already reconciled all 70 repository versions with the production migration inventory before backup. Together with the complete post-restore schema/data reconciliation, this establishes application recovery fidelity while explicitly preserving the limitation that hosted migration bookkeeping itself was not restored.
+
+`scripts/verify-isolated-checkpoint.sh` now reports two independent summaries:
+
+- `application_reconciliation_summary`: excludes migration bookkeeping and is expected to report `PASS` for this restore;
+- `migration_bookkeeping_summary`: reports `NOT_RESTORED` honestly while retaining the individual missing-history results.
+
+The next Phase 1 gate requires creation of six disposable synthetic staff identities and six minimum linked fixtures in the isolated project. `scripts/setup-isolated-authorization-baseline.mjs` was added for this purpose. It hard-codes the isolated project identity, explicitly rejects production, reads credentials only from the ignored local environment, creates no real-person data, records generated credentials and fixture UUIDs back into the mode-`600` ignored file without printing them, and leaves mutation probes disabled. The script passed `node --check` and was not executed by Codex because its sandbox cannot reach the isolated Supabase endpoint.
+
+Phase 1 remains **PARTIAL** at this manual identity/fixture gate. Production project modified: **NO**. Application remediation: **NONE**. Migration bookkeeping fabricated/repaired: **NO**. Phase 2 started: **NO**.
+
+### Phase 1C executed read-only authorization baseline
+
+The operator completed the isolated setup and read-only matrix. All six disposable identities (`journey_designer`, `partner_manager`, `finance`, `operations`, `content_marketing`, `super_admin`) authenticated successfully, and all six linked fixture IDs were verified by the synthetic Super Admin. Mutation rows were blocked solely because `AUTHZ_TEST_ENABLE_MUTATIONS=false`, as required by the read-first gate.
+
+The executed read-only behavior was:
+
+| Role | Resource | Actual | Target | Evidence |
+|---|---|---:|---:|---|
+| Anonymous | Published theme content | ALLOW | ALLOW | Baseline correct |
+| Anonymous | Guide contact and licence columns | ALLOW | DENY | `SEC-003` reproduced |
+| Anonymous | Website setup state | ALLOW | DENY | `SEC-013` reproduced |
+| Journey Designer | Traveller enquiry PII | ALLOW | ALLOW | Baseline correct for current role requirement |
+| Finance | Full traveller enquiry PII row | ALLOW | DENY | `SEC-008` reproduced |
+| Operations | Full traveller enquiry PII row | ALLOW | DENY | `SEC-008` reproduced |
+| Content Marketing | Guide contact and licence columns | ALLOW | DENY | `ARC-001` / `SEC-001` reproduced |
+| Partner Manager | Guide contact and licence columns | ALLOW | ALLOW | Baseline correct |
+| Journey Designer | Curated journey fixture | ALLOW | ALLOW | Baseline correct |
+| Partner Manager | Supplier allocation fixture | ALLOW | ALLOW | Baseline correct |
+| Finance | Journey account fixture | ALLOW | ALLOW | Baseline correct |
+| Super Admin | Staff roles | ALLOW | ALLOW | Baseline correct |
+
+Red target verdicts are evidence of current defects, not harness failures. No policy, grant, role, API or application behavior was changed.
+
+The mutation safety gate was re-encoded in `scripts/run-isolated-phase1-baselines.sh`: exact isolated ref/URL, explicit production rejection, isolated flag, six `@roamceylon.test` identities and all disposable fixture IDs must pass before any probe begins. The runner enables mutations only for the existing same-value/synthetic harness process; it does not change production or committed environment files.
+
+Two narrow test-only baselines were also prepared:
+
+- `tests/api-authorization-baseline.mjs` runs the existing legacy quote and partner-conversion authorization paths against an isolated local Next server using deliberately invalid/non-existent inputs, so authorization is measured without creating business records;
+- `tests/storage-authorization-baseline.mjs` measures read/write behavior for all four buckets and all six synthetic roles plus anonymous, using only disposable objects and mandatory cleanup.
+
+All scripts retain safe aggregate/authorization results outside Git under `/tmp/roam-stabilization-phase1/authorization-evidence`. Secrets and tokens are never printed. Syntax checks passed, but Codex did not execute the network-dependent probes because its sandbox cannot reach the isolated hosted project. The remaining Phase 1 mutation/API/Storage gate therefore requires one operator-terminal execution.
+
+Current Phase 1 status: **PARTIAL**. Read-only matrix: **EXECUTED**. Mutation matrix: **BLOCKED AT MANUAL EXECUTION GATE**. API baseline: **BLOCKED AT MANUAL EXECUTION GATE**. Storage baseline: **BLOCKED AT MANUAL EXECUTION GATE**. Production modified: **NO**. Application remediation: **NONE**. Phase 2 started: **NO**.
+
+### Phase 1C executed mutation matrix and continuation diagnostics
+
+The guarded operator-terminal runner passed its isolated-project and synthetic-identity gates and executed the mutation matrix. All six identities remained `READY`; the matrix used the existing fixture IDs and same-value/disposable probes only. Actual mutation results were:
+
+| Role | Resource/action | Actual | Target | Evidence |
+|---|---|---:|---:|---|
+| Journey Designer | CMS theme UPDATE | ALLOW | DENY | `ARC-001` / `SEC-001` reproduced |
+| Journey Designer | Supplier guide UPDATE | ALLOW | DENY | `ARC-001` / `SEC-001` reproduced |
+| Content Marketing | CMS theme UPDATE | ALLOW | ALLOW | Intended CMS baseline passed |
+| Journey Designer | Enquiry lifecycle UPDATE | ALLOW | DENY | `SEC-004` reproduced |
+| Journey Designer | `travel-content` upload | DENY (HTTP 415) | DENY | Inconclusive authorization result because payload was rejected first |
+| Content Marketing | `travel-content` upload | DENY (HTTP 415) | ALLOW | Inconclusive authorization result because payload was rejected first |
+
+The two HTTP 415 results are classified as **probe errors**, not authorization decisions. The original harness uploaded a `.txt`/`text/plain` payload while the restored `travel-content` bucket permits only JPEG, PNG, WebP and AVIF. The test probe was corrected to a minimal `.jpg` byte payload with `image/jpeg`; no Storage policy or application behavior changed.
+
+The runner then stopped before the API and four-bucket Storage baselines. The retained mode-`600` API diagnostic contains one safe startup error: `node: --env-file= is not allowed in NODE_OPTIONS`. Next.js never started. This is an **environment/test-runner wiring failure**, not an application startup, build, Supabase connectivity, missing fixture or authorization failure. The API harness was corrected to pass the three isolated Next.js variables directly to a child process, strip authorization-harness variables from that child, and run a temporary source copy with its own `.next` directory so it cannot conflict with an operator development server. No production or application source behavior was changed.
+
+The API probe remains deliberately non-mutating: it calls the legacy quote and partner-conversion endpoints with invalid/non-existent inputs. Any status beyond authentication/authorization (`401`/`403`) proves passage through the legacy role gate but cannot create or convert a business record. This is sufficient to measure `SEC-005` without broadening Phase 1.
+
+`scripts/run-isolated-phase1-continuation.sh` now runs only the two previously blocked baselines—legacy API and all four Storage buckets. It does **not** repeat the successful read-only or mutation database matrices. The Storage baseline uses synthetic objects only and service-role cleanup as a final fallback; cleanup failure is a hard blocked result. Syntax checks passed. Operator execution remains required because Codex cannot reach the isolated hosted project from its sandbox.
+
+Current Phase 1 status remains **PARTIAL**. Mutation matrix: **EXECUTED**. API baseline: **BLOCKED AT CORRECTED MANUAL CONTINUATION**. Storage baseline: **BLOCKED AT CORRECTED MANUAL CONTINUATION**. `SEC-014` / `TEST-001`: **PARTIAL** until the executable API and Storage evidence is captured. Production modified: **NO**. Application remediation: **NONE**. Phase 2 started: **NO**.
+
+The first corrected continuation attempt provided a second, different API-runner failure. Next.js 16.2.12 reached its `Ready` state in 398 ms, but Turbopack panicked while compiling the readiness route because the test-only temporary workspace linked `node_modules` from outside Turbopack's filesystem root (`TurbopackInternalError: Symlink [project]/node_modules is invalid, it points out of the filesystem root`). No API authorization result was produced. This is classified as a test-runner/runtime-layout incompatibility, not Google Fonts, application configuration, Supabase connectivity, port use, identity data or fixtures. The test-only spawn now uses the supported `next dev --webpack` mode while retaining the isolated temporary build directory and direct isolated environment. Application code and production configuration remain unchanged.
+
+## 20. Phase 1 Final Closure
+
+The operator executed the corrected continuation runner to completion. Final terminal marker: `PHASE 1 CONTINUATION BASELINES COMPLETED: isolated project only.` The API and four-bucket Storage evidence files are mode `600`, outside Git, contain synthetic identifiers/results only, and report the isolated project `xnsxmwgyugoqanuoyebh`. No further Phase 1 execution is required.
+
+### Legacy API authorization matrix
+
+The intentionally invalid/non-existent request bodies prevent business mutation. HTTP `400` means the authenticated request passed the endpoint's authorization gate and reached application validation, so it is correctly recorded as `ALLOW`; `401` is `DENY`.
+
+| API | Role | HTTP | Actual | Target | Result |
+|---|---|---:|---:|---:|---|
+| Legacy admin quote | Anonymous | 401 | DENY | DENY | Correct |
+| Legacy admin quote | Journey Designer | 400 | ALLOW | ALLOW | Correct |
+| Legacy admin quote | Partner Manager | 400 | ALLOW | DENY | `SEC-005` reproduced |
+| Legacy admin quote | Finance | 400 | ALLOW | DENY | `SEC-005` reproduced |
+| Legacy admin quote | Operations | 400 | ALLOW | DENY | `SEC-005` reproduced |
+| Legacy admin quote | Content Marketing | 400 | ALLOW | DENY | `SEC-005` reproduced |
+| Legacy admin quote | Super Admin | 400 | ALLOW | ALLOW | Correct |
+| Legacy partner conversion | Anonymous | 401 | DENY | DENY | Correct |
+| Legacy partner conversion | Journey Designer | 400 | ALLOW | DENY | `SEC-005` reproduced |
+| Legacy partner conversion | Partner Manager | 400 | ALLOW | ALLOW | Correct |
+| Legacy partner conversion | Finance | 400 | ALLOW | DENY | `SEC-005` reproduced |
+| Legacy partner conversion | Operations | 400 | ALLOW | DENY | `SEC-005` reproduced |
+| Legacy partner conversion | Content Marketing | 400 | ALLOW | DENY | `SEC-005` reproduced |
+| Legacy partner conversion | Super Admin | 400 | ALLOW | ALLOW | Correct |
+
+`SEC-005` is therefore **REPRODUCED** through executable isolated API evidence. No partner was converted and no quote was generated.
+
+### Four-bucket Storage authorization matrix
+
+The corrected probes used bucket-supported JPEG/PDF MIME types. The previous HTTP 415 results are superseded and are not authorization evidence. The completed matrix used one synthetic read object per bucket and one disposable write object per role; final cleanup reported `syntheticObjectsRemoved=true`.
+
+| Bucket | Current executable behavior | Classification |
+|---|---|---|
+| `travel-content` | READ ALLOW for anonymous and every tested staff role; WRITE DENY for anonymous and all six staff roles | Public reads and non-CMS write denials are intended. Content Marketing and Super Admin write denials are target-policy/capability failures requiring later remediation. |
+| `partner-application-media` | READ and WRITE DENY for anonymous and all six staff roles | Anonymous and unrelated-role denials are intentional. Partner Manager and Super Admin lack the required operational access; record as a genuine Storage authorization/capability defect. |
+| `partner-application-documents` | READ and WRITE DENY for anonymous and all six staff roles | Private-by-default behavior is correct for anonymous/unrelated roles. Partner Manager and Super Admin access failures are genuine target-policy/capability defects. |
+| `accounting-receipts` | READ and WRITE DENY for anonymous and all six staff roles | Anonymous/unrelated-role denials are intended. Finance and Super Admin READ denial is a genuine capability defect. Direct client WRITE denial is intentionally retained because receipt upload flows through the capability-checked server API and service client, not a broad Storage client policy. |
+
+These red Storage results are recorded for the later capability/RLS/Storage cutover. They do not invalidate Phase 1 execution.
+
+### Findings and assurance baseline
+
+Executable evidence now reproduces:
+
+- `ARC-001` / `SEC-001`: legacy editor authorization permits out-of-capability CMS/supplier reads and updates; Storage capabilities are also misaligned;
+- `SEC-003`: anonymous supplier contact/licence exposure;
+- `SEC-004`: Journey Designer can update enquiry lifecycle directly;
+- `SEC-005`: broad legacy admin/editor API authorization;
+- `SEC-008`: Finance and Operations can read over-broad traveller PII;
+- `SEC-013`: anonymous website setup-state exposure.
+
+`SEC-014` and `TEST-001` are **CLOSED AS BASELINE GAPS** because disposable-project execution now covers synthetic identities, database reads, same-value mutations, negative/positive legacy API authorization, four Storage buckets and cleanup. This closure means the missing executable-baseline problem has been addressed; it does **not** mean any reproduced security vulnerability is remediated or that all future security/E2E coverage is complete.
+
+### Final Phase 1 exit gate
+
+- [x] Immutable Git checkpoint, backup branch and annotated tag exist at `d28d81a01eb10cd6341b6df4f2d71d5866774bf1`
+- [x] Original schema/data/roles backups verified and checksummed
+- [x] Narrow restore-only derivatives documented and checksummed; originals unchanged
+- [x] Atomic isolated restore passed
+- [x] Application schema/data/relationships/RLS/grants/Storage reconciliation passed
+- [x] Hosted migration-bookkeeping limitation documented without fabricated rows
+- [x] Repository migration inventory contains 70 files; latest is `202608110002_preferred_benefits_and_privileges.sql`
+- [x] Six synthetic staff identities are ready
+- [x] Minimum disposable linked fixtures are available
+- [x] Read-only authorization matrix executed
+- [x] Mutation authorization matrix executed
+- [x] Legacy API authorization matrix executed
+- [x] Four-bucket Storage authorization matrix executed
+- [x] Synthetic Storage objects removed
+- [x] Current defects reproduced and documented without remediation
+- [x] Production project was not modified
+- [x] Application remediation performed: none
+
+Phase 1 status is **COMPLETE**. Backup and recovery: **PASSED**. Isolated restore: **PASSED**. Reconciliation: **PASSED**. Production modified: **NO**. Application remediation: **NONE**. Phase 2 readiness: **YES, pending human review and explicit authorization to begin Phase 2**.
+
+STABILIZATION PHASE 1 COMPLETE — READY FOR HUMAN REVIEW

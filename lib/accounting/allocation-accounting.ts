@@ -125,6 +125,10 @@ const isAllocationAccount=(account:Account)=>{
   const snapshot=account.quote_snapshot;
   return Boolean(snapshot&&typeof snapshot==="object"&&!Array.isArray(snapshot)&&(snapshot as Record<string,Json|undefined>).source==="supplier_allocations");
 };
+const isAcceptedProposalAccount=(account:Account)=>{
+  const snapshot=account.quote_snapshot;
+  return Boolean(snapshot&&typeof snapshot==="object"&&!Array.isArray(snapshot)&&(snapshot as Record<string,Json|undefined>).source==="accepted_proposal");
+};
 
 export async function syncAllocationAccounting(enquiryId:string,userId?:string){
   void userId;
@@ -136,8 +140,11 @@ export async function syncAllocationAccounting(enquiryId:string,userId?:string){
   ]);
   if(error)throw new Error(error.message);
   if(proposalError)throw new Error(proposalError.message);
-  const commercial=await allocationCommercialSnapshot(enquiryId);
   const account=existingAccount;
+  // Phase 8 freezes an activated account to the accepted proposal. Allocation
+  // edits may prepare a later proposal version, but must never rewrite history.
+  if(account&&isAcceptedProposalAccount(account))return {account,synced:false};
+  const commercial=await allocationCommercialSnapshot(enquiryId);
   if(account&&!isAllocationAccount(account))return {account,synced:false};
   if(!account||!account.active)return {account,synced:false};
   if(commercial.summary.incompleteLines)throw new Error("Complete supplier cost and selling price for every active allocation before Accounting can be updated.");

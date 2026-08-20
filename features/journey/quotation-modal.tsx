@@ -6,7 +6,6 @@ import {useEffect,useRef,useState} from "react";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {Button} from "@/components/ui/button";
-import {createClient} from "@/lib/supabase/client";
 import {journeyHandoffToJson,type JourneyQuotationHandoff} from "@/lib/journey/quotation-handoff";
 import type {PublicPackageQuote} from "@/lib/pricing/package-types";
 import {isJourneyEstimate,type PublicJourneyEstimate} from "@/lib/pricing/journey-estimate-types";
@@ -26,12 +25,14 @@ type FormData=z.infer<typeof schema>;
 export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:boolean;onClose:()=>void;onSubmitted:()=>void;state:JourneyState;quote:PublicJourneyEstimate|PublicPackageQuote|null}){
   const [sent,setSent]=useState(false);
   const [submitError,setSubmitError]=useState("");
+  const [honeypot,setHoneypot]=useState("");
+  const [submissionKey,setSubmissionKey]=useState<string|null>(null);
   const wasOpen=useRef(false);
   const {register,handleSubmit,reset,formState:{errors,isSubmitting}}=useForm<FormData>({
     resolver:zodResolver(schema),
     defaultValues:{arrival:state.travelDates.start,departure:state.travelDates.end}
   });
-  useEffect(()=>{const justOpened=open&&!wasOpen.current;wasOpen.current=open;if(justOpened){setSent(false);setSubmitError("");reset({name:"",phone:"",email:"",country:"",arrival:state.travelDates.start,departure:state.travelDates.end,notes:""});}},[open,reset,state.travelDates.end,state.travelDates.start]);
+  useEffect(()=>{const justOpened=open&&!wasOpen.current;wasOpen.current=open;if(justOpened){setSubmissionKey(null);setHoneypot("");setSent(false);setSubmitError("");reset({name:"",phone:"",email:"",country:"",arrival:state.travelDates.start,departure:state.travelDates.end,notes:""});}},[open,reset,state.travelDates.end,state.travelDates.start]);
   useEffect(()=>{
     if(!open)return;
     const close=(event:KeyboardEvent)=>{if(event.key==="Escape")onClose();};
@@ -46,34 +47,15 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:bool
     const submittedState={...state,travelDates:{start:values.arrival||state.travelDates.start,end:values.departure||state.travelDates.end}};
     const handoff:JourneyQuotationHandoff={version:1,createdAt:new Date().toISOString(),state:submittedState,quote};
     const estimate=isJourneyEstimate(quote)?quote:null;
-    const {error}=await createClient().from("enquiries").insert({
-      name:values.name,
-      email:values.email,
-      phone:values.phone,
-      nationality:values.country||null,
-      summary:"Personalised journey requested.",
-      traveller_notes:values.notes||null,
-      status:"new",
-      trip_state:journeyHandoffToJson(handoff),
-      travel_start_date:submittedState.travelDates.start||null,
-      travel_end_date:submittedState.travelDates.end||null,
-      adults:submittedState.travellerCounts.adults,
-      children:submittedState.travellerCounts.children,
-      experience_participants:submittedState.experienceParticipants,
-      selected_themes:submittedState.selectedThemeIds,
-      selected_destinations:submittedState.selectedDestinationIds,
-      selected_experiences:submittedState.selectedExperienceIds,
-      selected_stays:Object.values(submittedState.selectedStayIdsByDestination).filter(Boolean),
-      selected_vehicle:submittedState.selectedVehicleId,
-      selected_guide:submittedState.selectedGuideId,
-      estimated_price_min:estimate?.perPersonMin??null,
-      estimated_price_max:estimate?.perPersonMax??null,
-      estimated_price_currency:estimate?.currency??null,
-      estimated_price_basis:estimate?.basis??null,
-      estimated_at:estimate?.estimatedAt??null,
-      estimate_snapshot:estimate??{}
-    });
-    if(error){setSubmitError("We could not send your journey request. Please try again.");return}
+    const stableSubmissionKey=submissionKey??crypto.randomUUID();
+    if(!submissionKey)setSubmissionKey(stableSubmissionKey);
+    const response=await fetch("/api/enquiries",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({submissionKey:stableSubmissionKey,honeypot,source:"journey_builder",
+      name:values.name,email:values.email,phone:values.phone,nationality:values.country||null,notes:values.notes||"Please prepare my personalised Sri Lankan journey proposal.",journey:{handoff:journeyHandoffToJson(handoff),
+        travelStartDate:submittedState.travelDates.start||null,travelEndDate:submittedState.travelDates.end||null,travellerCounts:submittedState.travellerCounts,selectedThemeIds:submittedState.selectedThemeIds,
+        selectedDestinationIds:submittedState.selectedDestinationIds,selectedExperienceIds:submittedState.selectedExperienceIds,experienceParticipants:submittedState.experienceParticipants,
+        selectedStayIds:Object.values(submittedState.selectedStayIdsByDestination).filter(Boolean),selectedVehicleId:submittedState.selectedVehicleId,selectedGuideId:submittedState.selectedGuideId,
+        estimate:estimate?{perPersonMin:estimate.perPersonMin,perPersonMax:estimate.perPersonMax,currency:estimate.currency,basis:estimate.basis,estimatedAt:estimate.estimatedAt,snapshot:estimate}:null}})});
+    if(!response.ok){setSubmitError("We could not send your journey request. Please try again.");return}
     onSubmitted();
     setSent(true);
   };
@@ -82,6 +64,7 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:bool
       <button onClick={onClose} aria-label="Close quotation form" className="absolute right-5 top-5 z-10 grid size-10 place-items-center rounded-full bg-white/90 text-slate shadow"><X className="size-5"/></button>
       {sent?<div className="grid min-h-[430px] place-items-center p-10 text-center"><div><CheckCircle2 className="mx-auto size-14 text-gold"/><p className="eyebrow mt-6">Request received</p><h2 id="quotation-title" className="mt-3 font-serif text-4xl">Your journey designer is on it.</h2><p className="mx-auto mt-4 max-w-lg text-slate/60">We’ve received your journey details. Your dedicated Roam Ceylon journey designer will be in touch within 24 hours to begin shaping your proposal. Your builder is now ready for a fresh journey.</p><Button className="mt-8" onClick={onClose}>Start a new journey</Button></div></div>:
       <form onSubmit={handleSubmit(submit)}>
+        <input aria-hidden="true" tabIndex={-1} autoComplete="off" name="website-confirmation" className="hidden" value={honeypot} onChange={event=>setHoneypot(event.target.value)}/>
         <div className="bg-forest px-7 py-8 pr-20 text-ivory md:px-10"><p className="eyebrow text-gold-light">Private, tailor-made travel</p><h2 id="quotation-title" className="mt-2 font-serif text-3xl md:text-4xl">Request your journey proposal.</h2><p className="mt-3 max-w-xl text-sm leading-6 text-ivory/65">Share a few details and your Roam Ceylon journey designer will personally review every part of your trip.</p></div>
         <div className="grid gap-5 p-7 md:grid-cols-2 md:p-10">
           {([["name","Full name *","text"],["phone","WhatsApp number *","tel"],["email","Email address *","email"],["country","Country","text"]] as const).map(([name,label,type])=><label key={name} className="grid gap-2 text-sm font-semibold">{label}<input type={type} {...register(name)} className="rounded-xl border border-stone/30 bg-white px-4 py-3 outline-none focus:border-gold"/>{errors[name]&&<small className="text-red-700">{errors[name]?.message}</small>}</label>)}

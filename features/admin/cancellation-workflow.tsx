@@ -7,7 +7,7 @@ import {createClient} from "@/lib/supabase/client";
 import {calculateCancellationPosition} from "@/lib/accounting/cancellation";
 import type {Database} from "@/lib/database.types";
 
-type Account=Database["public"]["Tables"]["journey_accounts"]["Row"];
+type Account=Database["public"]["Views"]["finance_journey_accounts"]["Row"];
 type Settlement=Database["public"]["Tables"]["journey_settlements"]["Row"];
 type Transaction=Database["public"]["Tables"]["accounting_transactions"]["Row"];
 type Cancellation=Database["public"]["Tables"]["journey_cancellation_cases"]["Row"];

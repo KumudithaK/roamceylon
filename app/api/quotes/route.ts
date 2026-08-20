@@ -1,6 +1,7 @@
 import {NextResponse} from "next/server";
 import {z} from "zod";
 import {PackagePricingError,PackagePricingService} from "@/lib/pricing/package-service";
+import {PublicInputError,readBoundedJson} from "@/lib/security/public-input";
 
 const quoteSchema=z.object({
   selectedDestinationIds:z.array(z.uuid()).max(40),
@@ -15,7 +16,8 @@ const quoteSchema=z.object({
 });
 
 export async function POST(request:Request){
-  const parsed=quoteSchema.safeParse(await request.json().catch(()=>null));
+  let raw:unknown;try{raw=await readBoundedJson(request,100_000)}catch(error){return NextResponse.json({error:error instanceof PublicInputError&&error.code==="PAYLOAD_TOO_LARGE"?"The quote request is too large.":"Invalid quote request."},{status:error instanceof PublicInputError&&error.code==="PAYLOAD_TOO_LARGE"?413:400})}
+  const parsed=quoteSchema.strict().safeParse(raw);
   if(!parsed.success)return NextResponse.json({error:"Invalid quote request."},{status:400});
   try{
     const quote=await new PackagePricingService().quote(parsed.data);

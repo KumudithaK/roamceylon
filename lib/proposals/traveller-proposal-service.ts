@@ -29,12 +29,10 @@ export async function acceptTravellerProposal(token:string,input:{name:string;em
   if(!["sent","viewed"].includes(proposal.status))throw new TravellerProposalError("CONFLICT",proposal.status==="approved"?"This proposal version has already been accepted.":"This proposal version can no longer be accepted.");
   if(!input.termsAcknowledged)throw new TravellerProposalError("INVALID","Please confirm that you have reviewed this proposal and its terms.");
   if(input.email.trim().toLowerCase()!==snapshot.traveller.email.trim().toLowerCase())throw new TravellerProposalError("INVALID","Use the email address associated with this journey proposal.");
-  const now=new Date().toISOString(),metadata=safeMetadata(input.userAgent);
-  const {error:acceptanceError}=await database.from("journey_proposal_acceptances").insert({proposal_id:proposal.id,proposal_version:proposal.version,traveller_name:input.name.trim(),traveller_email:input.email.trim().toLowerCase(),accepted_total:proposal.total_selling_price,currency:proposal.currency,terms_acknowledged:true,metadata,accepted_at:now});
-  if(acceptanceError)throw new TravellerProposalError(acceptanceError.code==="23505"?"CONFLICT":"DATABASE",acceptanceError.code==="23505"?"This proposal version has already been accepted.":acceptanceError.message);
-  const {data:updated,error:updateError}=await database.from("journey_proposals").update({status:"approved",approved_at:now,accepted_at:now,accepted_name:input.name.trim(),accepted_email:input.email.trim().toLowerCase(),acceptance_metadata:metadata}).eq("id",proposal.id).in("status",["sent","viewed"]).select("*").single();
-  if(updateError||!updated)throw new TravellerProposalError("DATABASE",updateError?.message??"The acceptance could not be recorded.");
-  const {error:enquiryError}=await database.from("enquiries").update({status:"proposal_accepted"}).eq("id",proposal.enquiry_id);if(enquiryError)throw new TravellerProposalError("DATABASE",enquiryError.message);
+  const metadata=safeMetadata(input.userAgent);
+  const {error:acceptanceError}=await database.rpc("accept_journey_proposal_command",{p_public_token:token,p_name:input.name.trim(),p_email:input.email.trim().toLowerCase(),p_metadata:metadata});
+  if(acceptanceError){const conflict=["23505","40001","55000"].includes(acceptanceError.code);const invalid=acceptanceError.code==="22023";throw new TravellerProposalError(conflict?"CONFLICT":invalid?"INVALID":"DATABASE",acceptanceError.code==="23505"?"This journey already has an accepted proposal.":acceptanceError.message)}
+  const {data:updated,error:updateError}=await database.from("journey_proposals").select("*").eq("id",proposal.id).single();if(updateError||!updated)throw new TravellerProposalError("DATABASE",updateError?.message??"The acceptance could not be loaded.");
   return {proposal:updated,snapshot};
 }
 
@@ -45,8 +43,6 @@ export async function requestTravellerChanges(token:string,input:{name:string;em
   if(!["sent","viewed"].includes(proposal.status))throw new TravellerProposalError("CONFLICT","This proposal version is no longer open for change requests.");
   if(input.email.trim().toLowerCase()!==snapshot.traveller.email.trim().toLowerCase())throw new TravellerProposalError("INVALID","Use the email address associated with this journey proposal.");
   const now=new Date().toISOString();
-  const {error}=await database.from("journey_proposal_change_requests").insert({proposal_id:proposal.id,category:input.category,message:input.message.trim(),traveller_name:input.name.trim(),traveller_email:input.email.trim().toLowerCase()});if(error)throw new TravellerProposalError("DATABASE",error.message);
-  const {error:updateError}=await database.from("journey_proposals").update({status:"changes_requested",changes_requested_at:now}).eq("id",proposal.id);if(updateError)throw new TravellerProposalError("DATABASE",updateError.message);
-  const {error:enquiryError}=await database.from("enquiries").update({status:"preparing_proposal"}).eq("id",proposal.enquiry_id);if(enquiryError)throw new TravellerProposalError("DATABASE",enquiryError.message);
+  const {error}=await database.rpc("request_journey_proposal_changes_command",{p_proposal_id:proposal.id,p_category:input.category,p_message:input.message.trim(),p_name:input.name.trim(),p_email:input.email.trim().toLowerCase()});if(error)throw new TravellerProposalError("DATABASE",error.message);
   return {proposal:{...proposal,status:"changes_requested" as const,changes_requested_at:now},snapshot};
 }

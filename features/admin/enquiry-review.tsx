@@ -7,7 +7,8 @@ import {CalendarDays,Mail,MapPin,Phone,Users,WalletCards,X} from "lucide-react";
 import {AdminShell} from "./admin-shell";
 import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
-import {enquiryWorkflow} from "@/lib/enquiries/enquiry-workflow";
+import {enquiryStatusLabels} from "@/lib/enquiries/enquiry-workflow";
+import {enquiryLifecycleActionLabels,staffEnquiryLifecycleActions,type EnquiryLifecycleAction} from "@/lib/enquiries/enquiry-lifecycle";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import {isJourneyEstimate} from "@/lib/pricing/journey-estimate-types";
 import {pricingPlanKey} from "@/features/journey/journey-store";
@@ -18,7 +19,7 @@ import type {Database,EnquiryStatus,Json} from "@/lib/database.types";
 import type {ParticipantCounts} from "@/lib/types";
 
 type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
-type Account=Database["public"]["Tables"]["journey_accounts"]["Row"];
+type Account=Database["public"]["Views"]["journey_account_statuses"]["Row"];
 type Named={id:string;name:string};
 type SelectionNames={themes:Named[];destinations:Named[];experiences:Named[];stays:Named[];vehicle:string|null;guide:string|null};
 const accountStatusLabels:Record<Account["status"],string>={pending_deposit:"Pending Deposit",active:"Active",review_required:"Review Required",part_paid:"Part Paid",fully_paid:"Fully Paid",cancelled:"Cancelled",refund_pending:"Refund Pending",refunded:"Refunded",closed:"Closed"};
@@ -47,11 +48,32 @@ export function EnquiryReview({id}:{id:string}){
   const [message,setMessage]=useState("");
   const [saving,setSaving]=useState(false);
   const [depositOpen,setDepositOpen]=useState(false);
+  const [canManagePayments,setCanManagePayments]=useState(false);
+  const [lifecycleCapabilities,setLifecycleCapabilities]=useState({design:false,operations:false,override:false});
   useEffect(()=>{void (async()=>{
     const database=createClient();
     const {data:{session}}=await database.auth.getSession();
     if(!session){router.replace("/admin/login");return}
-    const {data:row,error}=await database.from("enquiries").select("*").eq("id",id).single();
+    const permissionResult=await database.rpc("current_staff_permissions");
+    const permissions=new Set((permissionResult.data??[]).map(item=>item.permission_code));
+    setCanManagePayments(permissions.has("finance.payments.manage"));
+    setLifecycleCapabilities({design:permissions.has("journey.lifecycle.manage"),operations:permissions.has("operations.manage"),override:permissions.has("journey.lifecycle.override")});
+    let projected:Record<string,unknown>|null=null,errorMessage="";
+    if(permissions.has("traveller.pii.full.view")||permissions.has("traveller.pii.design.view")){
+      const result=await database.from(permissions.has("traveller.pii.full.view")?"traveller_admin_full":"traveller_journey_design").select("*").eq("id",id).single();
+      projected=result.data as unknown as Record<string,unknown>|null;errorMessage=result.error?.message??"";
+    }else if(permissions.has("traveller.pii.operations.view")){
+      const result=await database.from("traveller_operations_context").select("*").eq("id",id).single();
+      projected=result.data?{...result.data,trip_state:result.data.operational_brief,email:"",summary:null,selected_themes:[],internal_notes:null,estimated_price_min:null,estimated_price_max:null,estimated_price_currency:null,estimated_price_basis:null,estimated_at:null,estimate_snapshot:{}} as unknown as Record<string,unknown>:null;errorMessage=result.error?.message??"";
+    }else if(permissions.has("traveller.context.suppliers.view")){
+      const result=await database.from("traveller_supplier_context").select("*").eq("id",id).single();
+      projected=result.data?{...result.data,trip_state:result.data.supplier_brief,name:result.data.journey_reference,email:"",phone:null,nationality:null,summary:null,selected_themes:[],selected_stays:[],selected_vehicle:null,selected_guide:null,traveller_notes:null,internal_notes:null,estimated_price_min:null,estimated_price_max:null,estimated_price_currency:null,estimated_price_basis:null,estimated_at:null,estimate_snapshot:{}} as unknown as Record<string,unknown>:null;errorMessage=result.error?.message??"";
+    }else if(permissions.has("traveller.pii.finance.view")){
+      const result=await database.from("traveller_finance_reference").select("*").eq("id",id).single();
+      projected=result.data?{...result.data,trip_state:{},email:"",phone:null,nationality:null,summary:null,selected_themes:[],selected_destinations:[],selected_experiences:[],experience_participants:{},selected_stays:[],selected_vehicle:null,selected_guide:null,traveller_notes:null,internal_notes:null,estimated_price_min:null,estimated_price_max:null,estimated_price_currency:null,estimated_price_basis:null,estimated_at:null,estimate_snapshot:{}} as unknown as Record<string,unknown>:null;errorMessage=result.error?.message??"";
+    }
+    const row=projected as unknown as Enquiry|null;
+    const error=errorMessage?new Error(errorMessage):null;
     if(error||!row){setMessage("This enquiry could not be found.");return}
     setEnquiry(row);setNotes(row.internal_notes||"");
     const themeIds=ids(row.selected_themes);const destinationIds=ids(row.selected_destinations);const experienceIds=ids(row.selected_experiences);const stayIds=ids(row.selected_stays);
@@ -70,7 +92,7 @@ export function EnquiryReview({id}:{id:string}){
       row.selected_vehicle?database.from("vehicles").select("listing_title").eq("id",row.selected_vehicle).maybeSingle():Promise.resolve({data:null}),
       row.selected_guide?database.from("guides").select("name").eq("id",row.selected_guide).maybeSingle():Promise.resolve({data:null}),
       selectedPlanIds.length?database.from("pricing_plans").select("id,name").in("id",selectedPlanIds):Promise.resolve({data:[]}),
-      database.from("journey_accounts").select("*").eq("enquiry_id",id).maybeSingle(),
+      database.from("journey_account_statuses").select("*").eq("enquiry_id",id).maybeSingle(),
       designExperienceIds.length?database.from("experience_destinations").select("experience_id,destination_id").in("experience_id",designExperienceIds):Promise.resolve({data:[]})
     ]);
     const order=(values:Named[]|null,orderedIds:string[])=>orderedIds.map(value=>values?.find(item=>item.id===value)).filter((item):item is Named=>Boolean(item));
@@ -92,18 +114,18 @@ export function EnquiryReview({id}:{id:string}){
   const handoff=useMemo(()=>enquiry?parseJourneyHandoff(enquiry.trip_state):null,[enquiry]);
   const quote=handoff?.quote??null;
   const submittedRange=isJourneyEstimate(quote)&&quote.status==="estimated_range"?{currency:quote.currency,minimum:quote.perPersonMin,maximum:quote.perPersonMax,totalMin:quote.totalMin,totalMax:quote.totalMax,estimatedAt:quote.estimatedAt}:enquiry?.estimated_at&&enquiry.estimated_price_min!==null&&enquiry.estimated_price_max!==null?{currency:enquiry.estimated_price_currency??"USD",minimum:enquiry.estimated_price_min,maximum:enquiry.estimated_price_max,totalMin:null,totalMax:null,estimatedAt:enquiry.estimated_at}:null;
-  const save=async(status:EnquiryStatus|undefined=enquiry?.status)=>{
-    if(!enquiry||!status)return;
-    if(status==="deposit_paid"&&(!account||account.amount_received<=0)){setDepositOpen(true);return}
+  const save=async(action?:EnquiryLifecycleAction)=>{
+    if(!enquiry)return;
     setSaving(true);setMessage("");
-    const database=createClient();
-    const {error}=await database.from("enquiries").update({status,internal_notes:notes}).eq("id",id);
+    const database=createClient(),{data:{session}}=await database.auth.getSession();
+    const response=await fetch("/api/admin/enquiry-lifecycle",{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${session?.access_token??""}`},body:JSON.stringify({enquiryId:id,action,internalNotes:notes})});
+    const result=await response.json() as {status?:EnquiryStatus;error?:string};
     setSaving(false);
-    if(error){setMessage(error.message);return}
-    setEnquiry({...enquiry,status,internal_notes:notes});
-    const {data:nextAccount}=await database.from("journey_accounts").select("*").eq("enquiry_id",id).maybeSingle();
+    if(!response.ok){setMessage(result.error??"The journey action could not be completed.");return}
+    const status=result.status??enquiry.status;setEnquiry({...enquiry,status,internal_notes:notes});
+    const {data:nextAccount}=await database.from("journey_account_statuses").select("*").eq("enquiry_id",id).maybeSingle();
     setAccount(nextAccount??null);
-    setMessage(status==="completed"?"Journey marked complete. Financial settlement remains independent.":"Enquiry updated.");
+    setMessage(action==="complete_journey"?"Journey marked complete. Financial settlement remains independent.":action?"Journey lifecycle updated.":"Internal notes saved.");
   };
   const activateAccounting=async(event:FormEvent<HTMLFormElement>)=>{
     event.preventDefault();
@@ -135,7 +157,7 @@ export function EnquiryReview({id}:{id:string}){
     return planId?pricingPlanNames[planId]??null:null;
   };
   return <AdminShell requiredPermission="journey.requests.view"><div className="mx-auto max-w-7xl">
-    <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">Traveller enquiry · {enquiry.journey_reference}</p><h1 className="font-serif text-4xl md:text-5xl">{enquiry.name}</h1><p className="mt-2 text-sm text-stone">Received {new Date(enquiry.created_at).toLocaleString("en-GB")}</p></div><div className="flex flex-wrap gap-3"><Link href={`/admin/journey-studio/${enquiry.id}`} className="rounded-full bg-gold px-5 py-3 text-sm font-bold text-slate">Open Journey Studio</Link><select value={enquiry.status} onChange={event=>void save(event.target.value as EnquiryStatus)} disabled={saving} className="rounded-full border border-stone/25 bg-white px-5 py-3 text-sm font-semibold">{enquiryWorkflow.map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></div></div>
+    <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">Traveller enquiry · {enquiry.journey_reference}</p><h1 className="font-serif text-4xl md:text-5xl">{enquiry.name}</h1><p className="mt-2 text-sm text-stone">Received {new Date(enquiry.created_at).toLocaleString("en-GB")}</p></div><div className="flex flex-wrap items-center gap-3"><Link href={`/admin/journey-studio/${enquiry.id}`} className="rounded-full bg-gold px-5 py-3 text-sm font-bold text-slate">Open Journey Studio</Link><span className="rounded-full border border-stone/20 bg-white px-5 py-3 text-sm font-semibold">{enquiryStatusLabels[enquiry.status]}</span>{staffEnquiryLifecycleActions(enquiry.status).filter(action=>["prepare_operations","start_travel","complete_journey"].includes(action)?lifecycleCapabilities.operations:["cancel_journey","archive_journey"].includes(action)?lifecycleCapabilities.override:lifecycleCapabilities.design).map(action=><Button key={action} disabled={saving} onClick={()=>void save(action)}>{enquiryLifecycleActionLabels[action]}</Button>)}{canManagePayments&&["proposal_accepted","deposit_requested"].includes(enquiry.status)&&(!account||account.amount_received<=0)?<Button onClick={()=>setDepositOpen(true)}>Record deposit</Button>:null}</div></div>
     {message&&<p className="mt-5 rounded-xl bg-white p-4 text-sm">{message}</p>}
     <div className="mt-8 grid gap-6 xl:grid-cols-[1fr_360px]"><div className="grid gap-6">
       <Section title="Journey at a glance"><div className="grid gap-4 sm:grid-cols-3"><Metric icon={Users} label="Travellers" value={`${travellers}`} detail={`${travellerCounts.adults} adults · ${travellerCounts.children} children · ${travellerCounts.infants} infants`}/><Metric icon={CalendarDays} label="Travel dates" value={enquiry.travel_start_date||"Flexible"} detail={enquiry.travel_end_date?`to ${enquiry.travel_end_date}`:"Departure not selected"}/><Metric icon={MapPin} label="Destinations" value={`${selectionNames.destinations.length}`} detail={selectionNames.destinations.map(item=>item.name).join(" · ")||"Not selected"}/></div></Section>
@@ -145,7 +167,7 @@ export function EnquiryReview({id}:{id:string}){
       <Section title="What the traveller saw at submission">{submittedRange?<div><div className="grid gap-4 sm:grid-cols-2"><Price label="Estimated range per adult" value={`${submittedRange.currency} ${submittedRange.minimum?.toLocaleString("en-US",{maximumFractionDigits:0})} – ${submittedRange.maximum?.toLocaleString("en-US",{maximumFractionDigits:0})}`}/>{submittedRange.totalMin!==null&&submittedRange.totalMax!==null?<Price label="Estimated journey total" value={`${submittedRange.currency} ${submittedRange.totalMin.toLocaleString("en-US",{maximumFractionDigits:0})} – ${submittedRange.totalMax.toLocaleString("en-US",{maximumFractionDigits:0})}`}/>:null}</div><p className="mt-4 text-sm leading-6 text-stone">Snapshot taken {new Date(submittedRange.estimatedAt).toLocaleString("en-GB")}. This is informational only and never drives supplier allocation, proposal pricing or Accounting.</p></div>:isJourneyEstimate(quote)||enquiry.estimated_at?<div><p className="font-serif text-xl text-forest">Price tailored in Journey Proposal</p><p className="mt-2 text-sm leading-6 text-stone">The public estimate could not be shown reliably. The journey designer should prepare the commercial proposal from allocated suppliers.</p></div>:quote?.status==="ready"?<div><Price label="Legacy fixed estimate at submission" value={`${quote.currency} ${quote.totalPackagePrice?.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}`}/><p className="mt-4 text-sm text-stone">Legacy snapshot retained for backwards compatibility. It does not replace the current supplier-led proposal.</p></div>:<p className="text-sm text-stone">No public estimate was stored with this enquiry.</p>}</Section>
     </div><aside className="grid h-fit gap-6">
       <Section title="Contact"><div className="grid gap-3 text-sm"><a href={`mailto:${enquiry.email}`} className="flex items-center gap-2 text-forest"><Mail className="size-4"/>{enquiry.email}</a>{enquiry.phone&&<a href={`tel:${enquiry.phone}`} className="flex items-center gap-2 text-forest"><Phone className="size-4"/>{enquiry.phone}</a>}<span className="text-stone">{enquiry.nationality||"Nationality not provided"}</span></div></Section>
-      <Section title="Accounting">{account?<div className="grid gap-4"><div className="flex items-center justify-between gap-4"><span className="flex items-center gap-2 text-sm"><WalletCards className="size-4 text-gold"/>Accounting {account.active?"active":"inactive"}</span><strong className={`rounded-full px-3 py-1 text-xs ${account.status==="review_required"?"bg-red-100 text-red-800":"bg-sand-light text-forest"}`}>{accountStatusLabels[account.status]}</strong></div><div className="grid gap-3 rounded-2xl bg-sand-light p-4 text-sm"><PaymentSummary label="Customer payments" value={grossCustomerPayments} currency={account.currency}/>{account.amount_refunded>0&&<PaymentSummary label="Refunds paid" value={account.amount_refunded} currency={account.currency} negative/>}<div className="border-t border-stone/15 pt-3"><PaymentSummary label="Net customer funds" value={account.amount_received} currency={account.currency} emphasized/></div></div>{account.review_reason&&<p className="rounded-xl bg-red-50 p-3 text-xs leading-5 text-red-800">{account.review_reason}</p>}<Link href={`/admin/accounting/${account.id}`} className="text-sm font-semibold text-forest">Open Accounting account →</Link></div>:<div><p className="text-sm leading-6 text-stone">Accounting has not been activated. Select <strong>Deposit Received</strong> when the traveller payment is received.</p><p className="mt-3 rounded-xl bg-sand-light p-3 text-xs text-stone">Customer payment: Not recorded</p></div>}</Section>
+      <Section title="Accounting">{account?<div className="grid gap-4"><div className="flex items-center justify-between gap-4"><span className="flex items-center gap-2 text-sm"><WalletCards className="size-4 text-gold"/>Accounting {account.active?"active":"inactive"}</span><strong className={`rounded-full px-3 py-1 text-xs ${account.status==="review_required"?"bg-red-100 text-red-800":"bg-sand-light text-forest"}`}>{accountStatusLabels[account.status]}</strong></div><div className="grid gap-3 rounded-2xl bg-sand-light p-4 text-sm"><PaymentSummary label="Customer payments" value={grossCustomerPayments} currency={account.currency}/>{account.amount_refunded>0&&<PaymentSummary label="Refunds paid" value={account.amount_refunded} currency={account.currency} negative/>}<div className="border-t border-stone/15 pt-3"><PaymentSummary label="Net customer funds" value={account.amount_received} currency={account.currency} emphasized/></div></div>{account.review_reason&&<p className="rounded-xl bg-red-50 p-3 text-xs leading-5 text-red-800">{account.review_reason}</p>}<Link href={`/admin/accounting/${account.id}`} className="text-sm font-semibold text-forest">Open Accounting account →</Link></div>:<div><p className="text-sm leading-6 text-stone">Accounting has not been activated. Once the proposal is accepted, use <strong>Record deposit</strong> to capture the payment and activate Accounting.</p><p className="mt-3 rounded-xl bg-sand-light p-3 text-xs text-stone">Customer payment: Not recorded</p></div>}</Section>
       <Section title="Internal follow-up notes"><textarea rows={10} value={notes} onChange={event=>setNotes(event.target.value)} placeholder="Record calls, supplier checks, preferences and next actions…" className="w-full rounded-xl border border-stone/25 p-4 text-sm outline-none focus:border-gold"/><Button disabled={saving} className="mt-3 w-full" onClick={()=>void save()}>{saving?"Saving…":"Save enquiry"}</Button></Section>
     </aside></div>
   </div>{depositOpen&&<div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-slate/65 p-4 backdrop-blur-sm"><form onSubmit={activateAccounting} className="relative my-6 w-full max-w-lg rounded-3xl bg-ivory p-7 shadow-2xl"><button type="button" aria-label="Close deposit form" onClick={()=>setDepositOpen(false)} className="absolute right-5 top-5 grid size-9 place-items-center rounded-full bg-white"><X className="size-4"/></button><p className="eyebrow mb-2">Accounting activation</p><h2 className="font-serif text-3xl">Record traveller deposit</h2><p className="mt-3 text-sm leading-6 text-stone">This creates or activates the account for {enquiry.journey_reference} and records one customer receipt.</p><div className="mt-6 grid gap-4"><label className="grid gap-2 text-sm font-semibold">Deposit amount ({quote?.currency??"USD"})<input required name="depositAmount" type="number" min=".01" step=".01" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Payment date<input required name="paymentDate" type="date" defaultValue={new Date().toISOString().slice(0,10)} className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Payment method<select name="paymentMethod" className="rounded-xl border border-stone/25 px-4 py-3"><option>Bank transfer</option><option>Card</option><option>Cash</option><option>Online payment</option><option>Other</option></select></label><label className="grid gap-2 text-sm font-semibold">Reference<input name="reference" placeholder="Bank reference or receipt number" className="rounded-xl border border-stone/25 px-4 py-3"/></label><label className="grid gap-2 text-sm font-semibold">Notes<textarea name="notes" rows={3} className="rounded-xl border border-stone/25 px-4 py-3"/></label><div className="flex justify-end gap-3"><Button type="button" variant="ghost" onClick={()=>setDepositOpen(false)}>Cancel</Button><Button disabled={saving} type="submit">{saving?"Recording…":"Record deposit & activate"}</Button></div></div></form></div>}</AdminShell>;

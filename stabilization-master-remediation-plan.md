@@ -530,3 +530,20 @@ Admin/list pagination beyond immediate volumes; compact catalogue/estimate repos
 **FINAL SAFETY CHECK:** `git status --short` reports the four pre-existing untracked audit inputs (`audit-2-security-privacy.md` through `audit-5-ux-accessibility-uat.md`) and this newly created plan. This planning task created only `stabilization-master-remediation-plan.md`; it did not alter application, database, test, configuration or content files. No backup, migration, commit, push or deployment was performed.
 
 STABILIZATION PHASE 0 COMPLETE – MASTER REMEDIATION PLAN CREATED – NO APPLICATION CODE OR DATABASE CHANGES MADE
+
+## Final stabilization handover — Phase 16
+
+Date updated: 2026-08-15
+Current programme state: **Phases 1–16 complete; ready for human C0 preflight review**
+
+The phased programme implemented and executably verified the public data boundary, capability architecture, RLS/Storage enforcement, purpose-limited PII, command-only workflow transitions, proposal acceptance, Accounting, supplier allocation, operational fulfilment, Admin read models, partner onboarding, public/API integrity and immutable minimized audit evidence. Phase 15 verified the integrated system with 32/32 isolated probes and 202/202 local tests. Production was not modified.
+
+The final canonical release inventory is frozen in `repository-migration-manifest.sha256` (84 migrations) and `stabilization-migration-manifest.sha256` (14 stabilization migrations). The release package, clean-room runner and human controls are documented in:
+
+- `stabilization-phase-16-checkpoint.md`
+- `stabilization-final-report.md`
+- `production-cutover-plan.md`
+- `production-smoke-test-checklist.md`
+- `real-data-entry-readiness.md`
+
+The guarded Phase 16 execution passed 84/84 clean-room migrations, schema and required system-data fingerprint equality, and the 32/32 isolated critical regression. Production deployment is **not yet authorized**: a separate human decision, C0 preflight, production backup, migration/application cutover and smoke verification remain mandatory before real-data entry. No Phase 17 is planned.

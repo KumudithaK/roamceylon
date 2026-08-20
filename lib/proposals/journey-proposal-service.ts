@@ -1,5 +1,4 @@
 import "server-only";
-import {randomUUID} from "node:crypto";
 import {createAdminClient} from "@/lib/supabase/admin";
 import {allocationCommercialSnapshot} from "@/lib/accounting/allocation-accounting";
 import type {AllocationCommercialOverrides} from "@/lib/pricing/allocation-commercial";
@@ -99,13 +98,13 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
   if(proposalError||!proposal)throw new ProposalError("DATABASE",proposalError?.message??"The proposal could not be generated.");
   const {error:supersedeError}=await database.from("journey_proposals").update({status:"superseded"}).eq("enquiry_id",enquiryId).neq("id",proposal.id).in("status",["ready","internal_approved","sent","viewed","changes_requested"]);
   if(supersedeError){await database.from("journey_proposals").delete().eq("id",proposal.id);throw new ProposalError("DATABASE",supersedeError.message)}
-  const {error:statusError}=await database.from("enquiries").update({status:"preparing_proposal"}).eq("id",enquiryId);
+  const {error:statusError}=await database.rpc("execute_enquiry_transition",{p_enquiry_id:enquiryId,p_action:"prepare_proposal",p_actor_id:userId,p_reason:`Proposal ${reference} generated.`});
   if(statusError)throw new ProposalError("DATABASE",statusError.message);
-  if(design.curated)await database.from("curated_journeys").update({status:"ready_for_proposal",updated_by:userId}).eq("id",design.curated.id);
+  if(design.curated){const transition=await database.rpc("execute_curated_journey_transition",{p_curated_journey_id:design.curated.id,p_action:"ready_for_proposal",p_actor_id:userId});if(transition.error)throw new ProposalError("DATABASE",transition.error.message)}
   return proposal;
 }
 
-export async function transitionJourneyProposal(proposalId:string,action:"internal_approve"|"sent"|"approved",userId?:string){
+export async function transitionJourneyProposal(proposalId:string,action:"internal_approve"|"sent",userId:string){
   const database=createAdminClient();
   if(!database)throw new ProposalError("DATABASE","Supabase server credentials are unavailable.");
   const {data:proposal,error}=await database.from("journey_proposals").select("*").eq("id",proposalId).maybeSingle();
@@ -114,18 +113,12 @@ export async function transitionJourneyProposal(proposalId:string,action:"intern
   if(proposal.requires_new_version)throw new ProposalError("INCOMPLETE","The curated journey or a supplier allocation changed after this proposal was prepared. Generate and review a new proposal version.");
   if(action==="internal_approve"&&proposal.status!=="ready")throw new ProposalError("INCOMPLETE","Only a ready proposal can be approved internally.");
   if(action==="sent"&&proposal.status!=="internal_approved")throw new ProposalError("INCOMPLETE","Approve the proposal internally before sending it to the traveller.");
-  if(action==="approved"&&!['sent','viewed'].includes(proposal.status))throw new ProposalError("INCOMPLETE","Only the sent proposal version can be accepted.");
   if(action==="internal_approve"||action==="sent"){
     const customer=customerSafeProposalDto(proposal.customer_snapshot);if(!customer)throw new ProposalError("INCOMPLETE","This legacy proposal has no customer-safe Phase 10 snapshot. Create a new proposal version before approval or sending.");
     const readiness=validateCustomerProposal(customer);if(!readiness.ready)throw new ProposalError("INCOMPLETE",readiness.issues.join(" "));
   }
-  const now=new Date().toISOString();
-  const changes=action==="internal_approve"?{status:"internal_approved" as const,internally_approved_at:now,internally_approved_by:userId??null}:action==="sent"?{status:"sent" as const,sent_at:now,sent_snapshot:proposal.customer_snapshot,public_token:randomUUID(),requires_new_version:false,out_of_date_at:null,access_revoked_at:null,access_revoked_by:null,access_revocation_reason:null}:{status:"approved" as const,approved_at:now,accepted_at:now};
-  const {data:updated,error:updateError}=await database.from("journey_proposals").update(changes).eq("id",proposalId).select("*").single();
-  if(updateError||!updated)throw new ProposalError("DATABASE",updateError?.message??"Proposal status could not be changed.");
-  const enquiryStatus=action==="internal_approve"?"preparing_proposal":action==="sent"?"proposal_sent":"proposal_accepted";
-  const {error:statusError}=await database.from("enquiries").update({status:enquiryStatus}).eq("id",proposal.enquiry_id);
-  if(statusError)throw new ProposalError("DATABASE",statusError.message);
+  const transition=await database.rpc("transition_journey_proposal_command",{p_proposal_id:proposalId,p_action:action,p_actor_id:userId});if(transition.error)throw new ProposalError("DATABASE",transition.error.message);
+  const {data:updated,error:updateError}=await database.from("journey_proposals").select("*").eq("id",proposalId).single();if(updateError||!updated)throw new ProposalError("DATABASE",updateError?.message??"Proposal status could not be loaded.");
   return updated as Proposal;
 }
 

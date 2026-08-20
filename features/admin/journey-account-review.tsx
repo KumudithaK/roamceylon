@@ -11,12 +11,12 @@ import {enquiryStatusLabels} from "@/lib/enquiries/enquiry-workflow";
 import type {Database} from "@/lib/database.types";
 import {CancellationWorkflow} from "./cancellation-workflow";
 
-type Account=Database["public"]["Tables"]["journey_accounts"]["Row"];
+type Account=Database["public"]["Views"]["finance_journey_accounts"]["Row"];
 type Settlement=Database["public"]["Tables"]["journey_settlements"]["Row"];
 type Transaction=Database["public"]["Tables"]["accounting_transactions"]["Row"];
 type Attachment=Database["public"]["Tables"]["accounting_attachments"]["Row"];
 type LifecycleEvent=Database["public"]["Tables"]["accounting_lifecycle_history"]["Row"];
-type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
+type Enquiry=Database["public"]["Views"]["traveller_finance_reference"]["Row"];
 type Action={type:"receipt"}|{type:"refund";maximum?:number}|{type:"payment";settlement:Settlement}|{type:"correction";settlement:Settlement}|{type:"liability"}|{type:"close"}|null;
 const payeeLabels={accommodation:"Stay",vehicle:"Fleet",guide:"Guide",experience:"Experience",destination:"Destination fee",operations:"Operations",other:"Other"} as const;
 const accountStatusLabels:Record<Account["status"],string>={pending_deposit:"Pending Deposit",active:"Active",review_required:"Review Required",part_paid:"Part Paid",fully_paid:"Fully Paid",cancelled:"Cancelled",refund_pending:"Refund Pending",refunded:"Refunded",closed:"Closed"};
@@ -39,12 +39,12 @@ export function JourneyAccountReview({id}:{id:string}){
     const database=createClient();
     const {data:{session}}=await database.auth.getSession();
     if(!session){router.replace("/admin/login");return}
-    const {data:row,error}=await database.from("journey_accounts").select("*").eq("id",id).maybeSingle();
+    const {data:row,error}=await database.from("finance_journey_accounts").select("*").eq("id",id).maybeSingle();
     if(error||!row){setMessage(error?.message??"Journey account not found.");setLoading(false);return}
     const [settlementResult,transactionResult,enquiryResult,attachmentResult,lifecycleResult]=await Promise.all([
       database.from("journey_settlements").select("*").eq("account_id",id).order("created_at"),
       database.from("accounting_transactions").select("*").eq("account_id",id).order("payment_date",{ascending:false}).order("created_at",{ascending:false}),
-      database.from("enquiries").select("*").eq("id",row.enquiry_id).maybeSingle(),
+      database.from("traveller_finance_reference").select("*").eq("id",row.enquiry_id).maybeSingle(),
       database.from("accounting_attachments").select("*").eq("account_id",id).order("created_at"),
       database.from("accounting_lifecycle_history").select("*").eq("account_id",id).order("created_at",{ascending:false})
     ]);
@@ -56,12 +56,12 @@ export function JourneyAccountReview({id}:{id:string}){
     const database=createClient();
     const {data:{session}}=await database.auth.getSession();
     if(!session){router.replace("/admin/login");return}
-    const {data:row,error}=await database.from("journey_accounts").select("*").eq("id",id).maybeSingle();
+    const {data:row,error}=await database.from("finance_journey_accounts").select("*").eq("id",id).maybeSingle();
     if(error||!row){setMessage(error?.message??"Journey account not found.");setLoading(false);return}
     const [settlementResult,transactionResult,enquiryResult,attachmentResult,lifecycleResult]=await Promise.all([
       database.from("journey_settlements").select("*").eq("account_id",id).order("created_at"),
       database.from("accounting_transactions").select("*").eq("account_id",id).order("payment_date",{ascending:false}).order("created_at",{ascending:false}),
-      database.from("enquiries").select("*").eq("id",row.enquiry_id).maybeSingle(),
+      database.from("traveller_finance_reference").select("*").eq("id",row.enquiry_id).maybeSingle(),
       database.from("accounting_attachments").select("*").eq("account_id",id).order("created_at"),
       database.from("accounting_lifecycle_history").select("*").eq("account_id",id).order("created_at",{ascending:false})
     ]);
@@ -123,7 +123,7 @@ export function JourneyAccountReview({id}:{id:string}){
   const settlementProgress=supplierDue?Math.min(100,(supplierPaid+supplierSavings)/supplierDue*100):100;
   return <AdminShell requiredPermission="finance.revenue.view"><div className="mx-auto max-w-7xl">
     <Link href="/admin/accounting" className="inline-flex items-center gap-2 text-sm font-semibold text-forest"><ArrowLeft className="size-4"/>Back to accounting</Link>
-    <div className="mt-6 flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">{account.journey_reference} · {account.account_number}</p><h1 className="font-serif text-4xl md:text-5xl">{account.traveller_name}</h1><p className="mt-2 text-sm text-stone">{account.traveller_email} · Accounting activated {account.activated_at?new Date(account.activated_at).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):"pending deposit"}</p><div className="mt-3 flex flex-wrap gap-2"><span className="rounded-full bg-sand-light px-3 py-1 text-xs font-semibold">Financial: {accountStatusLabels[account.status]}</span><span className="rounded-full bg-sand-light px-3 py-1 text-xs font-semibold">Journey: {enquiry?enquiryStatusLabels[enquiry.status]:"Unavailable"}</span></div></div><div className="flex flex-wrap gap-2">{account.status!=="closed"?<Button variant="outline" onClick={()=>setAction({type:"close"})}>Close account</Button>:null}{enquiry?.status!=="cancelled"&&<Button disabled={!account.active} variant="outline" onClick={()=>setAction({type:"refund"})}>Record refund</Button>}<Button disabled={!account.active||enquiry?.status==="cancelled"} onClick={()=>setAction({type:"receipt"})}><Banknote/>Record customer receipt</Button></div></div>
+    <div className="mt-6 flex flex-wrap items-end justify-between gap-5"><div><p className="eyebrow mb-3">{account.journey_reference} · {account.account_number}</p><h1 className="font-serif text-4xl md:text-5xl">{account.traveller_name}</h1><p className="mt-2 text-sm text-stone">Accounting activated {account.activated_at?new Date(account.activated_at).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}):"pending deposit"}</p><div className="mt-3 flex flex-wrap gap-2"><span className="rounded-full bg-sand-light px-3 py-1 text-xs font-semibold">Financial: {accountStatusLabels[account.status]}</span><span className="rounded-full bg-sand-light px-3 py-1 text-xs font-semibold">Journey: {enquiry?enquiryStatusLabels[enquiry.status]:"Unavailable"}</span></div></div><div className="flex flex-wrap gap-2">{account.status!=="closed"?<Button variant="outline" onClick={()=>setAction({type:"close"})}>Close account</Button>:null}{enquiry?.status!=="cancelled"&&<Button disabled={!account.active} variant="outline" onClick={()=>setAction({type:"refund"})}>Record refund</Button>}<Button disabled={!account.active||enquiry?.status==="cancelled"} onClick={()=>setAction({type:"receipt"})}><Banknote/>Record customer receipt</Button></div></div>
     {message&&<div className="mt-6 rounded-2xl border border-gold/25 bg-gold/10 p-4 text-sm">{message}</div>}
     {account.status==="review_required"&&<div className="mt-6 flex gap-3 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-800"><AlertTriangle className="mt-0.5 size-5 shrink-0"/><div><strong>Accounting review required</strong><p className="mt-1 leading-6">{account.review_reason||"The Traveller Enquiry lifecycle was reverted after financial activity. Review all payments and obligations before continuing."}</p></div></div>}
     {!account.active&&account.status!=="closed"?<div className="mt-6 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900"><AlertTriangle className="mt-0.5 size-5 shrink-0"/><p>This account is inactive because no customer payment is currently recorded. Its commercial snapshot and audit history are preserved.</p></div>:null}

@@ -21,7 +21,7 @@ async function companyDetails(){
   const fallback={email:"hello@roamceylon.com",telephone:"+94 71 307 7989"};
   const supabase=createPublicClient();
   if(!supabase)return fallback;
-  const {data,error}=await supabase.from("website_settings").select("enquiry_email,contact_phone").limit(1).maybeSingle();
+  const {data,error}=await supabase.from("website_public_settings").select("enquiry_email,contact_phone").limit(1).maybeSingle();
   if(error){
     console.error(`[about:website-settings] ${error.code}: ${error.message}`);
     return fallback;

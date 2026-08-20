@@ -31,7 +31,7 @@ const schema=z.discriminatedUnion("action",[settlementSchema,calculateSchema,tra
 
 export async function POST(request:Request){
   const actor=await authenticatedStaff(request,"finance.payments.manage");
-  if(!actor)return NextResponse.json({error:"Unauthorized."},{status:401});
+  if(!actor.authorized)return NextResponse.json({error:actor.status===401?"Unauthorized.":"You do not have permission to manage cancellations."},{status:actor.status});
   const {database,user}=actor;
   const parsed=schema.safeParse(await request.json().catch(()=>null));
   if(!parsed.success)return NextResponse.json({error:parsed.error.issues[0]?.message??"Check the cancellation details."},{status:400});

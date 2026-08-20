@@ -13,13 +13,14 @@ test("supplier allocations remain independent from immutable traveller preferenc
 
 test("proposal snapshots use allocated suppliers and require internal approval before sending",()=>{
   const service=read("../lib/proposals/journey-proposal-service.ts");
+  const workflowMigration=read("../supabase/migrations/202608120005_workflow_transition_integrity.sql");
   const workspace=read("../features/admin/journey-lifecycle-workspace.tsx");
   assert.match(service,/allocationCommercialSnapshot/);
   assert.match(service,/allocation_snapshot/);
   assert.match(service,/proposal\.status!=="internal_approved"/);
-  assert.match(service,/sent_snapshot:proposal\.customer_snapshot/);
+  assert.match(workflowMigration,/sent_snapshot=customer_snapshot/);
   assert.match(service,/customer_snapshot:customerProposalJson/);
-  assert.match(service,/"proposal_accepted"/);
+  assert.match(service,/transition_journey_proposal_command/);
   assert.match(workspace,/action==="sent"\?"proposal_sent":"preparing_proposal"/);
 });
 
@@ -27,10 +28,12 @@ test("phase ten preserves sent versions and provides traveller acceptance and ch
   const migration=read("../supabase/migrations/202608100005_premium_journey_proposals.sql");
   const guards=read("../supabase/migrations/202608100006_proposal_snapshot_guards.sql");
   const travellerService=read("../lib/proposals/traveller-proposal-service.ts");
+  const workflowMigration=read("../supabase/migrations/202608120005_workflow_transition_integrity.sql");
   const document=read("../components/proposal/proposal-document.tsx");
   for(const field of ["public_token","customer_snapshot","sent_snapshot","journey_proposal_change_requests","journey_proposal_acceptances"])assert.match(migration,new RegExp(field));
-  assert.match(travellerService,/proposal_version:proposal\.version/);
-  assert.match(travellerService,/accepted_total:proposal\.total_selling_price/);
+  assert.match(travellerService,/accept_journey_proposal_command/);
+  assert.match(workflowMigration,/proposal_row\.version/);
+  assert.match(workflowMigration,/proposal_row\.total_selling_price/);
   assert.match(travellerService,/status:"changes_requested"/);
   assert.match(guards,/protect_sent_proposal_snapshot/);
   assert.match(guards,/requires_new_version=true/);
@@ -42,12 +45,11 @@ test("phase ten preserves sent versions and provides traveller acceptance and ch
   assert.doesNotMatch(document,/supplierCost|grossProfit|profitMargin|commission/i);
 });
 
-test("allocation accounting preserves the legacy quote path and activates only after payment",()=>{
+test("allocation accounting remains a reconciliation service while activation uses the accepted proposal command",()=>{
   const posting=read("../lib/accounting/post-journey-account.ts");
   const allocationAccounting=read("../lib/accounting/allocation-accounting.ts");
-  assert.match(posting,/allocationCommercial\.allocations\.length/);
-  assert.match(posting,/new PackagePricingService\(\)\.quote/);
-  assert.match(posting,/source:"supplier_allocations"/);
+  assert.match(posting,/initialize_journey_account_command/);
+  assert.doesNotMatch(posting,/PackagePricingService|allocationCommercialSnapshot/);
   assert.match(allocationAccounting,/!account\|\|!account\.active/);
   assert.doesNotMatch(allocationAccounting,/journey_accounts"\)\.insert/);
   assert.match(allocationAccounting,/source_key:`allocation:/);

@@ -23,3 +23,5 @@ export const resourceConfigs:Record<ResourceType,ResourceConfig>={
 };
 
 export const isResourceType=(value:string):value is ResourceType=>value in resourceConfigs;
+
+export const resourceAdminPermission=(type:ResourceType)=>type==="themes"||type==="destinations"||type==="experiences"?"cms.edit" as const:"suppliers.manage" as const;

@@ -1,2 +1,3 @@
 import {PartnerApplicationInbox} from "@/features/admin/partner-application-inbox";
-export default function Page(){return <PartnerApplicationInbox/>}
+import {AdminShell} from "@/features/admin/admin-shell";
+export default function Page(){return <AdminShell requiredPermission="suppliers.manage"><PartnerApplicationInbox/></AdminShell>}

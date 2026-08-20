@@ -22,7 +22,8 @@ test("secure tokens are version-specific, rotated on send, and can be revoked",(
   const proposalService=read("../lib/proposals/journey-proposal-service.ts");
   const travellerService=read("../lib/proposals/traveller-proposal-service.ts");
   const migration=read("../supabase/migrations/202608110001_secure_traveller_proposal_access.sql");
-  assert.match(proposalService,/public_token:randomUUID\(\)/);
+  const workflowMigration=read("../supabase/migrations/202608120005_workflow_transition_integrity.sql");
+  assert.match(workflowMigration,/public_token=gen_random_uuid\(\)/);
   assert.match(travellerService,/\.eq\("public_token",token\)/);
   assert.match(travellerService,/data\.access_revoked_at/);
   assert.match(proposalService,/revokeJourneyProposalAccess/);
@@ -46,8 +47,10 @@ test("public actions preserve exact-version acceptance and structured change req
   const route=read("../app/api/proposals/[token]/route.ts");
   const service=read("../lib/proposals/traveller-proposal-service.ts");
   const view=read("../features/proposals/traveller-proposal.tsx");
-  assert.match(service,/proposal_version:proposal\.version/);
-  assert.match(service,/accepted_total:proposal\.total_selling_price/);
+  const workflowMigration=read("../supabase/migrations/202608120005_workflow_transition_integrity.sql");
+  assert.match(service,/accept_journey_proposal_command/);
+  assert.match(workflowMigration,/proposal_row\.version/);
+  assert.match(workflowMigration,/proposal_row\.total_selling_price/);
   assert.match(route,/"dates"/);
   assert.match(view,/value="dates">Travel dates/);
   assert.match(view,/Accept this proposal version/);

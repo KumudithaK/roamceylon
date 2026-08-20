@@ -19,13 +19,13 @@ const stored=(value:z.infer<typeof schema>,userId:string)=>({code:value.code,nam
 const redacted=(row:Definition,canSeeEvidence:boolean)=>canSeeEvidence?row:{...row,reference_rate_source:null,internal_notes:null};
 
 export async function GET(request:Request){
-  const actor=await authenticatedStaff(request,"benefits.view");if(!actor)return NextResponse.json({error:"You do not have permission to view benefits."},{status:403});
+  const actor=await authenticatedStaff(request,"benefits.view");if(!actor.authorized)return NextResponse.json({error:actor.status===401?"Unauthorized.":"You do not have permission to view benefits."},{status:actor.status});
   const {data,error}=await actor.database.from("benefit_definitions").select("*").order("created_at");if(error)return NextResponse.json({error:error.message},{status:500});
   return NextResponse.json({benefits:(data??[]).map(row=>redacted(row,actor.permissions.includes("benefits.reference.view"))),permissions:actor.permissions.filter(value=>value.startsWith("benefits."))});
 }
 
 export async function POST(request:Request){
-  const actor=await authenticatedStaff(request,"benefits.manage");if(!actor)return NextResponse.json({error:"You do not have permission to manage benefits."},{status:403});
+  const actor=await authenticatedStaff(request,"benefits.manage");if(!actor.authorized)return NextResponse.json({error:actor.status===401?"Unauthorized.":"You do not have permission to manage benefits."},{status:actor.status});
   const parsed=schema.safeParse(await request.json().catch(()=>null));if(!parsed.success)return NextResponse.json({error:parsed.error.issues[0]?.message??"Check the benefit details."},{status:400});
   if(parsed.data.comparisonVerified&&!actor.permissions.includes("benefits.reference.manage"))return NextResponse.json({error:"You do not have permission to verify reference-rate claims."},{status:403});
   const row=stored(parsed.data,actor.user.id);const comparison=referenceComparison(row as Definition);if(parsed.data.comparisonVerified&&!comparison.valid)return NextResponse.json({error:"A verified comparison requires equivalent rate evidence, dates, occupancy, room, meal plan, taxes and cancellation terms."},{status:400});

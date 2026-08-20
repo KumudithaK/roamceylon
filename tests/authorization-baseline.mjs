@@ -5,11 +5,13 @@ const PRODUCTION_PROJECT_REFS=new Set(["fstpfqlgypvktjwdeagu"]);
 const roles=["journey_designer","partner_manager","finance","operations","content_marketing","super_admin"];
 const url=process.env.AUTHZ_TEST_SUPABASE_URL??"";
 const publishableKey=process.env.AUTHZ_TEST_SUPABASE_PUBLISHABLE_KEY??"";
+const serviceRoleKey=process.env.AUTHZ_TEST_SUPABASE_SERVICE_ROLE_KEY??"";
 const declaredRef=process.env.AUTHZ_TEST_PROJECT_REF??"";
 const derivedRef=(()=>{try{return new URL(url).hostname.split(".")[0]??""}catch{return ""}})();
 const projectRef=declaredRef||derivedRef;
 const isolated=process.env.AUTHZ_TEST_ISOLATED_PROJECT==="true";
 const mutationsEnabled=process.env.AUTHZ_TEST_ENABLE_MUTATIONS==="true";
+const scope=process.env.AUTHZ_TEST_SCOPE??"all";
 
 const block=(message)=>{console.error(`[BLOCKED] ${message}`);process.exit(2)};
 if(!url||!publishableKey)block("Set AUTHZ_TEST_SUPABASE_URL and AUTHZ_TEST_SUPABASE_PUBLISHABLE_KEY for an isolated Supabase project.");
@@ -19,6 +21,7 @@ if(!isolated)block("Set AUTHZ_TEST_ISOLATED_PROJECT=true only after confirming t
 
 const client=()=>createClient(url,publishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
 const clients={anonymous:client()};
+const cleanupClient=serviceRoleKey?createClient(url,serviceRoleKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}):null;
 const identityStatus=[];
 for(const role of roles){
   const prefix=`AUTHZ_TEST_${role.toUpperCase()}`;
@@ -43,7 +46,13 @@ const fixture={
 
 const cases=[
   {role:"anonymous",resource:"published_content",action:"READ",table:"themes",columns:"id",publicFilter:true,current:"ALLOW",target:"ALLOW",audit:"baseline"},
+  {role:"anonymous",resource:"supplier_public_accommodation_projection",action:"READ",table:"public_accommodations",columns:"id,name,property_type,hero_image_url",current:"DENY",target:"ALLOW",audit:"SEC-003"},
+  {role:"anonymous",resource:"supplier_public_vehicle_projection",action:"READ",table:"public_vehicles",columns:"id,listing_title,vehicle_type,hero_image_url",current:"DENY",target:"ALLOW",audit:"SEC-003"},
+  {role:"anonymous",resource:"supplier_public_guide_projection",action:"READ",table:"public_guides",columns:"id,name,languages,profile_image_url",current:"DENY",target:"ALLOW",audit:"SEC-003"},
   {role:"anonymous",resource:"supplier_contact_and_licence",action:"READ",table:"guides",columns:"id,phone,email,licence_number",publicFilter:true,current:"ALLOW",target:"DENY",audit:"SEC-003"},
+  {role:"anonymous",resource:"accommodation_private_contact",action:"READ",table:"accommodations",columns:"id,phone,email,partner_account_id",publicFilter:true,current:"ALLOW",target:"DENY",audit:"SEC-003"},
+  {role:"anonymous",resource:"vehicle_private_contact",action:"READ",table:"vehicles",columns:"id,phone,email,partner_account_id",publicFilter:true,current:"ALLOW",target:"DENY",audit:"SEC-003"},
+  {role:"anonymous",resource:"website_public_projection",action:"READ",table:"website_public_settings",columns:"id,website_name,contact_phone,enquiry_email",current:"DENY",target:"ALLOW",audit:"SEC-013"},
   {role:"anonymous",resource:"website_setup_state",action:"READ",table:"website_settings",columns:"id,setup_checklist,setup_dismissed",current:"ALLOW",target:"DENY",audit:"SEC-013"},
   {role:"journey_designer",resource:"traveller_pii",action:"READ",table:"enquiries",columns:"id,email,phone",fixture:"enquiry",current:"ALLOW",target:"ALLOW",audit:"SEC-008"},
   {role:"finance",resource:"traveller_pii_base_row",action:"READ",table:"enquiries",columns:"id,email,phone,nationality,traveller_notes",fixture:"enquiry",current:"ALLOW",target:"DENY",audit:"SEC-008"},
@@ -61,10 +70,13 @@ const cases=[
   {role:"journey_designer",resource:"travel_content",action:"STORAGE_WRITE",bucket:"travel-content",current:"ALLOW",target:"DENY",audit:"ARC-001/SEC-001"},
   {role:"content_marketing",resource:"travel_content",action:"STORAGE_WRITE",bucket:"travel-content",current:"ALLOW",target:"ALLOW",audit:"baseline"}
 ];
+const selectedCases=scope==="phase2-public-boundary"
+  ?cases.filter(testCase=>testCase.audit==="SEC-003"||testCase.audit==="SEC-013"||testCase.resource==="published_content")
+  :cases;
 
 const verifiedFixtures={};
 if(clients.super_admin){
-  for(const testCase of cases.filter(item=>item.fixture)){
+  for(const testCase of selectedCases.filter(item=>item.fixture)){
     if(verifiedFixtures[testCase.fixture]!==undefined)continue;
     const id=fixture[testCase.fixture];
     if(!id){verifiedFixtures[testCase.fixture]=false;continue}
@@ -81,7 +93,8 @@ const resultFor=(testCase,actual,detail)=>({
 });
 
 const results=[];
-for(const testCase of cases){
+let cleanupFailed=false;
+for(const testCase of selectedCases){
   const database=clients[testCase.role];
   if(!database){results.push(resultFor(testCase,"BLOCKED","identity_not_ready"));continue}
   if(testCase.action!=="READ"&&!mutationsEnabled){results.push(resultFor(testCase,"BLOCKED","mutations_not_enabled"));continue}
@@ -104,13 +117,20 @@ for(const testCase of cases){
     continue;
   }
   if(testCase.action==="STORAGE_WRITE"){
-    const path=`authorization-baseline/${testCase.role}/${randomUUID()}.txt`;
-    const {error}=await database.storage.from(testCase.bucket).upload(path,new Blob(["synthetic authorization probe"],{type:"text/plain"}),{upsert:false});
-    if(!error)await database.storage.from(testCase.bucket).remove([path]);
-    results.push(resultFor(testCase,error?"DENY":"ALLOW",error?`storage_error:${error.statusCode??"unknown"}`:"created_and_removed_synthetic_object"));
+    const path=`authorization-baseline/${testCase.role}/${randomUUID()}.jpg`;
+    const jpegProbe=new Uint8Array([0xff,0xd8,0xff,0xd9]);
+    const {error}=await database.storage.from(testCase.bucket).upload(path,jpegProbe,{contentType:"image/jpeg",upsert:false});
+    let removeError=null;
+    if(!error){
+      ({error:removeError}=await database.storage.from(testCase.bucket).remove([path]));
+      if(removeError&&cleanupClient)({error:removeError}=await cleanupClient.storage.from(testCase.bucket).remove([path]));
+      if(removeError)cleanupFailed=true;
+    }
+    results.push(resultFor(testCase,error?"DENY":"ALLOW",error?`storage_error:${error.statusCode??"unknown"}`:removeError?"synthetic_object_cleanup_failed":"created_and_removed_synthetic_object"));
   }
 }
 
-console.log(JSON.stringify({projectRef,isolated:true,mutationsEnabled,identityStatus,results},null,2));
-if(results.some(result=>result.targetVerdict==="FAIL"))process.exitCode=1;
+console.log(JSON.stringify({projectRef,isolated:true,mutationsEnabled,scope,identityStatus,results},null,2));
+if(cleanupFailed)process.exitCode=2;
+else if(results.some(result=>result.targetVerdict==="FAIL"))process.exitCode=1;
 else if(results.some(result=>result.targetVerdict==="BLOCKED"))process.exitCode=2;

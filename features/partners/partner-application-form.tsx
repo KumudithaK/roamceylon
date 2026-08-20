@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect,useState} from "react";
+import {useEffect,useRef,useState} from "react";
 import {useRouter} from "next/navigation";
 import {Check,ChevronLeft,ChevronRight,FileText,ImagePlus,Plus,Trash2} from "lucide-react";
 import {Button} from "@/components/ui/button";
@@ -29,8 +29,9 @@ export function PartnerApplicationForm({initialType}:{initialType:PartnerType}){
   const [documents,setDocuments]=useState<File[]>([]);
   const [error,setError]=useState("");
   const [submitting,setSubmitting]=useState(false);
-  useEffect(()=>{try{const saved=localStorage.getItem("roam-ceylon-partner-draft");if(saved){const draft=JSON.parse(saved);queueMicrotask(()=>{setType(draft.type||initialType);setValues({...initial,...draft.values,honeypot:""});setEntries(draft.entries||[])})}}catch{}},[initialType]);
-  useEffect(()=>{const {honeypot,...savedValues}=values;void honeypot;localStorage.setItem("roam-ceylon-partner-draft",JSON.stringify({type,values:savedValues,entries}))},[type,values,entries]);
+  const submissionKey=useRef<string|null>(null);
+  useEffect(()=>{try{const saved=sessionStorage.getItem("roam-ceylon-partner-draft");if(saved){const draft=JSON.parse(saved);queueMicrotask(()=>{setType(draft.type||initialType);setValues({...initial,...draft.values,honeypot:""});setEntries(draft.entries||[])})}}catch{}},[initialType]);
+  useEffect(()=>{const {honeypot,...savedValues}=values;void honeypot;sessionStorage.setItem("roam-ceylon-partner-draft",JSON.stringify({type,values:savedValues,entries}))},[type,values,entries]);
   const set=(key:string,value:string|boolean)=>setValues(current=>({...current,[key]:value}));
   const required=step===0?["applicantName","businessName","email","phone","preferredContactMethod"]:step===1?["address","district","province","introduction","heardFrom"]:step===2?fieldsByType[type].slice(0,type==="guide"?6:4).map(([key])=>key):[];
   const next=()=>{const missing=required.filter(key=>!values[key]);if(missing.length){setError("Please complete the required fields before continuing.");return}if(values.website&&!isUrl(String(values.website))||values.socialUrl&&!isUrl(String(values.socialUrl))){setError("Please enter complete website and social links, including https://.");return}setError("");setStep(current=>Math.min(3,current+1))};
@@ -45,11 +46,12 @@ export function PartnerApplicationForm({initialType}:{initialType:PartnerType}){
     if(String(values.introduction).trim().length<30){setError("The short introduction must contain at least 30 characters.");return}
     if(String(values.phone).replace(/\D/g,"").length<7){setError("Please enter a complete phone or WhatsApp number.");return}
     setSubmitting(true);setError("");
-    const payload={partnerType:type,applicantName:values.applicantName,businessName:values.businessName,email:values.email,phone:`${values.countryCode} ${values.phone}`,preferredContactMethod:values.preferredContactMethod,address:values.address,district:values.district,province:values.province,website:values.website,socialUrl:values.socialUrl,introduction:values.introduction,heardFrom:values.heardFrom,consent:values.consent,accurate:values.accurate,honeypot:values.honeypot,applicationData:{...values,entries}};
+    submissionKey.current??=crypto.randomUUID();
+    const payload={submissionKey:submissionKey.current,partnerType:type,applicantName:values.applicantName,businessName:values.businessName,email:values.email,phone:`${values.countryCode} ${values.phone}`,preferredContactMethod:values.preferredContactMethod,address:values.address,district:values.district,province:values.province,website:values.website,socialUrl:values.socialUrl,introduction:values.introduction,heardFrom:values.heardFrom,consent:values.consent,accurate:values.accurate,honeypot:values.honeypot,applicationData:{...values,entries}};
     const body=new FormData();body.set("payload",JSON.stringify(payload));media.forEach(file=>body.append("media",file));documents.forEach(file=>body.append("documents",file));
     const response=await fetch("/api/partner-applications",{method:"POST",body});const result=await response.json();
     setSubmitting(false);if(!response.ok){const invalid=result.fields?Object.keys(result.fields).filter(key=>result.fields[key]?.length):[];setError(invalid.length?`Please check: ${invalid.map(labelFor).join(", ")}.`:result.error||"Application could not be submitted.");return}
-    localStorage.removeItem("roam-ceylon-partner-draft");router.push(`/partners/application-received?reference=${encodeURIComponent(result.reference)}&type=${encodeURIComponent(result.type)}`);
+    sessionStorage.removeItem("roam-ceylon-partner-draft");router.push(`/partners/application-received?reference=${encodeURIComponent(result.reference)}&type=${encodeURIComponent(result.type)}`);
   };
   return <main className="bg-[#f4f3ef] py-16 md:py-24"><div className="shell max-w-5xl"><p className="eyebrow mb-4">Partner application</p><h1 className="font-serif text-4xl md:text-6xl">Tell us what you bring to the journey.</h1><p className="mt-5 max-w-2xl leading-7 text-slate/60">Your draft is saved on this device. Submission starts a manual Roam Ceylon review and never creates a public listing automatically.</p>
     <div className="mt-10 flex gap-2 overflow-x-auto">{steps.map((label,index)=><div key={label} className={cn("flex min-w-fit items-center gap-2 rounded-full px-4 py-2 text-xs font-bold",index===step?"bg-forest text-white":index<step?"bg-gold/15 text-forest":"bg-white text-stone")}>{index<step?<Check className="size-3"/>:index+1} {label}</div>)}</div>

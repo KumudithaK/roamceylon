@@ -228,7 +228,7 @@ begin
   from public.destinations
   where slug in ('nilaveli','balapitiya') and status='archived' and not active;
 
-  if theme_count<>1 or destination_count<>16 or experience_count<>26
+  if theme_count<>1 or destination_count<>17 or experience_count<>26
      or cricket_destination_count<>4 or locality_orphans<>0 or archived_localities<>2 then
     raise exception 'Sporting theme validation failed: theme %, destinations %, experiences %, cricket hosts %, locality orphans %, archived localities %',
       theme_count,destination_count,experience_count,cricket_destination_count,

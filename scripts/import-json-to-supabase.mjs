@@ -122,7 +122,10 @@ await replaceLinks('guide_themes',guides.flatMap(guide=>(guide.themeIds||[]).map
 report.duplicate_images=duplicateExperienceImages.size;
 const {error:reportError}=await db.from('content_import_runs').insert({source:report.source,report});
 ensure(reportError,'Save import report');
-await mkdir(path.join(root,'reports'),{recursive:true});
-await writeFile(path.join(root,'reports','latest-import-report.json'),`${JSON.stringify(report,null,2)}\n`);
+const reportPath=process.env.IMPORT_REPORT_PATH
+  ?path.resolve(process.env.IMPORT_REPORT_PATH)
+  :path.join(root,'reports','latest-import-report.json');
+await mkdir(path.dirname(reportPath),{recursive:true});
+await writeFile(reportPath,`${JSON.stringify(report,null,2)}\n`);
 console.log(JSON.stringify(report,null,2));
 console.log(`Import complete. ${duplicateExperienceImages.size} repeated experience image URLs were left blank on draft records for manual correction.`);

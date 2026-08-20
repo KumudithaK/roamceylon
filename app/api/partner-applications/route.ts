@@ -2,10 +2,12 @@ import {NextResponse} from "next/server";
 import {z} from "zod";
 import {createAdminClient} from "@/lib/supabase/admin";
 import type {Json} from "@/lib/database.types";
+import {fileMatchesDeclaredType,publicAttemptLimited,publicSubmissionDigest,safeHttpUrlSchema} from "@/lib/security/public-input";
 
 export const runtime="nodejs";
 
 const schema=z.object({
+  submissionKey:z.uuid(),
   partnerType:z.enum(["accommodation","vehicle","guide"]),
   applicantName:z.string().trim().min(2).max(120),
   businessName:z.string().trim().min(2).max(160),
@@ -15,26 +17,21 @@ const schema=z.object({
   address:z.string().trim().min(5).max(400),
   district:z.string().trim().min(2).max(80),
   province:z.string().trim().min(2).max(80),
-  website:z.union([z.url(),z.literal("")]),
-  socialUrl:z.union([z.url(),z.literal("")]),
+  website:safeHttpUrlSchema,
+  socialUrl:safeHttpUrlSchema,
   introduction:z.string().trim().min(30).max(2000),
   heardFrom:z.string().trim().min(2).max(100),
   consent:z.literal(true),
   accurate:z.literal(true),
   honeypot:z.literal(""),
-  applicationData:z.record(z.string(),z.unknown())
-});
-
-const attempts=new Map<string,{count:number;reset:number}>();
-const limited=(key:string)=>{
-  const now=Date.now(),current=attempts.get(key);
-  if(!current||current.reset<now){attempts.set(key,{count:1,reset:now+60*60*1000});return false}
-  current.count+=1;return current.count>5;
-};
-const safeName=(name:string)=>name.toLowerCase().replace(/[^a-z0-9._-]+/g,"-").slice(-100);
+  applicationData:z.record(z.string(),z.unknown()).refine(value=>JSON.stringify(value).length<=100_000,"Application details are too large.")
+}).strict();
+const safeName=(name:string)=>name.toLowerCase().replace(/\.+/g,"-").replace(/[^a-z0-9_-]+/g,"-").replace(/^-+|-+$/g,"").slice(-100)||"upload";
+const authoritativeKeys=new Set(["id","user_id","supplier_id","status","approval_status","approved_at","approved_by","reviewed_at","reviewed_by","rejected_at","rejected_by","is_verified","verified","is_active","active","is_published","published","role","capability","created_by","internal_notes","licence_verified","commercial_approval"]);
+const publicApplicationData=(value:Record<string,unknown>)=>Object.fromEntries(Object.entries(value).filter(([key])=>!authoritativeKeys.has(key.toLowerCase())));
 
 export async function POST(request:Request){
-  const ip=request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()||"local";
+  const declaredHeader=request.headers.get("content-length"),declared=Number(declaredHeader);if(!declaredHeader||!Number.isFinite(declared)||declared<=0)return NextResponse.json({error:"A bounded application upload is required."},{status:411});if(declared>200*1024*1024)return NextResponse.json({error:"The application upload is too large."},{status:413});
   const form=await request.formData().catch(()=>null);
   if(!form)return NextResponse.json({error:"Invalid application."},{status:400});
   let raw:unknown=null;try{raw=JSON.parse(String(form.get("payload")||"null"))}catch{}
@@ -44,15 +41,21 @@ export async function POST(request:Request){
     const invalid=Object.entries(fields).filter(([,messages])=>messages?.length).map(([field])=>field);
     return NextResponse.json({error:`Please check: ${invalid.join(", ")||"the required fields"}.`,fields},{status:400});
   }
-  if(limited(ip))return NextResponse.json({error:"Too many completed applications were submitted from this connection. Please try again later."},{status:429});
   const database=createAdminClient();
   if(!database)return NextResponse.json({error:"Applications are temporarily unavailable."},{status:503});
-  const value=parsed.data;
+  const value=parsed.data,submissionHash=publicSubmissionDigest(value);
+  const replay=await database.from("partner_applications").select("application_reference,partner_type,public_submission_hash").eq("public_submission_key",value.submissionKey).maybeSingle();
+  if(replay.error)return NextResponse.json({error:"We could not save your application."},{status:500});
+  if(replay.data)return replay.data.public_submission_hash===submissionHash
+    ?NextResponse.json({reference:replay.data.application_reference,type:replay.data.partner_type,replayed:true})
+    :NextResponse.json({error:"This submission could not be verified. Please refresh and try again."},{status:409});
+  if(publicAttemptLimited("partner-application",value.email,5,60*60*1000))return NextResponse.json({error:"We have already received several applications for this email address. Please try again later."},{status:429});
   const {data:application,error}=await database.from("partner_applications").insert({
+    public_submission_key:value.submissionKey,public_submission_hash:submissionHash,
     partner_type:value.partnerType,applicant_name:value.applicantName,business_name:value.businessName,email:value.email,
     phone:value.phone,preferred_contact_method:value.preferredContactMethod,address:value.address,district:value.district,
     province:value.province,website:value.website||null,social_url:value.socialUrl||null,introduction:value.introduction,
-    application_data:{...value.applicationData,heardFrom:value.heardFrom} as Json,status:"submitted",submitted_at:new Date().toISOString()
+    application_data:{...publicApplicationData(value.applicationData),heardFrom:value.heardFrom} as Json,status:"submitted",submitted_at:new Date().toISOString()
   }).select("id,application_reference,partner_type").single();
   if(error||!application)return NextResponse.json({error:"We could not save your application."},{status:500});
   const plural={accommodation:"accommodation",vehicle:"vehicles",guide:"guides"}[value.partnerType];
@@ -67,7 +70,7 @@ export async function POST(request:Request){
       if(mediaCount>10||documentCount>6)throw new Error("Too many files");
       const allowed=media?["image/jpeg","image/png","image/webp"]:["application/pdf","image/jpeg","image/png"];
       const limit=media?10*1024*1024:15*1024*1024;
-      if(!allowed.includes(entry.type)||entry.size>limit)throw new Error("Unsupported file");
+      if(!allowed.includes(entry.type)||entry.size>limit||!await fileMatchesDeclaredType(entry))throw new Error("Unsupported file");
       const bucket=media?"partner-application-media" as const:"partner-application-documents" as const;
       const path=`partner-applications/${plural}/${application.id}/${crypto.randomUUID()}-${safeName(entry.name)}`;
       const {error:uploadError}=await database.storage.from(bucket).upload(path,entry,{contentType:entry.type,upsert:false});
@@ -80,7 +83,7 @@ export async function POST(request:Request){
       if(fileError)throw fileError;
     }
     await database.from("partner_application_history").insert({application_id:application.id,to_status:"submitted",note:"Application submitted through the partner portal."});
-    return NextResponse.json({reference:application.application_reference,type:application.partner_type},{status:201});
+    return NextResponse.json({reference:application.application_reference,type:application.partner_type,replayed:false},{status:201});
   }catch{
     await Promise.all(uploaded.map(item=>database.storage.from(item.bucket).remove([item.path])));
     await database.from("partner_applications").delete().eq("id",application.id);

@@ -1,6 +1,6 @@
 import {NextResponse} from "next/server";
 import {z} from "zod";
-import {createAdminClient} from "@/lib/supabase/admin";
+import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
 import {PackagePricingService} from "@/lib/pricing/package-service";
 
 const quoteSchema=z.object({
@@ -16,14 +16,9 @@ const quoteSchema=z.object({
 });
 
 export async function POST(request:Request){
-  const database=createAdminClient();
-  const token=request.headers.get("authorization")?.replace(/^Bearer\s+/,"");
-  if(!database||!token)return NextResponse.json({error:"Unauthorized."},{status:401});
-  const {data:userData,error:userError}=await database.auth.getUser(token);
-  if(userError||!userData.user)return NextResponse.json({error:"Unauthorized."},{status:401});
-  const {data:profile}=await database.from("profiles").select("role").eq("id",userData.user.id).maybeSingle();
-  if(!profile||!["admin","editor"].includes(profile.role))return NextResponse.json({error:"Forbidden."},{status:403});
-  const parsed=quoteSchema.safeParse(await request.json().catch(()=>null));
+  const actor=await authenticatedStaff(request,"journey.proposal.create");
+  if(!actor.authorized)return NextResponse.json({error:actor.status===401?"Unauthorized.":"Forbidden."},{status:actor.status});
+  const parsed=quoteSchema.strict().safeParse(await request.json().catch(()=>null));
   if(!parsed.success)return NextResponse.json({error:"Invalid quote request."},{status:400});
   try{return NextResponse.json(await new PackagePricingService().quote(parsed.data))}
   catch{return NextResponse.json({error:"Unable to calculate this package."},{status:500})}

@@ -1,5 +1,7 @@
 begin;
 
+drop table if exists pg_temp.premium_experience_source;
+
 alter table public.experiences add column if not exists gallery_alt_texts jsonb not null default '[]'::jsonb;
 
 do $$
