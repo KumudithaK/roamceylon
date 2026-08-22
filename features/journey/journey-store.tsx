@@ -1,6 +1,6 @@
 "use client";
 
-import {createContext,useContext,useEffect,useMemo,useReducer,useState} from "react";
+import {createContext,useContext,useEffect,useMemo,useReducer,useRef,useState} from "react";
 import type {JourneyBootstrap} from "@/lib/journey/journey-service";
 import {availableDestinations,availableExperiences} from "@/lib/journey/journey-selectors";
 import {normaliseDestinationPreferences,normaliseGuideLanguages,normaliseJourneyGuidePreference,type DestinationPreferences,type GuideLanguage,type JourneyGuidePreference,type StayPreference} from "@/lib/journey/journey-preferences";
@@ -8,6 +8,7 @@ import {completeJourneyLegs,normaliseCompleteTravelPreferences,normaliseTravelPr
 import {emptyJourneyEndpoint,normaliseJourneyEndpoint,type JourneyEndpoint} from "@/lib/journey/journey-endpoints";
 import type {ParticipantCounts} from "@/lib/types";
 import {clearJourneyLaunchParameters,readJourneyState,writeJourneyState} from "@/lib/journey/journey-persistence";
+import {mergeJourneyRestoreState} from "@/lib/journey/journey-restore";
 
 export type JourneyState={
   currentStep:number;
@@ -224,20 +225,14 @@ export function JourneyProvider({data,initialSelection,children}:{data:JourneyBo
   },[data.destinations,data.experiences,data.themes,initialSelection]);
   const [state,dispatch]=useReducer((current:JourneyState,action:Action)=>reducer(data,current,action),startingState);
   const [hydrated,setHydrated]=useState(false);
+  const launchSelectionPending=useRef(true);
   useEffect(()=>{
     const restore=()=>{
+      const applyLaunchSelection=launchSelectionPending.current;
+      launchSelectionPending.current=false;
       const saved=readJourneyState();
       if(!saved)return;
-      const hasLaunchParameters=Boolean(initialSelection?.themeId||initialSelection?.themeIds?.length||initialSelection?.destinationIds?.length||initialSelection?.experienceId||initialSelection?.step!==undefined);
-      dispatch({type:"hydrate",state:hasLaunchParameters?{
-        ...saved,
-        selectedThemeIds:[...new Set([...saved.selectedThemeIds,...startingState.selectedThemeIds])],
-        selectedDestinationIds:[...new Set([...saved.selectedDestinationIds,...startingState.selectedDestinationIds])],
-        selectedExperienceIds:[...new Set([...saved.selectedExperienceIds,...startingState.selectedExperienceIds])],
-        currentStep:initialSelection?.step??saved.currentStep,
-        travellerCounts:initialSelection?.travellers??saved.travellerCounts,
-        experienceParticipants:{...saved.experienceParticipants,...startingState.experienceParticipants}
-      }:saved});
+      dispatch({type:"hydrate",state:mergeJourneyRestoreState(saved,startingState,initialSelection,applyLaunchSelection)});
     };
     restore();
     const hydrationTimer=window.setTimeout(()=>setHydrated(true),0);
