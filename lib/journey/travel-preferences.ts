@@ -10,7 +10,7 @@ export const travelPreferenceOptions=[
   ["self_drive_van","Self-Drive Van"],
   ["self_drive_tuk_tuk","Self-Drive Tuk-Tuk"],
   ["self_drive_scooter","Self-Drive Scooter"],
-  ["recommend","Let Roam Ceylon Recommend"]
+  ["recommend","Let The Ceylon Edition Recommend"]
 ] as const;
 
 export type TravelPreference=(typeof travelPreferenceOptions)[number][0];
@@ -46,7 +46,7 @@ export function normaliseCompleteTravelPreferences(value:unknown,legs:CompleteJo
   }));
 }
 
-export const travelPreferenceLabel=(value:TravelPreference)=>travelPreferenceOptions.find(([key])=>key===value)?.[1]??"Let Roam Ceylon Recommend";
+export const travelPreferenceLabel=(value:TravelPreference)=>travelPreferenceOptions.find(([key])=>key===value)?.[1]??"Let The Ceylon Edition Recommend";
 export const effectiveTravelPreference=(preferences:TravelPreferencesByLeg,key:string,globalPreference:TravelPreference)=>preferences[key]?.travelPreference??globalPreference;
 
 export function recommendedTravelPreferences(travellers:number):TravelPreference[]{

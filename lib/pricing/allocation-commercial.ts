@@ -54,7 +54,7 @@ export function calculateAllocationCommercials(lines:AllocationCommercialLine[],
   const totalSellingPrice=money(manualSellingFloor+calculatedSelling);
   breakdown.push({key:"administration",label:"Administration",amount:administrationFee,category:"administration",internal:true});
   breakdown.push({key:"contingency",label:"Journey contingency",amount:contingency,category:"contingency",internal:true});
-  breakdown.push({key:"service-fee",label:"Roam Ceylon service fee",amount:serviceFee,category:"service_fee",internal:false});
+  breakdown.push({key:"service-fee",label:"The Ceylon Edition service fee",amount:serviceFee,category:"service_fee",internal:false});
   if(manuallyPriced.length)breakdown.push({key:"commercial-floor",label:"Entered service selling prices",amount:manualSellingFloor,category:"commercial_floor",internal:false});
   const grossProfit=money(totalSellingPrice-internalCost);
   return {totalSupplierCost,manualSellingFloor,operationsCost,administrationFee,contingency,serviceFee,internalCost,totalSellingPrice,grossProfit,profitMargin:totalSellingPrice?money(grossProfit/totalSellingPrice*100):0,incompleteLines,breakdown};

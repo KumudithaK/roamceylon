@@ -89,7 +89,7 @@ test("environment contract keeps privileged credentials server-only",()=>{
   const example=source(".env.example");
   assert.match(example,/NEXT_PUBLIC_SUPABASE_URL=/);
   assert.match(example,/NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=/);
-  assert.match(example,/NEXT_PUBLIC_SITE_URL=https:\/\/theroamceylon\.com/);
+  assert.match(example,/NEXT_PUBLIC_SITE_URL=https:\/\/theceylonedition\.com/);
   assert.match(example,/SUPABASE_SERVICE_ROLE_KEY=/);
   assert.doesNotMatch(example,/NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY/);
   for(const directory of ["app","components","features"]){

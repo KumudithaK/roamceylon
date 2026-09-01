@@ -25,7 +25,7 @@ export async function loadTravellerProposal(token:string,{markViewed=true}:{mark
 export async function acceptTravellerProposal(token:string,input:{name:string;email:string;termsAcknowledged:boolean;userAgent?:string}){
   const database=createAdminClient();if(!database)throw new TravellerProposalError("DATABASE","Proposal service is unavailable.");
   const loaded=await loadTravellerProposal(token,{markViewed:false}),{proposal,snapshot}=loaded;
-  if(proposal.requires_new_version)throw new TravellerProposalError("CONFLICT","This journey has been refined since this proposal was prepared. Roam Ceylon is preparing a new version for you.");
+  if(proposal.requires_new_version)throw new TravellerProposalError("CONFLICT","This journey has been refined since this proposal was prepared. The Ceylon Edition is preparing a new version for you.");
   if(!["sent","viewed"].includes(proposal.status))throw new TravellerProposalError("CONFLICT",proposal.status==="approved"?"This proposal version has already been accepted.":"This proposal version can no longer be accepted.");
   if(!input.termsAcknowledged)throw new TravellerProposalError("INVALID","Please confirm that you have reviewed this proposal and its terms.");
   if(input.email.trim().toLowerCase()!==snapshot.traveller.email.trim().toLowerCase())throw new TravellerProposalError("INVALID","Use the email address associated with this journey proposal.");
@@ -39,7 +39,7 @@ export async function acceptTravellerProposal(token:string,input:{name:string;em
 export async function requestTravellerChanges(token:string,input:{name:string;email:string;category:Database["public"]["Tables"]["journey_proposal_change_requests"]["Row"]["category"];message:string}){
   const database=createAdminClient();if(!database)throw new TravellerProposalError("DATABASE","Proposal service is unavailable.");
   const {proposal,snapshot}=await loadTravellerProposal(token,{markViewed:false});
-  if(proposal.requires_new_version)throw new TravellerProposalError("CONFLICT","This journey has been refined since this proposal was prepared. Roam Ceylon is preparing a new version for you.");
+  if(proposal.requires_new_version)throw new TravellerProposalError("CONFLICT","This journey has been refined since this proposal was prepared. The Ceylon Edition is preparing a new version for you.");
   if(!["sent","viewed"].includes(proposal.status))throw new TravellerProposalError("CONFLICT","This proposal version is no longer open for change requests.");
   if(input.email.trim().toLowerCase()!==snapshot.traveller.email.trim().toLowerCase())throw new TravellerProposalError("INVALID","Use the email address associated with this journey proposal.");
   const now=new Date().toISOString();

@@ -7,7 +7,7 @@ export const stayPreferenceOptions=[
   ["bungalows","Bungalows"],
   ["eco_lodges_tented_camps","Eco-Lodges & Tented Camps"],
   ["wellness_retreats","Wellness Retreats"],
-  ["recommend","Let Roam Ceylon Recommend"]
+  ["recommend","Let The Ceylon Edition Recommend"]
 ] as const;
 
 export const guidePreferenceOptions=[
@@ -18,14 +18,14 @@ export const guidePreferenceOptions=[
   ["wildlife_tracker_safari_guide","Wildlife Tracker / Safari Guide"],
   ["adventure_trekking_guide","Adventure / Trekking Guide"],
   ["no_guide","No Guide"],
-  ["recommend","Let Roam Ceylon Recommend"]
+  ["recommend","Let The Ceylon Edition Recommend"]
 ] as const;
 
 export const journeyGuidePreferenceOptions=[
   ["national_tourist_guide","National Tourist Guide"],
   ["chauffeur_tourist_guide","Chauffeur Tourist Guide"],
   ["no_guide","No Guide Required"],
-  ["recommend","Let Roam Ceylon Recommend"]
+  ["recommend","Let The Ceylon Edition Recommend"]
 ] as const;
 
 export const guideLanguageOptions=["English","German","French","Spanish","Italian","Japanese","Chinese","Russian","Arabic","Other"] as const;
@@ -64,9 +64,9 @@ export function normaliseDestinationPreferences(value:unknown,destinationIds:str
   }));
 }
 
-export const stayPreferenceLabel=(value:StayPreference)=>stayPreferenceOptions.find(([key])=>key===value)?.[1]??"Let Roam Ceylon Recommend";
-export const guidePreferenceLabel=(value:GuidePreference)=>guidePreferenceOptions.find(([key])=>key===value)?.[1]??"Let Roam Ceylon Recommend";
-export const journeyGuidePreferenceLabel=(value:JourneyGuidePreference)=>journeyGuidePreferenceOptions.find(([key])=>key===value)?.[1]??"Let Roam Ceylon Recommend";
+export const stayPreferenceLabel=(value:StayPreference)=>stayPreferenceOptions.find(([key])=>key===value)?.[1]??"Let The Ceylon Edition Recommend";
+export const guidePreferenceLabel=(value:GuidePreference)=>guidePreferenceOptions.find(([key])=>key===value)?.[1]??"Let The Ceylon Edition Recommend";
+export const journeyGuidePreferenceLabel=(value:JourneyGuidePreference)=>journeyGuidePreferenceOptions.find(([key])=>key===value)?.[1]??"Let The Ceylon Edition Recommend";
 export const specialistGuideOptions=(destinationName:string)=>specialistGuideOptionsByDestination[destinationName.trim().toLowerCase()]??[["none","None"]] as const;
 export const specialistGuidePreferenceLabel=(destinationName:string,value:string)=>specialistGuideOptions(destinationName).find(([key])=>key===value)?.[1]??"None";
 

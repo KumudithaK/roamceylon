@@ -1,6 +1,7 @@
 import type {PDFFont,PDFPage,RGB} from "pdf-lib";
 import type {PublicPackageQuote} from "@/lib/pricing/package-types";
 import {isJourneyEstimate,type PublicJourneyEstimate} from "@/lib/pricing/journey-estimate-types";
+import {brand} from "@/lib/brand";
 
 export type JourneyPdfDetails={
   themes:string[];
@@ -39,32 +40,28 @@ const formatDate=(value:string)=>{
 };
 
 export async function exportJourneyPdf(details:JourneyPdfDetails){
-  const logoBytes=await fetch("/assets/logo/roam-ceylon-elephant-transparent.png").then(response=>{
-    if(!response.ok)throw new Error("Roam Ceylon logo could not be loaded.");
-    return response.arrayBuffer();
-  });
-  const bytes=await buildJourneyPdf(details,logoBytes);
+  const bytes=await buildJourneyPdf(details);
   const blob=new Blob([new Uint8Array(bytes)],{type:"application/pdf"});
   const url=URL.createObjectURL(blob);
   const link=document.createElement("a");
   link.href=url;
-  link.download="roam-ceylon-personal-journey.pdf";
+  link.download="the-ceylon-edition-personal-journey.pdf";
   link.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
-export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes:ArrayBuffer|Uint8Array){
+export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes?:ArrayBuffer|Uint8Array){
   const {PDFDocument,StandardFonts,rgb}=await import("pdf-lib");
   const pdf=await PDFDocument.create();
-  pdf.setTitle("Roam Ceylon - Personal Journey");
-  pdf.setAuthor("Roam Ceylon");
+  pdf.setTitle(`${brand.name} - Personal Journey`);
+  pdf.setAuthor(brand.name);
   pdf.setSubject("Personalised Sri Lanka journey summary");
-  pdf.setCreator("Roam Ceylon Journey Designer");
+  pdf.setCreator(`${brand.name} Journey Designer`);
 
   const regular=await pdf.embedFont(StandardFonts.Helvetica);
   const bold=await pdf.embedFont(StandardFonts.HelveticaBold);
   const serif=await pdf.embedFont(StandardFonts.TimesRomanBold);
-  const logo=await pdf.embedPng(logoBytes);
+  const logo=logoBytes?await pdf.embedPng(logoBytes):null;
 
   const forest=rgb(18/255,61/255,51/255);
   const forestSoft=rgb(31/255,78/255,66/255);
@@ -131,7 +128,7 @@ export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes:ArrayB
   let pageNumber=0;
   const drawFooter=(page:PDFPage)=>{
     page.drawLine({start:{x:MARGIN,y:39},end:{x:PAGE_WIDTH-MARGIN,y:39},thickness:.7,color:border});
-    page.drawText("ROAM CEYLON  |  JOURNEYS THAT CONNECT",{x:MARGIN,y:22,size:7,font:bold,color:forest});
+    page.drawText(`${brand.wordmark}  |  ${brand.tagline.toUpperCase()}`,{x:MARGIN,y:22,size:7,font:bold,color:forest});
     page.drawText("JOURNEY SUMMARY",{x:PAGE_WIDTH/2-34,y:22,size:7,font:bold,color:gold});
     const number=String(pageNumber);
     page.drawText(number,{x:PAGE_WIDTH-MARGIN-bold.widthOfTextAtSize(number,8),y:21,size:8,font:bold,color:stone});
@@ -143,11 +140,10 @@ export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes:ArrayB
     page.drawRectangle({x:0,y:0,width:PAGE_WIDTH,height:PAGE_HEIGHT,color:ivory});
     page.drawRectangle({x:0,y:PAGE_HEIGHT-6,width:PAGE_WIDTH,height:6,color:gold});
     page.drawRectangle({x:0,y:PAGE_HEIGHT-92,width:PAGE_WIDTH,height:86,color:forest});
-    const logoSize=logo.scaleToFit(70,56);
-    page.drawRectangle({x:MARGIN,y:PAGE_HEIGHT-76,width:78,height:58,color:white,borderColor:goldLight,borderWidth:.6});
-    page.drawImage(logo,{x:MARGIN+4+(70-logoSize.width)/2,y:PAGE_HEIGHT-74+(56-logoSize.height)/2,width:logoSize.width,height:logoSize.height});
-    page.drawText("YOUR SRI LANKA STORY",{x:136,y:PAGE_HEIGHT-46,size:19,font:serif,color:white});
-    page.drawText("A PERSONALISED JOURNEY SUMMARY",{x:136,y:PAGE_HEIGHT-67,size:7,font:bold,color:goldLight});
+    let headerX=MARGIN;
+    if(logo){const logoSize=logo.scaleToFit(70,56);page.drawRectangle({x:MARGIN,y:PAGE_HEIGHT-76,width:78,height:58,color:white,borderColor:goldLight,borderWidth:.6});page.drawImage(logo,{x:MARGIN+4+(70-logoSize.width)/2,y:PAGE_HEIGHT-74+(56-logoSize.height)/2,width:logoSize.width,height:logoSize.height});headerX=136}
+    page.drawText(brand.wordmark,{x:headerX,y:PAGE_HEIGHT-46,size:19,font:serif,color:white});
+    page.drawText(brand.tagline.toUpperCase(),{x:headerX,y:PAGE_HEIGHT-67,size:7,font:bold,color:goldLight});
     drawLotusMotif(page,PAGE_WIDTH-55,PAGE_HEIGHT-48,.75,.28);
     drawFooter(page);
     return page;
@@ -160,9 +156,8 @@ export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes:ArrayB
   pageNumberedCover.drawRectangle({x:0,y:0,width:PAGE_WIDTH,height:150,color:forestSoft});
   drawLotusMotif(pageNumberedCover,42,72,1.5,.12);
   drawLotusMotif(pageNumberedCover,PAGE_WIDTH-42,PAGE_HEIGHT-52,1.15,.16);
-  const coverLogo=logo.scaleToFit(110,90);
-  pageNumberedCover.drawRectangle({x:MARGIN,y:PAGE_HEIGHT-142,width:120,height:104,color:white,borderColor:goldLight,borderWidth:.8});
-  pageNumberedCover.drawImage(logo,{x:MARGIN+5+(110-coverLogo.width)/2,y:PAGE_HEIGHT-135+(90-coverLogo.height)/2,width:coverLogo.width,height:coverLogo.height});
+  if(logo){const coverLogo=logo.scaleToFit(110,90);pageNumberedCover.drawRectangle({x:MARGIN,y:PAGE_HEIGHT-142,width:120,height:104,color:white,borderColor:goldLight,borderWidth:.8});pageNumberedCover.drawImage(logo,{x:MARGIN+5+(110-coverLogo.width)/2,y:PAGE_HEIGHT-135+(90-coverLogo.height)/2,width:coverLogo.width,height:coverLogo.height})}
+  else {pageNumberedCover.drawText(brand.wordmark,{x:MARGIN,y:PAGE_HEIGHT-82,size:19,font:serif,color:white});pageNumberedCover.drawText(brand.tagline.toUpperCase(),{x:MARGIN,y:PAGE_HEIGHT-104,size:7,font:bold,color:goldLight})}
   pageNumberedCover.drawText("PRIVATE, TAILOR-MADE SRI LANKA",{x:MARGIN,y:PAGE_HEIGHT-185,size:7,font:bold,color:goldLight});
   pageNumberedCover.drawText("Your Sri Lanka",{x:MARGIN,y:PAGE_HEIGHT-232,size:31,font:serif,color:white});
   pageNumberedCover.drawText("story starts here.",{x:MARGIN,y:PAGE_HEIGHT-270,size:31,font:serif,color:white});
@@ -247,7 +242,7 @@ export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes:ArrayB
   const routeEntries=routeNames.map((name,index)=>`${index+1}. ${name}`);
   if(details.estimatedDistance)routeEntries.push(`${details.estimatedDistance} km estimated road distance - ${details.estimatedTravelDays} travel day${details.estimatedTravelDays===1?"":"s"}`);
   drawListSection("Your route",routeEntries);
-  drawListSection("Travel themes",details.themes);
+  drawListSection("Editions",details.themes);
   drawListSection("Experiences to look forward to",details.experiences);
 
   const planLines=[
@@ -313,8 +308,8 @@ export async function buildJourneyPdf(details:JourneyPdfDetails,logoBytes:ArrayB
   const noteHeight=78;
   ensureSpace(noteHeight);
   page.drawRectangle({x:MARGIN,y:cursorY-noteHeight,width:CONTENT_WIDTH,height:noteHeight,color:white,borderColor:border,borderWidth:.7});
-  page.drawText("A NOTE FROM ROAM CEYLON",{x:MARGIN+18,y:cursorY-23,size:7,font:bold,color:gold});
-  drawWrapped(page,"This document is a journey summary, not a booking confirmation. Availability and final inclusions will be reviewed by a Roam Ceylon journey designer before your quotation is confirmed.",MARGIN+18,cursorY-45,{size:8.5,color:stone,maxWidth:CONTENT_WIDTH-36,lineHeight:12});
+  page.drawText(`A NOTE FROM ${brand.wordmark}`,{x:MARGIN+18,y:cursorY-23,size:7,font:bold,color:gold});
+  drawWrapped(page,`This document is a journey summary, not a booking confirmation. Availability and final inclusions will be reviewed by a journey designer from ${brand.name} before your quotation is confirmed.`,MARGIN+18,cursorY-45,{size:8.5,color:stone,maxWidth:CONTENT_WIDTH-36,lineHeight:12});
 
   return pdf.save();
 }

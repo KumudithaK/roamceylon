@@ -1,6 +1,6 @@
-# Roam Ceylon V2
+# The Ceylon Edition
 
-Sri Lanka's premium intelligent travel platform and marketplace.
+Bespoke journeys through Sri Lanka.
 
 ## Platform
 

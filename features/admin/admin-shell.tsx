@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {usePathname,useRouter} from "next/navigation";
 import {BedDouble,CarFront,Compass,Gift,Handshake,Inbox,LayoutDashboard,LogOut,Map,Route,Settings,Sparkles,UsersRound,WalletCards} from "lucide-react";
@@ -8,6 +7,7 @@ import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
 import {useStaffPermissions} from "@/lib/admin/use-staff-permissions";
 import {adminNavigationPermissions,type StaffPermission} from "@/lib/admin/permissions";
+import {BrandWordmark} from "@/components/brand/brand-wordmark";
 
 const navigation=[
   [LayoutDashboard,"Overview","/admin/dashboard",adminNavigationPermissions.overview],
@@ -33,7 +33,7 @@ export function AdminShell({children,requiredPermission}:{children:React.ReactNo
   const allowed=new Set(access.permissions);
   return <div className="grid min-h-screen bg-[#f4f3ef] lg:grid-cols-[250px_1fr]">
     <aside className="border-r border-stone/20 bg-slate p-5 text-ivory">
-      <Link href="/admin/dashboard"><Image src="/assets/logo/roam-ceylon-elephant-transparent.png" alt="Roam Ceylon" width={190} height={108} priority className="h-auto w-full rounded-2xl bg-ivory p-2"/></Link>
+      <Link href="/admin/dashboard"><BrandWordmark inverse className="rounded-2xl border border-white/10 p-3"/></Link>
       <nav className="mt-6 grid gap-1" aria-label="Admin navigation">{navigation.filter(([, , ,permission])=>allowed.has(permission)).map(([Icon,label,href])=>{
         const active=pathname===href||(href!=="/admin/dashboard"&&pathname.startsWith(`${href}/`));
         return <Link key={label} href={href} className={`flex items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition ${active?"bg-white/10 text-white":"text-white/55 hover:bg-white/5 hover:text-white"}`}><Icon className="size-4"/>{label}</Link>;

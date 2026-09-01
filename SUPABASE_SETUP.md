@@ -63,7 +63,7 @@ insert into public.profiles (id, email, full_name, role)
 values (
   '86d04378-e579-43a4-9012-18b8d0abb7a8',
   'kumuditha.info@gmail.com',
-  'Roam Ceylon Administrator',
+  'The Ceylon Edition Administrator',
   'admin'
 )
 on conflict (id) do update

@@ -32,7 +32,7 @@ export function TravellerProposal({token,snapshot,initialStatus,requiresNewVersi
     const result=await response.json() as {status?:string;error?:string};
     setSaving(false);
     if(!response.ok){
-      setMessage(result.error??"We could not update your proposal. Please contact Roam Ceylon.");
+      setMessage(result.error??"We could not update your proposal. Please contact The Ceylon Edition.");
       return;
     }
     setStatus(result.status??status);
@@ -56,7 +56,7 @@ export function TravellerProposal({token,snapshot,initialStatus,requiresNewVersi
           <Button onClick={()=>setMode("accept")} disabled={!actionable} className="!bg-gold !text-slate"><CheckCircle2 className="size-4"/>Accept journey</Button>
           <Button onClick={()=>setMode("changes")} disabled={!actionable} variant="outline" className="border-ivory/30 !text-ivory"><MessageCircle className="size-4"/>Request changes</Button>
           <Button onClick={()=>window.print()} variant="outline" className="border-ivory/30 !text-ivory"><Download className="size-4"/>Download / print PDF</Button>
-          <Button asChild variant="outline" className="border-ivory/30 !text-ivory"><a href={snapshot.contact.whatsappUrl} target="_blank" rel="noreferrer"><Send className="size-4"/>Contact Roam Ceylon</a></Button>
+          <Button asChild variant="outline" className="border-ivory/30 !text-ivory"><a href={snapshot.contact.whatsappUrl} target="_blank" rel="noreferrer"><Send className="size-4"/>Contact The Ceylon Edition</a></Button>
         </div>
       </div>
       {!actionable?<p className="mt-6 border-t border-white/10 pt-5 text-sm text-ivory/60">{statusMessage(status,requiresNewVersion)}</p>:null}
@@ -87,11 +87,11 @@ export function TravellerProposal({token,snapshot,initialStatus,requiresNewVersi
 }
 
 function statusMessage(status:string,requiresNewVersion:boolean){
-  if(requiresNewVersion||status==="superseded") return "A newer proposal has been prepared. Please contact Roam Ceylon for the current version.";
+  if(requiresNewVersion||status==="superseded") return "A newer proposal has been prepared. Please contact The Ceylon Edition for the current version.";
   if(status==="approved") return "This exact proposal version has been accepted.";
   if(status==="changes_requested") return "Your requested refinements are with your journey designer.";
-  if(status==="expired") return "This proposal's validity period has ended. Please contact Roam Ceylon for an updated proposal.";
-  if(status==="cancelled") return "This proposal is no longer active. Please contact Roam Ceylon if you would like us to begin again.";
+  if(status==="expired") return "This proposal's validity period has ended. Please contact The Ceylon Edition for an updated proposal.";
+  if(status==="cancelled") return "This proposal is no longer active. Please contact The Ceylon Edition if you would like us to begin again.";
   return "This proposal version is available for reference but is no longer active.";
 }
 

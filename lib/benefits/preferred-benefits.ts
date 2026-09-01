@@ -20,12 +20,12 @@ export type CustomerBenefit={
 };
 
 export const benefitTypeLabels:Record<BenefitType,string>={
-  roam_ceylon_complimentary:"Roam Ceylon complimentary",preferred_rate:"Preferred rate",partner_privilege:"Partner privilege",
+  roam_ceylon_complimentary:"The Ceylon Edition complimentary",preferred_rate:"Preferred rate",partner_privilege:"Partner privilege",
   complimentary_upgrade:"Complimentary upgrade",meal_benefit:"Meal benefit",arrival_departure_benefit:"Arrival / departure benefit",
-  celebration_benefit:"Celebration benefit",experience_benefit:"Experience benefit",roam_ceylon_service_benefit:"Roam Ceylon service",other:"Traveller benefit"
+  celebration_benefit:"Celebration benefit",experience_benefit:"Experience benefit",roam_ceylon_service_benefit:"The Ceylon Edition service",other:"Traveller benefit"
 };
 export const confidenceLabels:Record<BenefitConfidence,string>={
-  guaranteed_by_roam_ceylon:"Guaranteed by Roam Ceylon",confirmed_partner_benefit:"Confirmed partner benefit",subject_to_availability:"Subject to availability"
+  guaranteed_by_roam_ceylon:"Guaranteed by The Ceylon Edition",confirmed_partner_benefit:"Confirmed partner benefit",subject_to_availability:"Subject to availability"
 };
 export const fulfilmentLabels:Record<BenefitFulfilment,string>={not_required:"Not required",pending:"Pending",confirmed:"Confirmed",prepared:"Prepared",delivered:"Delivered",unavailable:"Unavailable"};
 

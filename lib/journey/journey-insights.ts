@@ -78,7 +78,7 @@ const destinationCompletenessRule:JourneyInsightRule={id:"destination-completene
   return selectedDestinations(context).flatMap(destination=>{
     const results:JourneyInsight[]=[];
     if(!selectedExperiences(context).some(experience=>experience.destinationIds.includes(destination.id)))results.push(insight(this,"consider",`${destination.name} does not yet have a selected experience. You can continue as it is, or explore what feels meaningful there.`,{label:"Explore experiences",targetStep:2}));
-    if(!context.destinationPreferences[destination.id]||context.destinationPreferences[destination.id].stayPreference==="recommend")results.push(insight(this,"note",`Your stay style in ${destination.name} is open for Roam Ceylon to recommend. You may also choose a preference if you already have one.`,{label:"Review stay preferences",targetStep:3}));
+    if(!context.destinationPreferences[destination.id]||context.destinationPreferences[destination.id].stayPreference==="recommend")results.push(insight(this,"note",`Your stay style in ${destination.name} is open for The Ceylon Edition to recommend. You may also choose a preference if you already have one.`,{label:"Review stay preferences",targetStep:3}));
     return results;
   });
 }};
@@ -135,7 +135,7 @@ const planningText=(experience:JourneyExperience)=>[experience.difficulty,...exp
 const accessibilityRule:JourneyInsightRule={id:"accessibility-planning",name:"Accessibility planning",evaluate(context){
   if(!context.accessibilityRequirements.trim())return [];
   const affected=selectedExperiences(context).filter(item=>/(challenging|difficult|steep|stairs|uneven|climb|trek|mobility)/.test(planningText(item)));
-  return affected.length?[insight(this,"important",`${affected.slice(0,2).map(item=>item.name).join(" and ")} may require additional accessibility planning. Roam Ceylon will review access arrangements with you before confirming the journey.`)]:[insight(this,"note","Your accessibility requirements have been noted for the journey designer to review carefully with every local partner.")];
+  return affected.length?[insight(this,"important",`${affected.slice(0,2).map(item=>item.name).join(" and ")} may require additional accessibility planning. The Ceylon Edition will review access arrangements with you before confirming the journey.`)]:[insight(this,"note","Your accessibility requirements have been noted for the journey designer to review carefully with every local partner.")];
 }};
 
 const familyRule:JourneyInsightRule={id:"family-suitability",name:"Family suitability",evaluate(context){

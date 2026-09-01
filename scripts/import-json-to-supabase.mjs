@@ -12,6 +12,7 @@ if(!supabaseUrl||!serviceRoleKey)throw new Error('SUPABASE_URL/NEXT_PUBLIC_SUPAB
 if(typeof window!=='undefined')throw new Error('This import may only run in a trusted server environment.');
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const publicBrand='The Ceylon Edition';
 const json=async name=>JSON.parse(await readFile(path.join(root,'data',`${name}.json`),'utf8'));
 const db=createClient(supabaseUrl,serviceRoleKey,{auth:{persistSession:false,autoRefreshToken:false}});
 const slug=value=>String(value).normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -45,7 +46,7 @@ const imageQuality=item=>{
   if((imageCounts.get(item.heroImage)||0)>1)return {image_status:'duplicate',needs_image_review:true,image_review_notes:'This external image URL is reused and requires relevance review.'};
   return {image_status:'needs_review',needs_image_review:true,image_review_notes:'External source retained provisionally; confirm Sri Lankan relevance, quality, source and credit.'};
 };
-const report={source:'Existing Roam Ceylon JSON and Journey Builder',imported:{},updated:{},duplicates_skipped:0,missing_images:0,duplicate_images:0,uncertain_records:0,records_marked_for_review:0};
+const report={source:`Existing ${publicBrand} JSON and Journey Builder`,imported:{},updated:{},duplicates_skipped:0,missing_images:0,duplicate_images:0,uncertain_records:0,records_marked_for_review:0};
 const quality=item=>{
   const image=imageQuality(item);
   if(image.image_status==='missing')report.missing_images+=1;
@@ -58,14 +59,14 @@ console.log(`Importing into ${new URL(supabaseUrl).host}. Existing slugs will be
 const themeIds=await upsert('themes',themes.map((item,index)=>({
   name:item.name,slug:slug(item.id||item.name),short_description:cleanDescription(item.description),hero_image_url:item.heroImage||null,
   image_alt:item.heroImage?`${item.name} travel experiences in Sri Lanka`:null,icon:item.icon,display_order:index,status:item.heroImage?'published':'draft',active:true,
-  seo_title:`${item.name} | Roam Ceylon`,seo_description:cleanDescription(item.description),...quality(item)
+  seo_title:`${item.name} | ${publicBrand}`,seo_description:cleanDescription(item.description),...quality(item)
 })));
 report.imported.themes=themes.length;
 const destinationIds=await upsert('destinations',destinations.map((item,index)=>({
   name:item.name,slug:slug(item.id||item.name),province:item.province,short_description:cleanDescription(item.shortDescription),
   hero_image_url:item.heroImage||null,image_alt:item.heroImage?`${item.name}, Sri Lanka`:null,latitude:item.coordinates?.lat,longitude:item.coordinates?.lon,
   display_order:index,coming_soon:Boolean(item.comingSoon),status:item.heroImage&&!item.comingSoon?'published':'draft',active:true,
-  seo_title:`${item.name}, Sri Lanka | Roam Ceylon`,seo_description:cleanDescription(item.shortDescription),...quality(item)
+  seo_title:`${item.name}, Sri Lanka | ${publicBrand}`,seo_description:cleanDescription(item.shortDescription),...quality(item)
 })));
 report.imported.destinations=destinations.length;
 const experienceIds=await upsert('experiences',experiences.map((item,index)=>{
@@ -75,7 +76,7 @@ const experienceIds=await upsert('experiences',experiences.map((item,index)=>{
     name:item.name,slug:slug(item.id||item.name),category:item.category,short_description:cleanDescription(item.shortDescription),
     hero_image_url:trustedImage,image_alt:trustedImage?`${item.name} in Sri Lanka`:null,gallery:trustedImage?[trustedImage]:[],
     duration:item.duration||null,difficulty:item.difficulty||null,priority,featured:Boolean(item.featured),display_order:index,
-    status:trustedImage?'published':'draft',active:true,seo_title:`${item.name} | Roam Ceylon`,
+    status:trustedImage?'published':'draft',active:true,seo_title:`${item.name} | ${publicBrand}`,
     seo_description:cleanDescription(item.shortDescription),...quality(item)
   };
 }));

@@ -11,7 +11,7 @@ import {completeJourneyLegs,effectiveTravelPreference,journeyLegKey,journeyLegs,
 
 test("public builder follows the seven-step preference and insights flow without supplier selectors",()=>{
   const source=readFileSync(new URL("../features/journey/journey-builder.tsx",import.meta.url),"utf8");
-  assert.match(source,/\["Theme","Destination","Experience","Journey Preferences","Journey Details","Journey Insights","Review"\]/);
+  assert.match(source,/\["Edition","Destination","Experience","Journey Preferences","Journey Details","Journey Insights","Review"\]/);
   assert.match(source,/destinationPreferences:state\.destinationPreferences/);
   assert.match(source,/journeyGuidePreference:state\.journeyGuidePreference/);
   assert.doesNotMatch(source,/availableStays\(|data\.guides\.(?:map|filter)|Local Guides/);
@@ -25,7 +25,7 @@ test("public builder follows the seven-step preference and insights flow without
 
 test("travel preferences cover every approved movement choice without restricting selection",()=>{
   assert.deepEqual(travelPreferenceOptions.map(([,label])=>label),[
-    "Scenic Train","Private Chauffeur Car / SUV","High-Roof Van","Mini Coach / Bus","Tuk-Tuk","Scooter","Domestic Floatplane","Self-Drive Car","Self-Drive Van","Self-Drive Tuk-Tuk","Self-Drive Scooter","Let Roam Ceylon Recommend"
+    "Scenic Train","Private Chauffeur Car / SUV","High-Roof Van","Mini Coach / Bus","Tuk-Tuk","Scooter","Domestic Floatplane","Self-Drive Car","Self-Drive Van","Self-Drive Tuk-Tuk","Self-Drive Scooter","Let The Ceylon Edition Recommend"
   ]);
   assert.equal(travelPreferenceOptions.length,12);
   assert(recommendedTravelPreferences(2).includes("private_chauffeur_car_suv"));
@@ -70,12 +70,12 @@ test("one route override leaves the global transport preference unchanged for ev
 
 test("destination journey preferences expose the approved stay and guide choices",()=>{
   assert.deepEqual(stayPreferenceOptions.map(([,label])=>label),[
-    "5-Star Class Resorts","4-Star Class Resorts","Boutique Hotels & Villas","Guest Houses","Homestays","Bungalows","Eco-Lodges & Tented Camps","Wellness Retreats","Let Roam Ceylon Recommend"
+    "5-Star Class Resorts","4-Star Class Resorts","Boutique Hotels & Villas","Guest Houses","Homestays","Bungalows","Eco-Lodges & Tented Camps","Wellness Retreats","Let The Ceylon Edition Recommend"
   ]);
   assert.deepEqual(guidePreferenceOptions.map(([,label])=>label),[
-    "National Tourist Guide","Chauffeur Tourist Guide","Area Tourist Guide","Site Tourist Guide","Wildlife Tracker / Safari Guide","Adventure / Trekking Guide","No Guide","Let Roam Ceylon Recommend"
+    "National Tourist Guide","Chauffeur Tourist Guide","Area Tourist Guide","Site Tourist Guide","Wildlife Tracker / Safari Guide","Adventure / Trekking Guide","No Guide","Let The Ceylon Edition Recommend"
   ]);
-  assert.deepEqual(journeyGuidePreferenceOptions.map(([,label])=>label),["National Tourist Guide","Chauffeur Tourist Guide","No Guide Required","Let Roam Ceylon Recommend"]);
+  assert.deepEqual(journeyGuidePreferenceOptions.map(([,label])=>label),["National Tourist Guide","Chauffeur Tourist Guide","No Guide Required","Let The Ceylon Edition Recommend"]);
   assert.equal(guideLanguageOptions.length,10);
   assert.deepEqual(specialistGuideOptions("Sigiriya").map(([,label])=>label),["None","Site Guide","Archaeological Guide"]);
   assert.deepEqual(specialistGuideOptions("Galle").map(([,label])=>label),["None"]);
@@ -192,7 +192,7 @@ test("DMC package price includes supplier, operational, overhead and margin cost
   assert(!JSON.stringify(quote.public).includes("Profit"));
   assert(!quote.breakdown.some(line=>line.label==="Airport transfers"));
   assert(quote.breakdown.some(line=>line.label==="Fuel"));
-  assert(quote.breakdown.some(line=>line.label==="Roam Ceylon service fee"));
+  assert(quote.breakdown.some(line=>line.label==="The Ceylon Edition service fee"));
   const buffered=calculatePackageQuote({config:{...config,routeDistanceBufferPercent:30},supplierCosts,selection,durationDays:2,distanceKm:100});
   assert(buffered.sellingPrice!>quote.sellingPrice!);
   assert.equal(buffered.breakdown.find(line=>line.label==="Vehicle distance")?.amount,65);

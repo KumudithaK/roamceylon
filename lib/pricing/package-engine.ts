@@ -88,7 +88,7 @@ export function calculatePackageQuote(context:PackagePricingContext):AdminPackag
   const adjustments=context.adjustments??[];
   const internalCost=money(applyAdjustments(internalBeforeAdjustments,adjustments,"internal_cost"));
   const serviceFee=config.serviceFeeFixed!+internalCost*config.serviceFeePercent!/100;
-  breakdown.push({key:"service-fee",label:"Roam Ceylon service fee",category:"service_fee",amount:money(serviceFee),internal:false});
+  breakdown.push({key:"service-fee",label:"The Ceylon Edition service fee",category:"service_fee",amount:money(serviceFee),internal:false});
   const beforeMargin=internalCost+serviceFee;
   const sellingBeforeAdjustments=beforeMargin/(1-config.targetProfitMarginPercent!/100);
   const sellingPrice=money(applyAdjustments(sellingBeforeAdjustments,adjustments,"selling_price"));

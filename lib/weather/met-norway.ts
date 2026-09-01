@@ -80,7 +80,7 @@ export async function getDestinationForecast(latitude:number,longitude:number){
     const url=new URL("https://api.met.no/weatherapi/locationforecast/2.0/compact");
     url.searchParams.set("lat",latitude.toFixed(4));
     url.searchParams.set("lon",longitude.toFixed(4));
-    const response=await fetch(url,{headers:{"User-Agent":"RoamCeylon/2.0 hello@roamceylon.com"},next:{revalidate:1800},signal:AbortSignal.timeout(5000)});
+    const response=await fetch(url,{headers:{"User-Agent":"TheCeylonEdition/2.0 (+https://theceylonedition.com)"},next:{revalidate:1800},signal:AbortSignal.timeout(5000)});
     if(!response.ok)return null;
     return parseMetForecast(await response.json());
   }catch{return null;}

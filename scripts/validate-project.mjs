@@ -47,4 +47,4 @@ assert.match(waiverMigration,/accounting_attachments_staff_read/);
 const editorialMigration=await read("supabase/migrations/202607290001_editorial_experiences.sql");
 assert.match(editorialMigration,/experience_participants jsonb/);
 assert.match(editorialMigration,/best_season text/);
-console.log("Roam Ceylon V2 architecture, routes, dependencies, metadata, and secret boundaries validated.");
+console.log("The Ceylon Edition architecture, routes, dependencies, metadata, and secret boundaries validated.");
