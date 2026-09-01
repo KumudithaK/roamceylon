@@ -6,8 +6,8 @@ import {brand} from "@/lib/brand";
 const siteUrl=(process.env.NEXT_PUBLIC_SITE_URL||brand.canonicalUrl).replace(/\/$/,"");
 
 export const metadata:Metadata={
-  title:"About The Ceylon Edition — Sri Lanka Destination Management Company",
-  description:"Meet The Ceylon Edition, a Sri Lanka Destination Management Company creating tailor-made, personalised journeys through local expertise, thoughtful design and human care.",
+  title:"About The Ceylon Edition — Bespoke Sri Lanka Journeys",
+  description:"Meet The Ceylon Edition, a Sri Lankan journey design brand creating tailor-made, personalised journeys through local expertise, thoughtful design and human care.",
   alternates:{canonical:"/about"},
   openGraph:{
     title:"About The Ceylon Edition — Journeys thoughtfully designed",
@@ -36,11 +36,9 @@ export default async function Page(){
     "@context":"https://schema.org",
     "@type":["Organization","TravelAgency"],
     name:brand.name,
-    legalName:"Roam Ceylon Atelier (Private) Limited",
     url:siteUrl,
     ...(company.email?{email:company.email}:{}),
     telephone:company.telephone,
-    address:{"@type":"PostalAddress",addressCountry:"LK",addressLocality:"Colombo"},
     areaServed:{"@type":"Country",name:"Sri Lanka"},
     description:"A Sri Lankan journey atelier creating and coordinating deeply personal, tailor-made journeys across the island."
   };

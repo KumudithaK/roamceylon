@@ -91,3 +91,26 @@ test("application-owned external identification uses the new brand and canonical
   assert.match(weather,/https:\/\/theceylonedition\.com/);
   assert.doesNotMatch(weather,/@theceylonedition\.com/);
 });
+
+test("active public and proposal presentation makes no incorporated-company claim",()=>{
+  const activePresentation=[
+    "app/about/page.tsx",
+    "features/about/about-page.tsx",
+    "lib/proposals/customer-proposal.ts",
+    "components/proposal/proposal-document.tsx",
+    "lib/proposals/export-proposal-pdf.ts"
+  ];
+  const incorporatedClaim=/Roam Ceylon Atelier|The Ceylon Edition\s*\((?:Private|Pvt)\)\s*(?:Limited|Ltd)|\bPrivate Limited\b|\b\(Pvt\) Ltd\b/i;
+  for(const path of activePresentation){
+    assert.doesNotMatch(source(path),incorporatedClaim,path);
+  }
+
+  const aboutMetadata=source("app/about/page.tsx");
+  assert.doesNotMatch(aboutMetadata,/legalName\s*:/);
+  assert.doesNotMatch(aboutMetadata,/"PostalAddress"/);
+  assert.doesNotMatch(aboutMetadata,/Destination Management Company/);
+
+  const aboutPage=source("features/about/about-page.tsx");
+  assert.match(aboutPage,/Brand information/);
+  assert.doesNotMatch(aboutPage,/\["Legal entity"/);
+});
