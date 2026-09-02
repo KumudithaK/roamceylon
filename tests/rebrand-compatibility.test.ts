@@ -114,3 +114,9 @@ test("active public and proposal presentation makes no incorporated-company clai
   assert.match(aboutPage,/Brand information/);
   assert.doesNotMatch(aboutPage,/\["Legal entity"/);
 });
+
+test("active About fallback uses the approved public contact number",()=>{
+  const aboutPage=source("app/about/page.tsx");
+  assert.match(aboutPage,/telephone:"\+94 78 799 7897"/);
+  assert.doesNotMatch(aboutPage,/\+94 71 307 7989/);
+});

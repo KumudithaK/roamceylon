@@ -19,7 +19,7 @@ export const metadata:Metadata={
 };
 
 async function companyDetails(){
-  const fallback={email:null as string|null,telephone:"+94 71 307 7989"};
+  const fallback={email:null as string|null,telephone:"+94 78 799 7897"};
   const supabase=createPublicClient();
   if(!supabase)return fallback;
   const {data,error}=await supabase.from("website_public_settings").select("enquiry_email,contact_phone").limit(1).maybeSingle();
