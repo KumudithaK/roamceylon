@@ -36,7 +36,8 @@ const nextConfig:NextConfig={
       {protocol:"https",hostname:"images.unsplash.com"},
       {protocol:"https",hostname:"upload.wikimedia.org"},
       {protocol:"https",hostname:"sitecore-cd.shangri-la.com"},
-      {protocol:"https",hostname:"fstpfqlgypvktjwdeagu.supabase.co"}
+      {protocol:"https",hostname:"fstpfqlgypvktjwdeagu.supabase.co"},
+      {protocol:"https",hostname:"hvcggnuptrcsxtrcjnre.supabase.co",pathname:"/storage/v1/object/public/**"}
     ]
   },
   async headers(){return [

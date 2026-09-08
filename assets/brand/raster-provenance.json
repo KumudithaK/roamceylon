@@ -1,0 +1,45 @@
+{
+  "status": "Human-approved raster master; not a vector master",
+  "sourceFilename": "ChatGPT Image Sep 8, 2026, 04_31_37 PM.png",
+  "sourceSha256": "5de54200e42d8486099ba4e085a28ba5ca66558c16b929ca3c9f5e5e433c3afa",
+  "sourceSize": {
+    "width": 1536,
+    "height": 1024
+  },
+  "processing": "Near-white matte extraction (minimum channel 225–245), no trace/redraw/recolour; fixed lossless crops; resized raster outputs. Solid source pixels with minimum channel <=225 are unchanged before resizing.",
+  "fullCrop": {
+    "left": 80,
+    "top": 24,
+    "width": 1380,
+    "height": 940
+  },
+  "emblemCrop": {
+    "left": 588,
+    "top": 32,
+    "width": 396,
+    "height": 580
+  },
+  "derivatives": [
+    {
+      "path": "public/brand/the-ceylon-edition-lockup.webp",
+      "width": 960,
+      "height": 654,
+      "bytes": 154638,
+      "sha256": "f2958d85c00e99faa8b5d5f276fe5974dee98e30b58b0c6eae8c3a4e5f2f3a33"
+    },
+    {
+      "path": "public/brand/the-ceylon-edition-emblem.png",
+      "width": 218,
+      "height": 320,
+      "bytes": 83438,
+      "sha256": "c34cee12deba6429906f09c10497a163110c7d65cb53aaa348f96d4f7b292bcb"
+    },
+    {
+      "path": "app/icon.png",
+      "width": 64,
+      "height": 64,
+      "bytes": 5413,
+      "sha256": "2a0e16e47e48858128374aec5223f846e39d11493c44366cfd2d1604ebcd5b33"
+    }
+  ]
+}

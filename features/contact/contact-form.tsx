@@ -5,6 +5,8 @@ import {useState} from "react";
 import {useForm} from "react-hook-form";
 import {z} from "zod";
 import {Button} from "@/components/ui/button";
+import {FormField,Input,Textarea} from "@/components/ui/form-field";
+import {Feedback} from "@/components/ui/feedback";
 import {clearJourneyHandoff,journeyHandoffToJson,readJourneyHandoff} from "@/lib/journey/quotation-handoff";
 
 const schema=z.object({name:z.string().min(2),email:z.email(),phone:z.string().optional(),nationality:z.string().optional(),notes:z.string().min(10)});
@@ -32,6 +34,21 @@ export function ContactForm({quotation=false}:{quotation?:boolean}){
     clearJourneyHandoff();
     setSent(true);
   };
-  if(sent)return <div className="rounded-3xl bg-sand-light p-10"><p className="eyebrow mb-3">Received</p><h2 className="font-serif text-4xl">{quotation?"Your quotation is being prepared.":"Your journey starts here."}</h2><p className="mt-4 text-slate/60">A journey designer from The Ceylon Edition will review your selections and be in touch shortly.</p></div>;
-  return <form onSubmit={handleSubmit(submit)} className="grid gap-5 rounded-3xl border border-stone/20 bg-white p-7 md:grid-cols-2 md:p-10"><input aria-hidden="true" tabIndex={-1} autoComplete="off" name="website-confirmation" className="hidden" value={honeypot} onChange={event=>setHoneypot(event.target.value)}/>{[["name","Full name"],["email","Email"],["phone","Phone / WhatsApp"],["nationality","Nationality"]].map(([name,label])=><label key={name} className="grid gap-2 text-sm font-semibold">{label}<input {...register(name as keyof FormData)} className="rounded-xl border border-stone/30 px-4 py-3 outline-none focus:border-gold"/>{errors[name as keyof FormData]&&<small className="text-red-700">Please check this field.</small>}</label>)}<label className="grid gap-2 text-sm font-semibold md:col-span-2">{quotation?"Anything we should consider before confirming your quotation?":"Tell us what you are imagining"}<textarea {...register("notes")} rows={6} className="rounded-xl border border-stone/30 px-4 py-3 outline-none focus:border-gold" placeholder={quotation?"Dietary needs, room preferences, mobility considerations or special occasions…":"Places, pace, occasion, travel dates or anything else that matters…"}/>{errors.notes&&<small className="text-red-700">Please share at least a few details.</small>}</label>{submitError&&<p role="alert" className="text-sm text-red-700 md:col-span-2">{submitError}</p>}<Button disabled={isSubmitting} type="submit" className="md:col-span-2">{isSubmitting?"Sending…":quotation?"Request Final Quotation":"Speak with a journey designer"}</Button></form>;
+  if(sent)return <div role="status" className="rounded-lg border border-divider bg-surface p-8 md:p-10"><p className="eyebrow mb-3">Received</p><h2 className="heading">{quotation?"Your quotation is being prepared.":"Your journey starts here."}</h2><p className="mt-4 text-base leading-7 text-muted">A journey designer from The Ceylon Edition will review your selections and be in touch shortly.</p></div>;
+  return <form onSubmit={handleSubmit(submit)} className="grid gap-6 rounded-lg border border-divider bg-surface p-6 sm:p-8 md:grid-cols-2 lg:p-10">
+    <input aria-hidden="true" tabIndex={-1} autoComplete="off" name="website-confirmation" className="hidden" value={honeypot} onChange={event=>setHoneypot(event.target.value)}/>
+    {([
+      {name:"name",label:"Full name",type:"text",autoComplete:"name",error:"Please enter at least two characters."},
+      {name:"email",label:"Email",type:"email",autoComplete:"email",error:"Please enter a valid email address."},
+      {name:"phone",label:"Phone / WhatsApp",type:"tel",autoComplete:"tel",error:"Please check your phone number."},
+      {name:"nationality",label:"Nationality",type:"text",autoComplete:"off",error:"Please check this field."}
+    ] as const).map(({name,label,type,autoComplete,error})=><FormField key={name} label={label} required={name==="name"||name==="email"} error={errors[name]?error:undefined}>
+      {association=><Input {...register(name)} {...association} type={type} autoComplete={autoComplete} aria-required={name==="name"||name==="email"}/>}
+    </FormField>)}
+    <FormField className="md:col-span-2" label={quotation?"Anything we should consider before confirming your quotation?":"Tell us what you are imagining"} required error={errors.notes?"Please share at least ten characters of detail.":undefined}>
+      {association=><Textarea {...register("notes")} {...association} rows={6} aria-required="true" placeholder={quotation?"Dietary needs, room preferences, mobility considerations or special occasions…":"Places, pace, occasion, travel dates or anything else that matters…"}/>}
+    </FormField>
+    {submitError?<Feedback className="md:col-span-2">{submitError}</Feedback>:null}
+    <Button disabled={isSubmitting} aria-busy={isSubmitting} type="submit" className="md:col-span-2">{isSubmitting?"Sending…":quotation?"Request Final Quotation":"Speak with a journey designer"}</Button>
+  </form>;
 }
