@@ -46,6 +46,8 @@ test("Batch 1 uses the exact palette, layout measures and readable type foundati
   assert.match(css,/--measure-reading:46rem/);
   assert.match(css,/--measure-media:90rem/);
   assert.match(css,/\.eyebrow\{font-size:\.75rem/);
+  assert.match(css,/\.section\{padding-block:clamp\(3\.5rem,6vw,6rem\)\}/);
+  for(const utility of ["editorial-surface","editorial-rule","cinematic-image"])assert.match(css,new RegExp("\\."+utility));
   assert.match(css,/:focus-visible/);
   assert.match(css,/@layer base\{a\{text-decoration:none;color:inherit\}\}/);
   assert.match(css,/prefers-reduced-motion:reduce/);
@@ -69,6 +71,8 @@ test("header renders accessible navigation and no primary supplier or empty Jour
   assert.match(html,/aria-label="Primary"/);
   assert.match(html,/aria-current="page"/);
   assert.match(html,/Plan Your Journey/);
+  assert.match(html,/the-ceylon-edition-emblem\.png/);
+  assert.match(html,/border-gold\/70/);
   assert.match(html,/aria-label="Open navigation menu"/);
   assert.match(html,/aria-expanded="false"/);
   assert.doesNotMatch(html,/href="\/(?:hotels|transport|guides|blog)"/);
@@ -79,7 +83,7 @@ test("mobile menu uses focus-managed dialog and closes for every navigation/CTA"
   const header=source("components/site/site-header.tsx");
   assert.match(header,/<Dialog open=\{open\} onOpenChange=\{setOpen\}/);
   assert.match(header,/<DialogClose asChild key=\{href\}>/);
-  assert.match(header,/<DialogClose asChild><Link href="\/partners"/);
+  assert.match(header,/<DialogClose asChild><Button asChild variant="outline"[^>]*><Link href="\/partners"/);
   assert.match(header,/<DialogClose asChild><Button asChild/);
   assert.match(header,/desktop\.removeEventListener/);
   const dialog=source("components/ui/dialog.tsx");
@@ -103,6 +107,8 @@ test("footer includes only verified contacts, safe external links and no invente
   for(const href of [approvedPublicContact.phoneHref,approvedPublicContact.whatsapp,approvedPublicContact.facebook])assert.ok(html.includes(href));
   assert.equal((html.match(/rel="noopener noreferrer"/g)??[]).length,2);
   assert.match(html,/Facebook \(opens in a new tab\)/);
+  assert.match(html,/aria-label="WhatsApp \(opens in a new tab\)"/);
+  assert.match(html,/rounded-full border border-forest\/45/);
   assert.doesNotMatch(html,/mailto:|Roam Ceylon|Private Limited|Pvt Ltd|licen[cs]e|href="\/blog"/i);
   assert.equal(render("components/site/site-footer.tsx","SiteFooter",{},"/admin/dashboard"),"");
 });
@@ -121,6 +127,11 @@ test("approved raster master is unchanged and derivatives have recorded provenan
   assert.match(logo,/width="218"/);
   assert.match(logo,/height="320"/);
   assert.match(logo,/the-ceylon-edition-emblem/);
+  const compact=render("components/brand/brand-logo.tsx","BrandLogo",{variant:"compact",decorative:true});
+  assert.match(compact,/the-ceylon-edition-emblem/);
+  assert.match(compact,/>THE</);
+  assert.match(compact,/>CEYLON EDITION</);
+  assert.doesNotMatch(compact,/Bespoke journeys through Sri Lanka/);
   const dark=render("components/brand/brand-logo.tsx","BrandLogo",{variant:"full",inverse:true});
   assert.doesNotMatch(dark,/<img/);
   assert.match(dark,/Bespoke journeys through Sri Lanka/);

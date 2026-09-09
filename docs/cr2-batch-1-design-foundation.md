@@ -19,7 +19,13 @@ Buttons, badges, cards, section headings, labelled fields and honest loading/emp
 
 Header: Editions / Destinations / Experiences / Our story; primary Plan Your Journey CTA preserves /journey-builder?step=0. Supplier resources and the empty Journal are not primary navigation. Mobile/tablet uses the installed Radix Dialog for focus trapping, Escape and focus restoration; all navigation closes it.
 
+Human-review refinement: the compact header identity now pairs the faithful approved emblem crop with the readable wordmark, without a tiny tagline or increased shell height. Partner with us uses a restrained Heritage Gold outline while Plan Your Journey remains the sole filled primary action.
+
 Footer: approved phone, WhatsApp, Facebook and postal address are explicit verified presentation constants, not an unrestricted CMS email feed. No email, legal registration, licence or corporate claim. External contact links use noopener noreferrer. Updating these verified footer contacts later is a reviewed presentation change.
+
+The full application inherits the cinematic editorial identity of the Coming Soon experience while evolving it into a highly usable luxury travel platform. Public surfaces may be atmospheric, image-led and Playfair-forward; functional surfaces remain clear, scannable, accessible and conversion-oriented; Admin remains operational and information-efficient. Shared `editorial-surface`, `editorial-rule` and `cinematic-image` primitives provide this capability without redesigning Batch 2 page compositions.
+
+Shared section padding now follows controlled editorial whitespace (`3.5rem` to `6rem`) rather than the earlier `4rem` to `8rem` range. Shared section-heading relationships and listing-page introductions are correspondingly tighter; major storytelling transitions may still opt into more generous spacing deliberately.
 
 Shared FadeIn respects reduced motion directly; standard reveal 450ms, bounded delay. Motion CSS suppresses animations/transitions for reduced motion.
 
@@ -38,7 +44,7 @@ This is a raster master, NOT a vector master. The deterministic derivative scrip
 - Emblem: 218 × 320 PNG, 83438 bytes (Next/Image serves a smaller rendition).
 - App icon: 64 × 64 transparent PNG, 5413 bytes.
 - Footer uses the faithful emblem crop, with separate readable brand/tagline text.
-- Header/compact and dark backgrounds use the deliberately temporary HTML wordmark.
+- Header/compact presentation pairs the faithful emblem crop with a deliberately temporary readable HTML wordmark; dark backgrounds retain the readable HTML treatment until an approved inverse asset exists.
 - Full graphical lockup component is reserved for large light-background contexts; small viewports fall back to text. Do not force it into a narrow container.
 - Proper approved compact/vector/dark-background artwork remains deferred, not invented.
 

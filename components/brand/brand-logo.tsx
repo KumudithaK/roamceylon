@@ -10,7 +10,13 @@ type BrandLogoProps={variant?:"full"|"compact"|"emblem";inverse?:boolean;decorat
  * The dark/compact wordmark is intentionally HTML until an approved export exists.
  */
 export function BrandLogo({variant="compact",inverse=false,decorative=false,className}:BrandLogoProps){
-  if(variant==="compact"||inverse){
+  if(variant==="compact"){
+    return <span aria-hidden={decorative?true:undefined} className={cn("inline-flex items-center gap-3",className)}>
+      <Image src="/brand/the-ceylon-edition-emblem.png" alt="" width={218} height={320} sizes="56px" className="h-12 w-auto shrink-0 object-contain sm:h-14"/>
+      <BrandWordmark showTagline={false}/>
+    </span>;
+  }
+  if(inverse){
     return <span aria-hidden={decorative?true:undefined}><BrandWordmark inverse={inverse} showTagline={variant==="full"} className={className}/></span>;
   }
   if(variant==="emblem"){
