@@ -97,7 +97,7 @@ test("temporary text lockup is readable and does not invent emblem artwork",()=>
   assert.match(html,/>THE</);
   assert.match(html,/>CEYLON EDITION</);
   assert.match(html,/items-start text-left/);
-  assert.match(html,/-translate-x-px self-start/);
+  assert.match(html,/-translate-x-\[2px\] self-start/);
   assert.doesNotMatch(html,/<svg|<img|Bespoke/);
   const full=render("components/brand/brand-wordmark.tsx","BrandWordmark",{inverse:true});
   assert.match(full,/Bespoke journeys through Sri Lanka\./);
@@ -112,10 +112,18 @@ test("footer includes only verified contacts, safe external links and no invente
   assert.match(html,/Facebook \(opens in a new tab\)/);
   assert.match(html,/aria-label="WhatsApp \(opens in a new tab\)"/);
   assert.match(html,/viewBox="0 0 24 24"/);
-  assert.match(html,/text-forest/);
-  assert.doesNotMatch(source("components/site/site-footer.tsx"),/\bPhone\b|rounded-full border border-forest\/45/);
+  assert.equal((html.match(/inline-flex size-11 items-center justify-center rounded-md border border-forest\/40/g)??[]).length,2);
+  assert.doesNotMatch(html,/>WhatsApp<|bright WhatsApp green/);
+  assert.doesNotMatch(source("components/site/site-footer.tsx"),/\bPhone\b|rounded-full border border-forest\/45|text-link inline-flex min-h-11 items-center gap-2\.5/);
   assert.doesNotMatch(html,/mailto:|Roam Ceylon|Private Limited|Pvt Ltd|licen[cs]e|href="\/blog"/i);
   assert.equal(render("components/site/site-footer.tsx","SiteFooter",{},"/admin/dashboard"),"");
+});
+
+test("shared catalogue introduction and cards use one content-driven section",()=>{
+  const listing=source("components/site/listing-page.tsx");
+  assert.match(listing,/return <section className="section border-b border-gold\/20 bg-sand-light"/);
+  assert.equal((listing.match(/<section/g)??[]).length,1);
+  assert.doesNotMatch(listing,/py-16 md:py-24|<\/section><section/);
 });
 
 test("approved raster master is unchanged and derivatives have recorded provenance",()=>{

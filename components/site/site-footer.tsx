@@ -28,9 +28,9 @@ export function SiteFooter(){
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-[.16em]">Stay in touch</h2>
         <a href={approvedPublicContact.phoneHref} className="text-link inline-flex min-h-11 items-center text-base">{approvedPublicContact.phone}</a>
         <address className="mt-3 whitespace-pre-line text-sm not-italic leading-7 text-muted">{approvedPublicContact.address}</address>
-        <div className="mt-5 flex flex-wrap gap-4">
-          <a href={approvedPublicContact.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp (opens in a new tab)" className="text-link inline-flex min-h-11 items-center gap-2.5 text-sm"><WhatsAppIcon className="size-5 shrink-0 text-forest"/>WhatsApp</a>
-          <a href={approvedPublicContact.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook (opens in a new tab)" className="inline-flex size-11 items-center justify-center rounded-md border border-forest/40 hover:bg-forest/5"><Facebook className="size-5" aria-hidden="true"/></a>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <a href={approvedPublicContact.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp (opens in a new tab)" className="inline-flex size-11 items-center justify-center rounded-md border border-forest/40 text-forest transition-colors hover:border-forest/60 hover:bg-forest/5"><WhatsAppIcon className="size-5"/></a>
+          <a href={approvedPublicContact.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook (opens in a new tab)" className="inline-flex size-11 items-center justify-center rounded-md border border-forest/40 text-forest transition-colors hover:border-forest/60 hover:bg-forest/5"><Facebook className="size-5" aria-hidden="true"/></a>
         </div>
       </div>
     </div>
