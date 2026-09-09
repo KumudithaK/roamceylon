@@ -28,7 +28,8 @@ button:not(:disabled),[role="button"]:not([aria-disabled="true"]){cursor:pointer
 .shell,.media-shell{width:min(var(--measure-content),calc(100% - clamp(2rem,6vw,6rem)));margin-inline:auto}
 .media-shell{max-width:var(--measure-media);width:min(var(--measure-media),calc(100% - 2rem))}
 .reading-measure{max-width:var(--measure-reading)}
-.section{padding-block:clamp(3.5rem,6vw,6rem)}
+.section{padding-block:clamp(3rem,5vw,5rem)}
+.section-continuation{padding-top:clamp(1.5rem,3vw,3rem)}
 .display{font-family:var(--font-playfair),serif;font-size:clamp(3rem,6.7vw,6rem);line-height:1.04;letter-spacing:-.035em;text-wrap:balance}
 .heading{font-family:var(--font-playfair),serif;font-size:clamp(2.25rem,4.5vw,3.25rem);line-height:1.12;letter-spacing:-.025em;text-wrap:balance}
 .heading-1{font-family:var(--font-playfair),serif;font-size:clamp(2.5rem,5.5vw,4.5rem);line-height:1.08;letter-spacing:-.03em;text-wrap:balance}

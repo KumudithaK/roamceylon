@@ -46,7 +46,8 @@ test("Batch 1 uses the exact palette, layout measures and readable type foundati
   assert.match(css,/--measure-reading:46rem/);
   assert.match(css,/--measure-media:90rem/);
   assert.match(css,/\.eyebrow\{font-size:\.75rem/);
-  assert.match(css,/\.section\{padding-block:clamp\(3\.5rem,6vw,6rem\)\}/);
+  assert.match(css,/\.section\{padding-block:clamp\(3rem,5vw,5rem\)\}/);
+  assert.match(css,/\.section-continuation\{padding-top:clamp\(1\.5rem,3vw,3rem\)\}/);
   for(const utility of ["editorial-surface","editorial-rule","cinematic-image"])assert.match(css,new RegExp("\\."+utility));
   assert.match(css,/:focus-visible/);
   assert.match(css,/@layer base\{a\{text-decoration:none;color:inherit\}\}/);
@@ -95,6 +96,8 @@ test("temporary text lockup is readable and does not invent emblem artwork",()=>
   const html=render("components/brand/brand-wordmark.tsx","BrandWordmark",{showTagline:false});
   assert.match(html,/>THE</);
   assert.match(html,/>CEYLON EDITION</);
+  assert.match(html,/items-start text-left/);
+  assert.match(html,/-translate-x-px self-start/);
   assert.doesNotMatch(html,/<svg|<img|Bespoke/);
   const full=render("components/brand/brand-wordmark.tsx","BrandWordmark",{inverse:true});
   assert.match(full,/Bespoke journeys through Sri Lanka\./);
@@ -108,7 +111,9 @@ test("footer includes only verified contacts, safe external links and no invente
   assert.equal((html.match(/rel="noopener noreferrer"/g)??[]).length,2);
   assert.match(html,/Facebook \(opens in a new tab\)/);
   assert.match(html,/aria-label="WhatsApp \(opens in a new tab\)"/);
-  assert.match(html,/rounded-full border border-forest\/45/);
+  assert.match(html,/viewBox="0 0 24 24"/);
+  assert.match(html,/text-forest/);
+  assert.doesNotMatch(source("components/site/site-footer.tsx"),/\bPhone\b|rounded-full border border-forest\/45/);
   assert.doesNotMatch(html,/mailto:|Roam Ceylon|Private Limited|Pvt Ltd|licen[cs]e|href="\/blog"/i);
   assert.equal(render("components/site/site-footer.tsx","SiteFooter",{},"/admin/dashboard"),"");
 });

@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import {Facebook,Phone,ArrowUpRight} from "lucide-react";
+import {Facebook,ArrowUpRight} from "lucide-react";
 import {usePathname} from "next/navigation";
 import {BrandWordmark} from "@/components/brand/brand-wordmark";
 import {BrandLogo} from "@/components/brand/brand-logo";
+import {WhatsAppIcon} from "@/components/icons/whatsapp-icon";
 import {brand} from "@/lib/brand";
 import {approvedPublicContact,hidePublicShell,journeyLaunchHref,publicNavigation} from "@/lib/public-navigation";
 
@@ -28,7 +29,7 @@ export function SiteFooter(){
         <a href={approvedPublicContact.phoneHref} className="text-link inline-flex min-h-11 items-center text-base">{approvedPublicContact.phone}</a>
         <address className="mt-3 whitespace-pre-line text-sm not-italic leading-7 text-muted">{approvedPublicContact.address}</address>
         <div className="mt-5 flex flex-wrap gap-4">
-          <a href={approvedPublicContact.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp (opens in a new tab)" className="text-link inline-flex min-h-11 items-center gap-2.5 text-sm"><span className="inline-flex size-7 items-center justify-center rounded-full border border-forest/45" aria-hidden="true"><Phone className="size-3.5"/></span>WhatsApp</a>
+          <a href={approvedPublicContact.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp (opens in a new tab)" className="text-link inline-flex min-h-11 items-center gap-2.5 text-sm"><WhatsAppIcon className="size-5 shrink-0 text-forest"/>WhatsApp</a>
           <a href={approvedPublicContact.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook (opens in a new tab)" className="inline-flex size-11 items-center justify-center rounded-md border border-forest/40 hover:bg-forest/5"><Facebook className="size-5" aria-hidden="true"/></a>
         </div>
       </div>
