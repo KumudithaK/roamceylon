@@ -97,7 +97,7 @@ test("temporary text lockup is readable and does not invent emblem artwork",()=>
   assert.match(html,/>THE</);
   assert.match(html,/>CEYLON EDITION</);
   assert.match(html,/items-start text-left/);
-  assert.match(html,/-translate-x-\[2px\] self-start/);
+  assert.match(html,/-translate-x-\[1\.5px\] self-start/);
   assert.doesNotMatch(html,/<svg|<img|Bespoke/);
   const full=render("components/brand/brand-wordmark.tsx","BrandWordmark",{inverse:true});
   assert.match(full,/Bespoke journeys through Sri Lanka\./);
