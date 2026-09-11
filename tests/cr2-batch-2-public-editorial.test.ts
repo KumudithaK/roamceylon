@@ -18,6 +18,19 @@ test("homepage is a cinematic editorial sequence backed by published content",()
   assert.doesNotMatch(home,/Something Extraordinary is Coming|testimonial|award-winning/i);
 });
 
+test("Edition mosaic gives the four Sri Lanka anchors explicit editorial authority",()=>{
+  const home=source("components/home/editorial-home.tsx");
+  assert.match(home,/editionMosaicOrder=\["nature","wellness","sporting","heritage","tropical","adventure","culture","wildlife"\]/);
+  assert.match(home,/nature:\{tile:"sm:col-span-2 lg:col-span-7 lg:row-span-5"/);
+  assert.match(home,/heritage:\{tile:"sm:col-span-2 lg:col-span-5 lg:row-span-6"/);
+  assert.match(home,/tropical:\{tile:"sm:col-span-2 lg:col-span-7 lg:row-span-4"/);
+  assert.match(home,/wildlife:\{tile:"sm:col-span-2 lg:col-span-12 lg:row-span-5"/);
+  for(const slug of ["wellness","sporting","adventure","culture"])assert.match(home,new RegExp(`${slug}:\\{tile:\"(?:lg:|sm:col-span-2 lg:)`));
+  assert.match(home,/lg:auto-rows-\[6\.5rem\] lg:grid-cols-12/);
+  assert.match(home,/object-\[center_38%\]/);
+  assert.doesNotMatch(home,/index===0\|\|index===5/);
+});
+
 test("catalogue and detail surfaces use image-led editorial composition",()=>{
   const listing=source("components/site/listing-page.tsx");
   const mediaCard=source("components/site/media-card.tsx");
