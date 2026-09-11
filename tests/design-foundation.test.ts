@@ -119,11 +119,14 @@ test("footer includes only verified contacts, safe external links and no invente
   assert.equal(render("components/site/site-footer.tsx","SiteFooter",{},"/admin/dashboard"),"");
 });
 
-test("shared catalogue introduction and cards use one content-driven section",()=>{
+test("shared catalogue uses one cinematic opening and one content-driven editorial collection",()=>{
   const listing=source("components/site/listing-page.tsx");
-  assert.match(listing,/return <section className="section border-b border-gold\/20 bg-sand-light"/);
+  assert.match(listing,/min-h-\[62svh\]/);
+  assert.match(listing,/A considered collection/);
+  assert.match(listing,/lg:grid-cols-12/);
   assert.equal((listing.match(/<section/g)??[]).length,1);
-  assert.doesNotMatch(listing,/py-16 md:py-24|<\/section><section/);
+  assert.equal((listing.match(/<header/g)??[]).length,1);
+  assert.doesNotMatch(listing,/rounded-3xl border border-stone/);
 });
 
 test("approved raster master is unchanged and derivatives have recorded provenance",()=>{
