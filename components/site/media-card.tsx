@@ -1,13 +1,18 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import {ArrowUpRight} from "lucide-react";
+import {useState} from "react";
 import {UnescoBadge} from "@/components/destinations/unesco-badge";
 
 export function MediaCard({href,image,alt,title,eyebrow,description,tall=false,unesco=false,index}:{href:string;image:string|null;alt:string|null;title:string;eyebrow?:string|null;description?:string|null;tall?:boolean;unesco?:boolean;index?:number}){
+  const [imageFailed,setImageFailed]=useState(false);
+
   return <Link href={href} className="image-lift group focus-ring block">
     <article>
       <div className={`relative overflow-hidden bg-sand ${tall?"aspect-[3/4]":"aspect-[4/3]"}`}>
-        {image?<Image src={image} alt={alt||title} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover"/>:<div className="absolute inset-0 grid place-items-center text-sm text-muted">Image awaiting review</div>}
+        {image&&!imageFailed?<Image src={image} alt={alt||title} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" onError={()=>setImageFailed(true)}/>:<div className="absolute inset-0 grid place-items-center bg-forest/5 text-sm text-muted">Image awaiting review</div>}
         <div className="absolute inset-0 bg-gradient-to-t from-forest/75 via-transparent to-transparent"/>
         {unesco&&<UnescoBadge className="absolute bottom-4 left-4"/>}
         {index!==undefined?<span className="absolute right-5 top-5 font-serif text-2xl text-ivory/85">{String(index+1).padStart(2,"0")}</span>:null}
