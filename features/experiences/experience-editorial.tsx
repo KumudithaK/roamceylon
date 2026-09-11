@@ -17,7 +17,8 @@ const emptyCounts:ParticipantCounts={adults:0,children:0,infants:0};
 const total=(counts:ParticipantCounts)=>counts.adults+counts.children+counts.infants;
 const withinTrip=(participants:ParticipantCounts,travellers:ParticipantCounts)=>participants.adults<=travellers.adults&&participants.children<=travellers.children&&participants.infants<=travellers.infants;
 const teaser=(value:string|null)=>value?.split(/[.!?]\s/)[0]?.trim()||"A remarkable Sri Lankan moment, thoughtfully discovered.";
-const experienceBadges=(experience:JourneyExperience)=>experience.badges.filter((value,index,values)=>value&&values.indexOf(value)===index).slice(0,3);
+const experienceBadgeLabel=(badge:string)=>badge.trim().toLowerCase()==="roam ceylon recommended"?"The Ceylon Edition Recommended":badge;
+const experienceBadges=(experience:JourneyExperience)=>experience.badges.filter((value,index,values)=>value&&values.indexOf(value)===index).slice(0,3).map(experienceBadgeLabel);
 
 export function ExperienceCard({experience,onOpen,onRemove,compact=false,selected=false}:{experience:JourneyExperience;onOpen:()=>void;onRemove?:()=>void;compact?:boolean;selected?:boolean}){
   return <motion.article layout whileHover={{y:-6}} className={cn("group overflow-hidden rounded-[2rem] border-2 bg-white text-left transition",selected?"border-gold shadow-[0_24px_70px_rgba(193,140,45,.2)]":"border-transparent shadow-[0_24px_70px_rgba(26,40,35,.09)] hover:shadow-[0_30px_90px_rgba(26,40,35,.16)]")}>
