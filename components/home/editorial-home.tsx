@@ -5,6 +5,7 @@ import {FadeIn} from "@/components/animate/fade-in";
 import {SriLankaMap} from "@/components/map/sri-lanka-map";
 import {Button} from "@/components/ui/button";
 import {brand,editionDisplayName} from "@/lib/brand";
+import {curateHomepageExperiences} from "@/lib/homepage-experience-curation";
 import type {Destination,JourneyExperience,Theme} from "@/lib/types";
 
 const editionMosaicOrder=["nature","wellness","sporting","heritage","tropical","adventure","culture","wildlife"];
@@ -22,7 +23,7 @@ const fallbackEditionLayout={tile:"lg:col-span-3 lg:row-span-2",frame:"aspect-[3
 
 export function EditorialHome({themes,destinations,experiences}:{themes:Theme[];destinations:Destination[];experiences:JourneyExperience[]}){
   const places=destinations.slice(0,5);
-  const moments=experiences.slice(0,3);
+  const moments=curateHomepageExperiences(experiences);
   const brandImage=places.find(item=>item.hero_image_url)?.hero_image_url;
   const editorialEditions=themes.map((theme,index)=>({theme,number:index+1})).sort((a,b)=>{
     const aOrder=editionMosaicOrder.indexOf(a.theme.slug);

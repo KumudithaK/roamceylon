@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import path from "node:path";
 import test from "node:test";
+import {curateHomepageExperiences,homepageExperienceSlugs} from "../lib/homepage-experience-curation.ts";
+import type {JourneyExperience} from "../lib/types.ts";
 
 const root=path.resolve(import.meta.dirname,"..");
 const source=(file:string)=>readFileSync(path.join(root,file),"utf8");
@@ -14,8 +16,19 @@ test("homepage is a cinematic editorial sequence backed by published content",()
   for(const phrase of ["The Editions","Places worth knowing","Experiences worth travelling for","Why {brand.name}","Your island. Your pace."])assert.ok(home.includes(phrase));
   assert.match(home,/themes\.map/);
   assert.match(home,/destinations\.slice/);
-  assert.match(home,/experiences\.slice/);
+  assert.match(home,/curateHomepageExperiences\(experiences\)/);
   assert.doesNotMatch(home,/Something Extraordinary is Coming|testimonial|award-winning/i);
+});
+
+test("homepage experience curation uses three stable, diverse catalogue slugs with safe fallback",()=>{
+  const existing=[
+    {id:"generic",slug:"generic-experience"},
+    {id:"rail",slug:homepageExperienceSlugs[2]},
+    {id:"wildlife",slug:homepageExperienceSlugs[0]},
+    {id:"heritage",slug:homepageExperienceSlugs[1]},
+  ] as JourneyExperience[];
+  assert.deepEqual(curateHomepageExperiences(existing).map(item=>item.slug),homepageExperienceSlugs);
+  assert.deepEqual(curateHomepageExperiences(existing.slice(0,2)).map(item=>item.slug),[homepageExperienceSlugs[2],"generic-experience"]);
 });
 
 test("Edition mosaic gives the four Sri Lanka anchors explicit editorial authority",()=>{
