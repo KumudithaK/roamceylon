@@ -44,3 +44,9 @@ Admin, Journey Studio, database schema, migrations, Supabase configuration, pric
 
 - A fully successful live enquiry cannot be exercised without creating a staging record; automated contract evidence is used until a separately authorized controlled-write test.
 - Catalogue image focal points are inherited from existing records; final aesthetic crop acceptance remains a human decision on the deployed Preview.
+
+## Human-review correction 1
+
+Destination preferences now use a landscape editorial image followed by a restrained Sand/Ivory control surface, rather than a narrow fixed-width portrait strip beside a large white form card. The existing factual catalogue hero assets remain authoritative; their wider crop and responsive image sizing avoid enlarging a 220px presentation. The journey summary becomes a sticky side column only at extra-large widths, leaving 1024px and tablet layouts intentionally stacked instead of squeezing either panel.
+
+Arrival dates now have one reusable calendar-date rule: the earliest permitted arrival is the local calendar date fourteen days after today. The arrival input exposes that date through its native `min` attribute and Journey Builder progression independently enforces the same rule. A stale saved arrival remains present and is reported as invalid, while every other persisted selection and preference remains intact. Departure retains the existing same-day-or-later relationship to arrival.

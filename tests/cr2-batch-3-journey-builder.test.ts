@@ -57,3 +57,14 @@ test("responsive and reduced-motion foundations remain explicit",()=>{
   assert.match(primitives,/md:grid-cols/);
   assert.match(globals,/prefers-reduced-motion:reduce/);
 });
+
+test("destination preferences use landscape editorial media and defer the side summary until wide screens",()=>{
+  const builder=source("features/journey/journey-builder.tsx");
+  assert.match(builder,/Destination \{String\(index\+1\)\.padStart\(2,"0"\)\}/);
+  assert.match(builder,/aspect-\[16\/9\]/);
+  assert.match(builder,/md:aspect-\[16\/7\]/);
+  assert.match(builder,/quality=\{88\}/);
+  assert.doesNotMatch(builder,/md:grid-cols-\[220px_1fr\]/);
+  assert.match(builder,/xl:grid-cols-\[minmax\(0,1fr\)_minmax\(20rem,23rem\)\]/);
+  assert.match(builder,/xl:sticky xl:top-28/);
+});
