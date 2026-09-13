@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import {AnimatePresence,motion} from "motion/react";
-import {BedDouble,Check,ChevronLeft,ChevronRight,Download,MapPin,MoonStar,NotebookPen,Plane,Sparkles,UsersRound} from "lucide-react";
+import {BedDouble,Check,ChevronRight,Download,MapPin,MoonStar,NotebookPen,Plane,Sparkles,UsersRound} from "lucide-react";
 import {useMemo,useState} from "react";
 import {Button} from "@/components/ui/button";
+import {JourneyChapter,JourneyNavigation,JourneyOpening,JourneyProgress,type JourneyChapterDefinition} from "@/components/journey/journey-builder-primitives";
 import {UnescoBadge} from "@/components/destinations/unesco-badge";
 import {SriLankaMap} from "@/components/map/sri-lanka-map";
 import {ExperienceDiscovery} from "@/features/experiences/experience-editorial";
@@ -25,16 +26,38 @@ import {JourneyInsightsPanel} from "./journey-insights-panel";
 import {QuotationModal} from "./quotation-modal";
 
 const steps=["Edition","Destination","Experience","Journey Preferences","Journey Details","Journey Insights","Review"] as const;
+const chapters:JourneyChapterDefinition[]=[
+  {label:"Editions",phase:"Inspire"},
+  {label:"Places",phase:"Choose"},
+  {label:"Moments",phase:"Choose"},
+  {label:"Preferences",phase:"Shape"},
+  {label:"Details",phase:"Refine"},
+  {label:"Insights",phase:"Refine"},
+  {label:"Your Edition",phase:"Share"}
+];
 const stepTitles=["What kind of journey draws you in?","Where would you like to wake up?","Choose the moments that matter.","Shape each place around you.","Add the practical details.","A thoughtful second look.","Review the journey taking shape."] as const;
+const stepIntros=[
+  "Choose one or more Editions as the creative starting point for your private journey.",
+  "Explore the island through places connected to your Editions, then keep the ones that call to you.",
+  "Discover factual, place-specific experiences and choose the moments that belong in your journey.",
+  "Set the character of each stay and the kind of guidance that would make the journey feel right.",
+  "Add the essential timing, traveller and transport details needed to shape a coherent route.",
+  "Consider a few calm observations about pace and flow. They are guidance, never judgement.",
+  "See every choice together as one journey portrait. You can return to any completed chapter before sharing it."
+] as const;
 const budgetPreferenceOptions=[["flexible","Open to guidance"],["value_conscious","Value-conscious"],["balanced","Balanced comfort"],["premium","Premium comfort"]] as const;
 const travelPaceOptions=[["relaxed","Relaxed"],["balanced","Balanced"],["fast_paced","Fast-paced"]] as const;
 const journeyDetailsIssue=(state:JourneyState)=>!endpointComplete(state.pickup)?"Complete the journey pickup point, date and time to continue.":!endpointComplete(state.dropoff)?"Complete the journey drop-off point, date and time to continue.":state.dropoff.date<state.pickup.date?"Drop-off must be on or after pickup.":state.travellerCounts.adults<1?"Add at least one adult traveller to continue.":"";
 type Card={id:string;name:string;hero_image_url:string|null;short_description:string|null;category?:string|null;unesco_information?:string|null};
 
-function ChoiceCard({item,selected,onClick}:{item:Card;selected:boolean;onClick:()=>void}){
-  return <button onClick={onClick} className={cn("group overflow-hidden rounded-3xl border bg-white text-left transition",selected?"border-gold ring-2 ring-gold/25":"border-stone/15 hover:-translate-y-1")}>
-    <div className="relative aspect-[16/9] bg-sand">{item.hero_image_url&&<Image src={item.hero_image_url} alt={item.name} fill sizes="50vw" className="object-cover transition duration-700 group-hover:scale-105"/>}{item.unesco_information&&<UnescoBadge className="absolute bottom-4 left-4"/>}<span className={cn("absolute right-4 top-4 grid size-8 place-items-center rounded-full border backdrop-blur",selected?"border-gold bg-gold text-white":"border-white/50 bg-slate/30 text-white")}>{selected&&<Check className="size-4"/>}</span></div>
-    <div className="p-5">{item.category&&<p className="text-xs font-bold uppercase tracking-widest text-gold">{item.category}</p>}<h2 className="mt-2 font-serif text-2xl">{item.name}</h2><p className="mt-2 line-clamp-2 text-sm leading-6 text-slate/60">{item.short_description}</p></div>
+function ChoiceCard({item,selected,onClick,index,kind}:{item:Card;selected:boolean;onClick:()=>void;index:number;kind:"edition"|"destination"}){
+  const feature=kind==="edition"&&(index===0||index===5);
+  return <button type="button" aria-pressed={selected} onClick={onClick} className={cn("group relative min-h-[23rem] overflow-hidden border text-left transition duration-300 focus-ring md:min-h-[26rem]",feature?"md:col-span-2 xl:col-span-7":"xl:col-span-5",selected?"border-gold shadow-[0_22px_65px_rgba(11,48,42,.18)]":"border-forest/15 hover:border-gold")}>
+    {item.hero_image_url?<Image src={item.hero_image_url} alt={item.name} fill sizes={feature?"(max-width: 768px) 100vw, 58vw":"(max-width: 768px) 100vw, 42vw"} className="object-cover transition duration-1000 ease-out group-hover:scale-[1.025]"/>:null}
+    <div className="absolute inset-0 bg-gradient-to-t from-forest via-forest/25 to-transparent"/>
+    <span className={cn("absolute right-5 top-5 z-10 flex min-h-10 items-center gap-2 rounded-full border px-3 text-[.65rem] font-bold uppercase tracking-[.12em] backdrop-blur",selected?"border-gold bg-gold text-forest":"border-white/55 bg-forest/25 text-white")}><span className="grid size-4 place-items-center">{selected?<Check className="size-4"/>:null}</span>{selected?"Selected":"Select"}</span>
+    {item.unesco_information?<UnescoBadge className="absolute left-5 top-5"/>:null}
+    <div className="absolute inset-x-0 bottom-0 p-6 text-ivory md:p-8">{item.category?<p className="text-[.65rem] font-bold uppercase tracking-[.2em] text-gold-light">{item.category}</p>:null}<h2 className={cn("mt-3 max-w-2xl font-serif leading-[1.06]",feature?"text-4xl md:text-5xl":"text-3xl")}>{item.name}</h2><p className="mt-4 max-w-xl line-clamp-2 text-sm leading-6 text-ivory/72">{item.short_description}</p></div>
   </button>;
 }
 
@@ -124,19 +147,20 @@ function Builder({data}:{data:JourneyBootstrap}){
   const field=step===0?"selectedThemeIds":"selectedDestinationIds";
   const estimateRequest={selectedDestinationIds:state.selectedDestinationIds,selectedExperienceIds:state.selectedExperienceIds,selectedPricingPlanIds:state.selectedPricingPlanIds,destinationPreferences:state.destinationPreferences,journeyGuidePreference:state.journeyGuidePreference,pickup:state.pickup,dropoff:state.dropoff,globalTravelPreference:state.globalTravelPreference,travelPreferencesByLeg:state.travelPreferencesByLeg,travelDates:state.travelDates,travellerCounts:state.travellerCounts,experienceParticipants:state.experienceParticipants};
   const journeyEstimate=useJourneyEstimate(estimateRequest);
-  return <><div className="shell grid gap-8 py-12 lg:grid-cols-[1fr_340px]">
-    <section>
-      <div className="mb-10 flex gap-2 overflow-x-auto">{steps.map((label,index)=><button key={label} onClick={()=>index<=step&&setStep(index)} className={cn("flex min-w-fit items-center gap-2 rounded-full px-4 py-2 text-xs font-bold",index===step?"bg-forest text-ivory":index<step?"bg-sand text-forest":"bg-stone/10 text-stone")}>{index<step?<Check className="size-3"/>:index+1} {label}</button>)}</div>
-      <AnimatePresence mode="wait"><motion.div key={step} initial={{opacity:0,x:22}} animate={{opacity:1,x:0}} exit={{opacity:0,x:-18}}>
-        <p className="eyebrow mb-3">Step {step+1} of {steps.length}</p><h1 className="font-serif text-4xl md:text-6xl">{stepTitles[step]}</h1><p className="mt-4 max-w-2xl text-slate/60">{step===1&&!state.selectedThemeIds.length?"Choose an Edition to reveal its linked destinations.":step===2&&!state.selectedDestinationIds.length?"Choose a destination to reveal its linked experiences.":step===3?"Tell us what feels right in each destination. Your journey designer will choose the individual partners later.":step===4?"Add your dates and party size, then shape how you would like to travel between each destination.":step===5?"Consider these gentle observations, or continue without changing a thing.":step===6?"Check every preference before asking us to shape the proposal.":"Shape each choice as you move through your journey."}</p>
-        {step<2?<><div className="mt-10 grid gap-5 md:grid-cols-2">{current.map(item=><ChoiceCard key={item.id} item={item} selected={selected.includes(item.id)} onClick={()=>dispatch({type:"toggle",field,id:item.id})}/>)}</div>{step===1&&<div className="mt-10"><SriLankaMap destinations={destinations} selectedIds={state.selectedDestinationIds} onSelect={id=>dispatch({type:"toggle",field:"selectedDestinationIds",id})}/></div>}</>:null}
+  const openingImage=data.themes.find(theme=>theme.hero_image_url)?.hero_image_url??data.destinations.find(destination=>destination.hero_image_url)?.hero_image_url??null;
+  return <><AnimatePresence initial={false}>{step===0?<motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}><JourneyOpening image={openingImage}/></motion.div>:null}</AnimatePresence>
+    <JourneyProgress chapters={chapters} current={step} onSelect={setStep}/>
+    <main className="journey-builder shell grid gap-10 py-10 md:py-16 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-12 xl:grid-cols-[minmax(0,1fr)_24rem]">
+    <AnimatePresence mode="wait"><motion.div key={step} initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-12}} transition={{duration:.28}}>
+      <JourneyChapter phase={chapters[step].phase} title={stepTitles[step]} intro={stepIntros[step]}>
+        {step<2?<><div className={cn("mt-10 grid gap-5 md:grid-cols-2",step===0&&"xl:grid-cols-12")}>{current.map((item,index)=><ChoiceCard key={item.id} item={item} index={index} kind={step===0?"edition":"destination"} selected={selected.includes(item.id)} onClick={()=>dispatch({type:"toggle",field,id:item.id})}/>)}</div>{step===1&&<div className="mt-10 border-t border-forest/15 pt-10"><p className="eyebrow mb-5">Read the island</p><SriLankaMap destinations={destinations} selectedIds={state.selectedDestinationIds} onSelect={id=>dispatch({type:"toggle",field:"selectedDestinationIds",id})}/></div>}</>:null}
         {step===2?<ExperienceDiscovery compact experiences={experiences} globalTravellers={state.travellerCounts} selectedIds={state.selectedExperienceIds} participantsByExperience={state.experienceParticipants} selectedPricingPlanIds={state.selectedPricingPlanIds} onInclude={(experience,participants,travellers,pricingPlanId)=>{dispatch({type:"travellers",counts:travellers});dispatch({type:"includeExperience",experienceId:experience.id,counts:participants,pricingPlanId})}} onRemove={experience=>dispatch({type:"removeExperience",experienceId:experience.id})} onParticipantsChange={(experience,participants,pricingPlanId)=>dispatch({type:"experienceParticipants",experienceId:experience.id,counts:participants,pricingPlanId})}/>:null}
         {step===3?<JourneyPreferencesStep data={data}/>:null}{step===4?<JourneyDetailsStep data={data} validationMessage={detailsAttempted?detailsIssue:""}/>:null}{step===5?<JourneyInsightsStep data={data} onAction={setStep}/>:null}{step===6?<ReviewStep data={data} onAction={setStep}/>:null}
-        <div className="mt-10 flex justify-between"><Button variant="ghost" disabled={step===0} onClick={()=>setStep(step-1)}><ChevronLeft/>Back</Button>{step<steps.length-1?<Button onClick={continueJourney}>Continue<ChevronRight/></Button>:<Button onClick={openQuotation} disabled={!state.selectedDestinationIds.length} variant="accent">Request Journey Proposal</Button>}</div>
-      </motion.div></AnimatePresence>
-    </section>
+        <JourneyNavigation step={step} total={steps.length} onBack={()=>setStep(step-1)} onContinue={continueJourney} onSubmit={openQuotation} submitDisabled={!state.selectedDestinationIds.length}/>
+      </JourneyChapter>
+    </motion.div></AnimatePresence>
     <Summary data={data} estimateState={journeyEstimate} onQuotation={openQuotation}/>
-  </div><QuotationModal open={quotationOpen} onClose={()=>setQuotationOpen(false)} onSubmitted={()=>dispatch({type:"hydrate",state:emptyJourneyState})} state={state} quote={journeyEstimate.estimate}/></>;
+  </main><QuotationModal open={quotationOpen} onClose={()=>setQuotationOpen(false)} onSubmitted={()=>dispatch({type:"hydrate",state:emptyJourneyState})} state={state} quote={journeyEstimate.estimate}/></>;
 }
 
 function Empty({text}:{text:string}){return <div className="rounded-2xl border border-dashed border-stone/30 p-8 text-sm text-stone">{text}</div>}
@@ -160,8 +184,8 @@ function Summary({data,estimateState,onQuotation}:{data:JourneyBootstrap;estimat
   const exportPdf=async()=>{setExporting(true);try{const specialists=selectedDestinations.flatMap(item=>{const label=specialistGuidePreferenceLabel(item.name,state.destinationPreferences[item.id]?.specialistGuidePreference||"none");return label==="None"?[]:[`${item.name}: ${label}`]});await exportJourneyPdf({themes:state.selectedThemeIds.map(id=>data.themes.find(item=>item.id===id)).filter((theme):theme is JourneyBootstrap["themes"][number]=>Boolean(theme)).map(editionDisplayName),destinations:selectedDestinations.map(item=>item.name),routeCoordinates,experiences:state.selectedExperienceIds.map(id=>{const item=data.experiences.find(experience=>experience.id===id);if(!item)return null;const plan=selectedPlanName(item);const counts=state.experienceParticipants[item.id];const participants=counts?counts.adults+counts.children+counts.infants:0;return `${item.name}${participants?` - ${participants} participant${participants===1?"":"s"}`:""}${plan?` - ${plan}`:""}`}).filter((name):name is string=>Boolean(name)),accommodations:selectedDestinations.map(item=>`${item.name} - ${stayPreferenceLabel(state.destinationPreferences[item.id]?.stayPreference||"recommend")}`),vehicle:travelSummary||null,guide:`${journeyGuidePreferenceLabel(state.journeyGuidePreference)}${state.journeyGuideLanguages.length?` (${state.journeyGuideLanguages.join(", ")})`:""}${specialists.length?`; Specialists: ${specialists.join("; ")}`:""}`,travelDates:state.travelDates,travellerCounts:state.travellerCounts,estimatedDistance:route.estimatedDistance,estimatedTravelDays:route.estimatedTravelDays,quote:estimate});}finally{setExporting(false)}};
   const ranged=estimate?.status==="estimated_range";
   const money=(value:number|null)=>value===null?"—":value.toLocaleString("en-US",{maximumFractionDigits:0});
-  return <aside className="h-fit rounded-3xl bg-forest p-7 text-ivory lg:sticky lg:top-28">
-    <div className="mb-6 flex items-center gap-3"><Sparkles className="text-gold-light"/><h2 className="font-serif text-2xl">Your journey</h2></div>
+  return <aside aria-label="Your Ceylon Edition journey summary" className="h-fit overflow-hidden border border-gold/30 bg-forest text-ivory shadow-[0_28px_80px_rgba(11,48,42,.16)] lg:sticky lg:top-28">
+    <div className="border-b border-ivory/10 bg-ivory/5 p-7"><div className="flex items-center gap-3"><Sparkles className="text-gold-light"/><p className="eyebrow text-gold-light">Your Ceylon Edition</p></div><h2 className="mt-4 font-serif text-3xl leading-tight">The journey taking shape.</h2><p className="mt-3 text-xs leading-5 text-ivory/55">A live portrait of the choices you make in each chapter.</p></div><div className="p-7">
     {[[state.selectedThemeIds,data.themes,"Editions"],[state.selectedDestinationIds,data.destinations,"Destinations"]].map(([ids,items,label])=><div className="border-t border-ivory/10 py-5" key={label as string}><p className="mb-3 text-[.65rem] font-bold uppercase tracking-widest text-gold-light">{label as string}</p><div className="flex flex-wrap gap-2">{(ids as string[]).length?(ids as string[]).map(id=>{const item=(items as Card[]).find(candidate=>candidate.id===id);return <span key={id} className="rounded-full bg-ivory/10 px-3 py-1 text-xs">{label==="Editions"&&item?editionDisplayName(item):item?.name}</span>}):<span className="text-sm text-ivory/40">Nothing selected yet</span>}</div></div>)}
     <div className="border-t border-ivory/10 py-5"><p className="mb-3 text-[.65rem] font-bold uppercase tracking-widest text-gold-light">Experiences</p><div className="flex flex-wrap gap-2">{state.selectedExperienceIds.length?state.selectedExperienceIds.map(id=>{const item=data.experiences.find(experience=>experience.id===id);const counts=state.experienceParticipants[id];const plan=item?selectedPlanName(item):null;return <span key={id} className="rounded-full bg-ivory/10 px-3 py-1 text-xs">{item?.name}{counts?` · ${counts.adults+counts.children+counts.infants}`:""}{plan?` · ${plan}`:""}</span>}):<span className="text-sm text-ivory/40">Nothing selected yet</span>}</div></div>
     <div className="border-t border-ivory/10 py-5"><p className="mb-3 text-[.65rem] font-bold uppercase tracking-widest text-gold-light">Preferences & plan</p><div className="grid gap-3 text-sm text-ivory/70"><div><strong className="text-ivory">Primary guide</strong><span className="mt-1 block text-xs">{journeyGuidePreferenceLabel(state.journeyGuidePreference)}{state.journeyGuideLanguages.length?` · ${state.journeyGuideLanguages.join(", ")}`:""}</span></div>{selectedDestinations.map(item=>{const preference=state.destinationPreferences[item.id];const specialist=specialistGuidePreferenceLabel(item.name,preference?.specialistGuidePreference||"none");return <div key={item.id}><strong className="text-ivory">{item.name}</strong><span className="mt-1 block text-xs">{stayPreferenceLabel(preference?.stayPreference||"recommend")}{specialist!=="None"?` · ${specialist}`:""}</span></div>})}{legs.length?<div className="grid gap-2 border-t border-ivory/10 pt-3">{legs.map(leg=><span key={leg.key} className="text-xs">{locationName(leg.fromLocationKey)} → {locationName(leg.toLocationKey)} · {travelPreferenceLabel(effectiveTravelPreference(state.travelPreferencesByLeg,leg.key,state.globalTravelPreference))}</span>)}</div>:null}{!selectedDestinations.length&&<span className="text-ivory/40">Nothing selected yet</span>}</div></div>
@@ -169,7 +193,7 @@ function Summary({data,estimateState,onQuotation}:{data:JourneyBootstrap;estimat
     <Button onClick={onQuotation} disabled={!state.selectedDestinationIds.length||state.currentStep<steps.length-1} variant="accent" className="mb-3 w-full">{state.currentStep<steps.length-1?"Review journey to continue":"Request Journey Proposal"}</Button>
     <Button onClick={exportPdf} disabled={!state.selectedDestinationIds.length||exporting} variant="outline" className="w-full border-ivory/20 text-ivory hover:bg-ivory/10"><Download/>{exporting?"Preparing PDF...":"Export Journey Summary"}</Button>
     <div className="mt-4 flex items-center gap-2 text-xs text-ivory/55"><MapPin className="size-4"/>Review and revise every choice before requesting your quote.</div>
-  </aside>;
+    </div></aside>;
 }
 
 export function JourneyBuilder({data,initialSelection}:{data:JourneyBootstrap;initialSelection?:JourneyInitialSelection}){return <JourneyProvider data={data} initialSelection={initialSelection}><Builder data={data}/></JourneyProvider>}

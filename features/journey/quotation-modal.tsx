@@ -24,6 +24,7 @@ type FormData=z.infer<typeof schema>;
 
 export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:boolean;onClose:()=>void;onSubmitted:()=>void;state:JourneyState;quote:PublicJourneyEstimate|PublicPackageQuote|null}){
   const [sent,setSent]=useState(false);
+  const [reference,setReference]=useState("");
   const [submitError,setSubmitError]=useState("");
   const [honeypot,setHoneypot]=useState("");
   const [submissionKey,setSubmissionKey]=useState<string|null>(null);
@@ -32,7 +33,7 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:bool
     resolver:zodResolver(schema),
     defaultValues:{arrival:state.travelDates.start,departure:state.travelDates.end}
   });
-  useEffect(()=>{const justOpened=open&&!wasOpen.current;wasOpen.current=open;if(justOpened){setSubmissionKey(null);setHoneypot("");setSent(false);setSubmitError("");reset({name:"",phone:"",email:"",country:"",arrival:state.travelDates.start,departure:state.travelDates.end,notes:""});}},[open,reset,state.travelDates.end,state.travelDates.start]);
+  useEffect(()=>{const justOpened=open&&!wasOpen.current;wasOpen.current=open;if(justOpened){setSubmissionKey(null);setHoneypot("");setSent(false);setReference("");setSubmitError("");reset({name:"",phone:"",email:"",country:"",arrival:state.travelDates.start,departure:state.travelDates.end,notes:""});}},[open,reset,state.travelDates.end,state.travelDates.start]);
   useEffect(()=>{
     if(!open)return;
     const close=(event:KeyboardEvent)=>{if(event.key==="Escape")onClose();};
@@ -56,13 +57,15 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:bool
         selectedStayIds:Object.values(submittedState.selectedStayIdsByDestination).filter(Boolean),selectedVehicleId:submittedState.selectedVehicleId,selectedGuideId:submittedState.selectedGuideId,
         estimate:estimate?{perPersonMin:estimate.perPersonMin,perPersonMax:estimate.perPersonMax,currency:estimate.currency,basis:estimate.basis,estimatedAt:estimate.estimatedAt,snapshot:estimate}:null}})});
     if(!response.ok){setSubmitError("We could not send your journey request. Please try again.");return}
+    const result=await response.json() as {reference?:string};
+    setReference(typeof result.reference==="string"?result.reference:"");
     onSubmitted();
     setSent(true);
   };
   return <div role="dialog" aria-modal="true" aria-labelledby="quotation-title" className="fixed inset-0 z-[100] grid place-items-center overflow-y-auto bg-slate/70 p-4 backdrop-blur-sm" onMouseDown={event=>{if(event.target===event.currentTarget)onClose();}}>
     <div className="relative my-6 w-full max-w-3xl overflow-hidden rounded-[2rem] bg-ivory shadow-2xl">
       <button onClick={onClose} aria-label="Close quotation form" className="absolute right-5 top-5 z-10 grid size-10 place-items-center rounded-full bg-white/90 text-slate shadow"><X className="size-5"/></button>
-      {sent?<div className="grid min-h-[430px] place-items-center p-10 text-center"><div><CheckCircle2 className="mx-auto size-14 text-gold"/><p className="eyebrow mt-6">Request received</p><h2 id="quotation-title" className="mt-3 font-serif text-4xl">Your journey designer is on it.</h2><p className="mx-auto mt-4 max-w-lg text-slate/60">We’ve received your journey details. Your dedicated journey designer from The Ceylon Edition will be in touch within 24 hours to begin shaping your proposal. Your builder is now ready for a fresh journey.</p><Button className="mt-8" onClick={onClose}>Start a new journey</Button></div></div>:
+      {sent?<div className="grid min-h-[430px] place-items-center bg-forest p-10 text-center text-ivory"><div><CheckCircle2 className="mx-auto size-14 text-gold-light"/><p className="eyebrow mt-6 text-gold-light">Your journey has been shared</p><h2 id="quotation-title" className="mt-3 font-serif text-4xl md:text-5xl">A considered beginning.</h2><p className="mx-auto mt-4 max-w-lg leading-7 text-ivory/68">We’ve received your journey choices. The Ceylon Edition can now review the places, experiences and preferences you shared.</p>{reference?<div className="mx-auto mt-7 w-fit border-y border-ivory/15 px-8 py-4"><p className="text-[.62rem] font-bold uppercase tracking-[.18em] text-gold-light">Journey reference</p><p className="mt-1 font-serif text-2xl" aria-live="polite">{reference}</p></div>:null}<Button variant="accent" className="mt-8" onClick={onClose}>Start a new journey</Button></div></div>:
       <form onSubmit={handleSubmit(submit)}>
         <input aria-hidden="true" tabIndex={-1} autoComplete="off" name="website-confirmation" className="hidden" value={honeypot} onChange={event=>setHoneypot(event.target.value)}/>
         <div className="bg-forest px-7 py-8 pr-20 text-ivory md:px-10"><p className="eyebrow text-gold-light">Private, tailor-made travel</p><h2 id="quotation-title" className="mt-2 font-serif text-3xl md:text-4xl">Request your journey proposal.</h2><p className="mt-3 max-w-xl text-sm leading-6 text-ivory/65">Share a few details and your journey designer from The Ceylon Edition will personally review every part of your trip.</p></div>
@@ -73,7 +76,7 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote}:{open:bool
           <label className="grid gap-2 text-sm font-semibold md:col-span-2">Special requests<textarea rows={4} {...register("notes")} placeholder="Dietary needs, room preferences, mobility considerations or special occasions…" className="rounded-xl border border-stone/30 bg-white px-4 py-3 outline-none focus:border-gold"/></label>
           {submitError&&<p role="alert" className="text-sm text-red-700 md:col-span-2">{submitError}</p>}
           <Button disabled={isSubmitting} type="submit" variant="accent" className="md:col-span-2">{isSubmitting?"Sending your request…":"Request my journey proposal"}</Button>
-          <p className="text-center text-xs text-stone md:col-span-2">No payment is taken now. Your journey designer will be in touch within 24 hours.</p>
+          <p className="text-center text-xs text-stone md:col-span-2">No payment is taken when you share this request.</p>
         </div>
       </form>}
     </div>
