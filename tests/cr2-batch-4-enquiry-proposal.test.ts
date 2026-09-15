@@ -66,14 +66,23 @@ test("the editorial dialog supplies focus containment, restoration and responsiv
   assert.match(modal,/DialogPrimitive\.Title/);
   assert.match(modal,/DialogPrimitive\.Description/);
   assert.match(modal,/onOpenAutoFocus/);
-  assert.match(modal,/returnFocusRef\.current=document\.activeElement/);
   assert.match(modal,/onCloseAutoFocus/);
-  assert.match(modal,/returnFocusRef\.current\?\.focus\(\)/);
   assert.match(modal,/setFocus\("name"\)/);
   assert.match(modal,/successRef\.current\?\.focus\(\)/);
   assert.match(modal,/max-h-\[calc\(100dvh-1rem\)\]/);
   assert.match(modal,/lg:grid-cols-/);
   assert.match(modal,/w-full sm:w-auto/);
+});
+
+test("the actual proposal opener is preserved for post-close focus restoration",()=>{
+  const builder=source("features/journey/journey-builder.tsx");
+  const restoration=source("lib/ui/use-dialog-focus-return.ts");
+  assert.match(builder,/rememberQuotationOpener\(event\.currentTarget\)/);
+  assert.match(builder,/useDialogFocusReturn\(quotationOpen\)/);
+  assert.match(restoration,/if\(open\)\{wasOpenRef\.current=true;return\}/);
+  assert.match(restoration,/if\(opener\?\.isConnected\)opener\.focus\(\{preventScroll:true\}\)/);
+  assert.doesNotMatch(restoration,/setTimeout/);
+  assert.doesNotMatch(restoration,/querySelector/);
 });
 
 test("journey context and truthful tailored pricing remain visible at the handoff",()=>{

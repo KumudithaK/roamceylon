@@ -4,6 +4,7 @@ import Image from "next/image";
 import {AnimatePresence,motion} from "motion/react";
 import {BedDouble,Check,ChevronRight,Download,MapPin,MoonStar,NotebookPen,Plane,Sparkles,UsersRound} from "lucide-react";
 import {useEffect,useMemo,useRef,useState} from "react";
+import type {MouseEvent} from "react";
 import {Button} from "@/components/ui/button";
 import {JourneyChapter,JourneyNavigation,JourneyOpening,JourneyProgress,type JourneyChapterDefinition} from "@/components/journey/journey-builder-primitives";
 import {UnescoBadge} from "@/components/destinations/unesco-badge";
@@ -22,6 +23,7 @@ import {useJourneyEstimate} from "@/lib/pricing/use-journey-estimate";
 import type {JourneyPricingPlan,ParticipantCounts} from "@/lib/types";
 import {cn} from "@/lib/utils";
 import {brand,editionDisplayName} from "@/lib/brand";
+import {useDialogFocusReturn} from "@/lib/ui/use-dialog-focus-return";
 import {emptyJourneyState,JourneyProvider,pricingPlanKey,useJourney,type JourneyInitialSelection,type JourneyState} from "./journey-store";
 import {JourneyInsightsPanel} from "./journey-insights-panel";
 import {QuotationModal} from "./quotation-modal";
@@ -157,10 +159,11 @@ function Builder({data}:{data:JourneyBootstrap}){
   const step=state.currentStep;
   const setStep=(value:number)=>dispatch({type:"step",value});
   const [quotationOpen,setQuotationOpen]=useState(false);
+  const rememberQuotationOpener=useDialogFocusReturn(quotationOpen);
   const [detailsAttempted,setDetailsAttempted]=useState(false);
   const detailsIssue=journeyDetailsIssue(state);
   const continueJourney=()=>{if(step===4&&detailsIssue){setDetailsAttempted(true);return}setDetailsAttempted(false);setStep(step+1)};
-  const openQuotation=()=>{if(detailsIssue){setDetailsAttempted(true);setStep(4);return}setQuotationOpen(true)};
+  const openQuotation=(event:MouseEvent<HTMLButtonElement>)=>{if(detailsIssue){setDetailsAttempted(true);setStep(4);return}rememberQuotationOpener(event.currentTarget);setQuotationOpen(true)};
   const destinations=useMemo(()=>availableDestinations(data.destinations,state.selectedThemeIds),[data.destinations,state.selectedThemeIds]);
   const experiences=useMemo(()=>availableExperiences(data.experiences,state.selectedDestinationIds,state.selectedThemeIds),[data.experiences,state.selectedDestinationIds,state.selectedThemeIds]);
   const current=step===0?data.themes.map(theme=>({...theme,name:editionDisplayName(theme)})):destinations;
@@ -186,7 +189,7 @@ function Builder({data}:{data:JourneyBootstrap}){
 
 function Empty({text}:{text:string}){return <div className="rounded-2xl border border-dashed border-stone/30 p-8 text-sm text-stone">{text}</div>}
 
-function Summary({data,estimateState,onQuotation}:{data:JourneyBootstrap;estimateState:ReturnType<typeof useJourneyEstimate>;onQuotation:()=>void}){
+function Summary({data,estimateState,onQuotation}:{data:JourneyBootstrap;estimateState:ReturnType<typeof useJourneyEstimate>;onQuotation:(event:MouseEvent<HTMLButtonElement>)=>void}){
   const {state}=useJourney();
   const [exporting,setExporting]=useState(false);
   const selectedPlanName=(item:{id:string;pricingPlans:JourneyPricingPlan[]})=>item.pricingPlans.find(plan=>plan.id===state.selectedPricingPlanIds[pricingPlanKey("experience",item.id)])?.name||item.pricingPlans[0]?.name||null;

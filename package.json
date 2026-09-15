@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test:browser:focus": "playwright test --config=playwright.config.ts tests/browser/proposal-focus.spec.ts",
     "import:data": "node scripts/import-json-to-supabase.mjs --confirm-import",
     "test": "node scripts/validate-project.mjs && node --test tests/*.test.ts"
   },
@@ -33,6 +34,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
