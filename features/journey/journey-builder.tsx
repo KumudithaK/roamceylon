@@ -181,7 +181,7 @@ function Builder({data}:{data:JourneyBootstrap}){
       </JourneyChapter>
     </motion.div></AnimatePresence>
     <Summary data={data} estimateState={journeyEstimate} onQuotation={openQuotation}/>
-  </main><QuotationModal open={quotationOpen} onClose={()=>setQuotationOpen(false)} onSubmitted={()=>dispatch({type:"hydrate",state:emptyJourneyState})} state={state} quote={journeyEstimate.estimate}/></>;
+  </main><QuotationModal open={quotationOpen} onClose={()=>setQuotationOpen(false)} onSubmitted={()=>dispatch({type:"hydrate",state:emptyJourneyState})} state={state} quote={journeyEstimate.estimate} data={data}/></>;
 }
 
 function Empty({text}:{text:string}){return <div className="rounded-2xl border border-dashed border-stone/30 p-8 text-sm text-stone">{text}</div>}
