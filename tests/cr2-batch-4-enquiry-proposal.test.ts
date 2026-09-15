@@ -66,6 +66,9 @@ test("the editorial dialog supplies focus containment, restoration and responsiv
   assert.match(modal,/DialogPrimitive\.Title/);
   assert.match(modal,/DialogPrimitive\.Description/);
   assert.match(modal,/onOpenAutoFocus/);
+  assert.match(modal,/returnFocusRef\.current=document\.activeElement/);
+  assert.match(modal,/onCloseAutoFocus/);
+  assert.match(modal,/returnFocusRef\.current\?\.focus\(\)/);
   assert.match(modal,/setFocus\("name"\)/);
   assert.match(modal,/successRef\.current\?\.focus\(\)/);
   assert.match(modal,/max-h-\[calc\(100dvh-1rem\)\]/);

@@ -47,6 +47,7 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote,data}:{
   const [honeypot,setHoneypot]=useState("");
   const [submissionKey,setSubmissionKey]=useState<string|null>(null);
   const wasOpen=useRef(false);
+  const returnFocusRef=useRef<HTMLElement|null>(null);
   const submitErrorRef=useRef<HTMLParagraphElement>(null);
   const successRef=useRef<HTMLHeadingElement>(null);
   const {register,handleSubmit,reset,setFocus,formState:{errors,isSubmitting}}=useForm<FormData>({
@@ -143,7 +144,16 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote,data}:{
       <DialogPrimitive.Overlay className="fixed inset-0 z-[90] bg-forest/75 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in data-[state=closed]:fade-out"/>
       <DialogPrimitive.Content
         className="fixed left-1/2 top-1/2 z-[100] max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] max-w-[74rem] -translate-x-1/2 -translate-y-1/2 overflow-y-auto overscroll-contain rounded-[1.75rem] border border-gold/35 bg-ivory text-slate shadow-[0_32px_100px_rgba(4,24,21,.42)] outline-none md:max-h-[calc(100dvh-2rem)] md:w-[calc(100%-2rem)]"
-        onOpenAutoFocus={event=>{event.preventDefault();queueMicrotask(()=>setFocus("name"))}}
+        onOpenAutoFocus={event=>{
+          returnFocusRef.current=document.activeElement instanceof HTMLElement?document.activeElement:null;
+          event.preventDefault();
+          queueMicrotask(()=>setFocus("name"));
+        }}
+        onCloseAutoFocus={event=>{
+          event.preventDefault();
+          returnFocusRef.current?.focus();
+          returnFocusRef.current=null;
+        }}
         onEscapeKeyDown={event=>{if(isSubmitting)event.preventDefault()}}
         onPointerDownOutside={event=>{if(isSubmitting)event.preventDefault()}}
       >
