@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "test:browser:focus": "playwright test --config=playwright.config.ts tests/browser/proposal-focus.spec.ts",
+    "test:browser:partner": "playwright test --config=playwright.config.ts tests/browser/partner-experience.spec.ts",
     "import:data": "node scripts/import-json-to-supabase.mjs --confirm-import",
     "test": "node scripts/validate-project.mjs && node --test tests/*.test.ts"
   },

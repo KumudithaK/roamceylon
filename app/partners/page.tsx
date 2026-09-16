@@ -1,23 +1,84 @@
+import type {Metadata} from "next";
 import Link from "next/link";
-import Image from "next/image";
-import {Building2,CarFront,Check,ShieldCheck,UserRoundCheck} from "lucide-react";
+import {ArrowRight,ArrowUpRight} from "lucide-react";
+import {FadeIn} from "@/components/animate/fade-in";
+import {PartnerEditorialImage} from "@/components/partners/partner-editorial-image";
 import {Button} from "@/components/ui/button";
+import {brand,editionDisplayName} from "@/lib/brand";
+import {listContent} from "@/lib/data";
 
-const categories=[
-  {type:"accommodation",Icon:Building2,title:"List your property",copy:"Place your property inside destination-led journeys designed around how travellers want to experience Sri Lanka.",benefits:["Reach travellers planning destination-based journeys","Present rooms, facilities and authentic local character","Receive qualified enquiries reviewed by The Ceylon Edition"]},
-  {type:"vehicle",Icon:CarFront,title:"Register your vehicle or fleet",copy:"Support complete private journeys with dependable, comfortable transport matched to real trip requirements.",benefits:["Join complete private itineraries across Sri Lanka","Register one vehicle or an entire fleet","Receive relevant transport enquiries"]},
-  {type:"guide",Icon:UserRoundCheck,title:"Join our guide network",copy:"Bring local knowledge, languages and specialist expertise to travellers seeking meaningful human guidance.",benefits:["Share your local and specialist expertise","Join journeys matching your destinations","Work with travellers seeking trusted guidance"]}
+export const metadata:Metadata={
+  title:"Work with The Ceylon Edition",
+  description:"Begin a considered commercial conversation about accommodation, transport or guiding within thoughtfully designed Sri Lanka journeys.",
+  alternates:{canonical:"/partners"},
+  openGraph:{title:"Work with The Ceylon Edition",description:"A considered starting point for Sri Lankan accommodation, transport and guiding conversations.",url:"/partners",images:["/og.png"]}
+};
+
+const heroImage="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Sun_setting_over_Kandalama_Lake%2C_Sri_Lanka.jpg/1920px-Sun_setting_over_Kandalama_Lake%2C_Sri_Lanka.jpg";
+const partnerPaths=[
+  {number:"01",type:"accommodation",title:"Places to stay",copy:"Share the character, location and practical details of an accommodation you represent. We consider how a stay may sit within the pace and geography of a journey."},
+  {number:"02",type:"vehicle",title:"Transport across the island",copy:"Introduce a vehicle or fleet and the journeys it can realistically support, from airport arrivals to longer routes between destinations."},
+  {number:"03",type:"guide",title:"Guides and local specialists",copy:"Tell us about your languages, home base, destinations and specialist knowledge so a future conversation can begin with useful context."}
 ] as const;
-const steps=[["01","Submit your details","Tell us about your property, transport service or guide expertise."],["02","We review your application","Our team checks relevance, quality, media and supporting information."],["03","We prepare your listing","Approved information is organised into a polished marketplace listing."],["04","Join suitable journeys","Published services may appear where they are relevant to a traveller’s journey."]];
-const benefits=[["Qualified journey enquiries","Connect with travellers who have already chosen destinations and interests."],["Curated marketplace presence","Present your service within a trusted, quality-reviewed Sri Lankan network."],["Human-supported onboarding","Our team prepares listings instead of leaving partners with complex configuration."],["Relevant matching","Appear where your service fits selected destinations, experiences and itineraries."],["Long-term partnership","Build visibility through future enquiries and destination-led promotions."]];
-const faqs=[["Is there a fee to apply?","No application fee is currently displayed. Any future commercial terms will be communicated clearly before you agree."],["Does applying guarantee approval?","No. Every application is reviewed for quality, relevance, accuracy and service standards."],["Can I register several properties or vehicles?","Yes. A fleet can be included in one application. Separate properties should be submitted separately so each can be reviewed properly."],["Can individual guides apply?","Yes. Licensed and specialist independent guides are welcome to apply."],["When does my listing become public?","Only after review, preparation and a separate manual publishing decision by The Ceylon Edition."],["Who sets the final package price?","The Ceylon Edition prepares the final traveller package price using confirmed partner rates and complete journey costs."]];
+const conversation=[
+  ["01","Share the essentials","Choose the relevant path and tell us what you offer, where you work and how we can reach you."],
+  ["02","A human review","The submission enters the existing partner review workspace. It does not create a public listing or commercial agreement."],
+  ["03","Continue the conversation","If the details are relevant to a journey or future collaboration, The Ceylon Edition may contact you using your chosen method."],
+  ["04","Publication is separate","Any catalogue publication follows a distinct review and manual decision. An application alone never makes information public."]
+] as const;
 
-export default function Page(){
-  return <><section className="relative min-h-[68svh] overflow-hidden bg-forest text-ivory"><Image src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Sun_setting_over_Kandalama_Lake%2C_Sri_Lanka.jpg/1920px-Sun_setting_over_Kandalama_Lake%2C_Sri_Lanka.jpg" alt="Evening light over the Sri Lankan landscape" fill priority sizes="100vw" className="object-cover opacity-45"/><div className="absolute inset-0 bg-gradient-to-r from-forest via-forest/75 to-transparent"/><div className="shell relative flex min-h-[68svh] items-end py-16 md:py-24"><div className="max-w-5xl"><p className="eyebrow text-gold-light">Partner with The Ceylon Edition</p><h1 className="display mt-5">Bring your place, service or local expertise into unforgettable journeys.</h1><p className="mt-7 max-w-3xl text-lg leading-8 text-ivory/72">Join a carefully curated network of Sri Lankan accommodation providers, transport operators and local guides. Submit your details for review, and our team will work with you to prepare your listing for travellers.</p><div className="mt-9 flex flex-wrap gap-3"><Button asChild variant="accent" size="lg"><Link href="/partners/apply">Apply to become a partner</Link></Button><Button asChild variant="outline" size="lg" className="border-ivory/40 bg-transparent text-ivory hover:bg-ivory/10"><Link href="#how-it-works">See how it works</Link></Button></div></div></div></section>
-  <section className="section"><div className="shell"><p className="eyebrow mb-4">Choose your path</p><h2 className="heading max-w-3xl">A marketplace built around complete journeys.</h2><div className="mt-12 grid gap-6 lg:grid-cols-3">{categories.map(({type,Icon,title,copy,benefits})=><article key={type} className="group flex rounded-3xl border border-stone/20 bg-white p-8 transition hover:-translate-y-1 hover:border-gold/50 focus-within:ring-2 focus-within:ring-gold"><div className="flex flex-1 flex-col"><Icon className="mb-7 size-8 text-gold"/><h3 className="font-serif text-3xl">{title}</h3><p className="mt-4 text-sm leading-7 text-slate/60">{copy}</p><ul className="mt-6 grid gap-3 text-sm">{benefits.map(item=><li key={item} className="flex gap-3"><Check className="mt-0.5 size-4 shrink-0 text-gold"/>{item}</li>)}</ul><Button asChild variant="outline" className="mt-8 self-start"><Link href={{pathname:"/partners/apply",query:{type}}}>Apply as {type==="guide"?"a guide":type==="vehicle"?"a transport partner":"an accommodation partner"}</Link></Button></div></article>)}</div></div></section>
-  <section id="how-it-works" className="section bg-forest text-ivory"><div className="shell"><p className="eyebrow mb-4 text-gold-light">How it works</p><h2 className="heading max-w-3xl">Reviewed by people, prepared with care.</h2><div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">{steps.map(([number,title,copy])=><article key={number} className="rounded-3xl border border-white/10 p-6"><span className="font-serif text-3xl text-gold-light">{number}</span><h3 className="mt-5 font-serif text-2xl">{title}</h3><p className="mt-3 text-sm leading-6 text-white/60">{copy}</p></article>)}</div></div></section>
-  <section className="section"><div className="shell grid gap-12 lg:grid-cols-[.75fr_1.25fr]"><div><p className="eyebrow mb-4">Why partner with us?</p><h2 className="heading">Thoughtful growth, not an open directory.</h2></div><div className="grid gap-4 sm:grid-cols-2">{benefits.map(([title,copy])=><article key={title} className="rounded-2xl border border-stone/15 bg-white p-6"><h3 className="font-serif text-xl">{title}</h3><p className="mt-3 text-sm leading-6 text-slate/60">{copy}</p></article>)}</div></div></section>
-  <section className="section bg-sand-light"><div className="shell grid gap-12 lg:grid-cols-2"><div className="rounded-3xl bg-white p-8 md:p-10"><ShieldCheck className="size-9 text-gold"/><h2 className="mt-6 font-serif text-4xl">Quality comes before publication.</h2><p className="mt-5 leading-8 text-slate/65">The Ceylon Edition is a curated marketplace. Every application is reviewed before a listing is created. We focus on accurate information, dependable service, clear communication and authentic Sri Lankan travel experiences.</p></div><div><p className="eyebrow mb-4">Partner requirements</p><ul className="grid gap-4 text-sm leading-6">{["Accurate business or professional information","Clear, current photos that represent the service honestly","Dependable communication and confirmed contact details","Relevant licences, registration or verification documents where applicable","Agreement that submission does not guarantee publication"].map(item=><li key={item} className="flex gap-3 rounded-2xl bg-white p-4"><Check className="mt-0.5 size-4 shrink-0 text-gold"/>{item}</li>)}</ul></div></div></section>
-  <section className="section"><div className="shell max-w-4xl"><p className="eyebrow mb-4">Frequently asked questions</p><h2 className="heading">Before you apply.</h2><div className="mt-10 divide-y divide-stone/20 border-y border-stone/20">{faqs.map(([question,answer])=><details key={question} className="group py-5"><summary className="cursor-pointer list-none font-semibold">{question}<span className="float-right text-gold group-open:rotate-45">+</span></summary><p className="mt-4 max-w-3xl text-sm leading-7 text-slate/60">{answer}</p></details>)}</div></div></section>
-  <section className="pb-24 md:pb-36"><div className="shell"><div className="rounded-[2.5rem] bg-forest p-10 text-ivory md:p-16"><p className="eyebrow mb-4 text-gold-light">Join the network</p><h2 className="heading max-w-3xl">Ready to bring your service into better journeys?</h2><p className="mt-5 max-w-2xl text-white/60">Tell us what makes your property, transport service or expertise distinctive. Our team will guide the next step.</p><Button asChild variant="accent" size="lg" className="mt-8"><Link href="/partners/apply">Apply to become a partner</Link></Button></div></div></section></>;
+export default async function Page(){
+  const [editions,destinations,experiences]=await Promise.all([listContent("themes"),listContent("destinations"),listContent("experiences")]);
+  const edition=editions.find(item=>item.slug==="heritage")??editions.find(item=>item.hero_image_url)??null;
+  const destination=destinations.find(item=>item.slug==="sigiriya")??destinations.find(item=>item.hero_image_url)??null;
+  const experience=experiences.find(item=>item.slug.includes("sigiriya"))??experiences.find(item=>item.hero_image_url)??null;
+  const publicJourney=[
+    edition?{eyebrow:"Editions",title:editionDisplayName(edition),copy:edition.short_description,href:`/discover/${edition.slug}`,image:edition.hero_image_url,alt:edition.image_alt||editionDisplayName(edition)}:null,
+    destination?{eyebrow:"Destinations",title:destination.name,copy:destination.short_description,href:`/destinations/${destination.slug}`,image:destination.hero_image_url,alt:destination.image_alt||destination.name}:null,
+    experience?{eyebrow:"Experiences",title:experience.name,copy:experience.short_description,href:`/experiences/${experience.slug}`,image:experience.hero_image_url,alt:experience.image_alt||experience.name}:null
+  ].filter(item=>item!==null);
+
+  return <main id="content">
+    <section className="relative isolate min-h-[76svh] overflow-hidden bg-forest text-ivory">
+      <PartnerEditorialImage src={heroImage} alt="Evening light over Kandalama Lake and the Sri Lankan landscape" sizes="100vw" priority className="object-cover object-center"/>
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,48,42,.92)_0%,rgba(11,48,42,.68)_48%,rgba(11,48,42,.18)_100%)]"/>
+      <div className="shell relative flex min-h-[76svh] items-end py-16 md:py-24">
+        <FadeIn className="max-w-4xl">
+          <p className="eyebrow text-gold-light">For those who help shape the journey</p>
+          <h1 className="display mt-5">Sri Lanka is experienced through people who know it well.</h1>
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-ivory/76">The Ceylon Edition welcomes considered conversations with accommodation providers, transport operators and guides whose work may be relevant to thoughtfully designed journeys.</p>
+          <div className="mt-9 flex flex-wrap gap-3"><Button asChild variant="accent" size="lg"><Link href="/partners/apply">Begin a partner conversation<ArrowRight aria-hidden="true"/></Link></Button><Button asChild variant="outline" size="lg" className="border-ivory/45 text-ivory hover:bg-ivory/10"><Link href="#our-approach">Our approach</Link></Button></div>
+        </FadeIn>
+      </div>
+    </section>
+
+    <section id="our-approach" className="section overflow-hidden bg-ivory">
+      <div className="shell grid gap-12 lg:grid-cols-[.68fr_1.32fr] lg:gap-24">
+        <FadeIn><p className="editorial-index">01</p><p className="eyebrow mt-8">A partnership point of view</p></FadeIn>
+        <FadeIn delay={.08}><h2 className="font-serif text-[clamp(2.7rem,5vw,5rem)] leading-[1.02] tracking-[-.035em]">The right detail, shared at the right moment.</h2><div className="mt-8 grid gap-6 border-t border-forest/20 pt-8 md:grid-cols-2"><p className="prose-luxury">A private journey is shaped by place, pace and the practical reality of moving through the island. We begin with the traveller, then consider which services genuinely belong in that journey.</p><p className="prose-luxury">A first submission is simply context for a human conversation. It is not a promise of work, publication, rates, availability or a commercial relationship.</p></div></FadeIn>
+      </div>
+    </section>
+
+    <section className="editorial-noise bg-forest py-20 text-ivory md:py-32">
+      <div className="shell">
+        <FadeIn className="max-w-4xl"><p className="eyebrow text-gold-light">Ways we may begin</p><h2 className="heading mt-4">Three kinds of local knowledge.</h2><p className="mt-6 max-w-2xl leading-8 text-ivory/68">The existing partner pathway accepts accommodation, vehicle or fleet, and guide applications. Each asks only for the practical detail relevant to that path.</p></FadeIn>
+        <div className="mt-14 border-y border-ivory/20">{partnerPaths.map(item=><FadeIn key={item.type}><article className="grid gap-5 border-b border-ivory/20 py-9 last:border-b-0 md:grid-cols-[6rem_1fr_1.2fr_auto] md:items-center"><span className="font-serif text-4xl text-gold-light/70">{item.number}</span><h3 className="font-serif text-3xl">{item.title}</h3><p className="max-w-xl text-sm leading-7 text-ivory/64">{item.copy}</p><Link href={{pathname:"/partners/apply",query:{type:item.type}}} className="editorial-link text-gold-light">Begin here</Link></article></FadeIn>)}</div>
+      </div>
+    </section>
+
+    {publicJourney.length?<section className="section bg-sand">
+      <div className="shell"><div className="grid gap-6 border-b border-forest/20 pb-10 md:grid-cols-[.55fr_1fr]"><p className="eyebrow">The public journey</p><div><h2 className="heading">See the experience travellers are invited to shape.</h2><p className="prose-luxury mt-5 max-w-2xl">Our published Editions, destinations and experiences reveal the tone and level of detail behind the journey. The Journey Builder then brings those choices together.</p></div></div>
+        <div className="mt-14 grid gap-8 lg:grid-cols-12">{publicJourney.map((item,index)=><FadeIn key={item.href} className={index===0?"lg:col-span-6":"lg:col-span-3"}><Link href={item.href} className="image-lift group block focus-ring"><article><div className={`relative overflow-hidden bg-forest ${index===0?"aspect-[4/3]":"aspect-[3/4]"}`}><PartnerEditorialImage src={item.image} alt={item.alt} sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover"/><div className="absolute inset-0 bg-gradient-to-t from-forest/90 via-transparent to-transparent"/><div className="absolute inset-x-0 bottom-0 p-6 text-ivory"><p className="text-[.65rem] font-bold uppercase tracking-[.18em] text-gold-light">{item.eyebrow}</p><h3 className="mt-3 font-serif text-2xl leading-tight md:text-3xl">{item.title}</h3></div></div><p className="mt-4 line-clamp-3 text-sm leading-7 text-muted">{item.copy}</p></article></Link></FadeIn>)}</div>
+        <Button asChild variant="outline" className="mt-10"><Link href="/journey-builder?step=0">Explore the Journey Builder<ArrowUpRight aria-hidden="true"/></Link></Button>
+      </div>
+    </section>:null}
+
+    <section className="section bg-ivory">
+      <div className="shell grid gap-12 lg:grid-cols-[.7fr_1.3fr] lg:gap-24"><FadeIn><p className="editorial-index">02</p><p className="eyebrow mt-8">How a conversation begins</p><h2 className="heading mt-4">Clear steps. No automatic promises.</h2></FadeIn><div className="border-t border-forest/20">{conversation.map(([number,title,copy])=><FadeIn key={number}><article className="grid gap-4 border-b border-forest/20 py-8 sm:grid-cols-[4rem_1fr] lg:grid-cols-[4rem_.7fr_1.3fr]"><span className="font-serif text-2xl text-gold">{number}</span><h3 className="font-serif text-2xl">{title}</h3><p className="text-sm leading-7 text-muted">{copy}</p></article></FadeIn>)}</div></div>
+    </section>
+
+    <section className="relative isolate overflow-hidden bg-forest py-24 text-ivory md:py-36"><div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_20%,rgba(181,138,58,.22),transparent_35%)]"/><FadeIn className="shell relative"><p className="eyebrow text-gold-light">Begin with context</p><h2 className="mt-5 max-w-5xl font-serif text-[clamp(3rem,6vw,6rem)] leading-[.98]">Tell us what you bring to Sri Lanka’s journeys.</h2><p className="mt-7 max-w-2xl text-lg leading-8 text-ivory/68">Your draft stays in this browser until you choose to submit. Submission begins a manual review; it does not create a listing, account or agreement.</p><Button asChild variant="accent" size="lg" className="mt-9"><Link href="/partners/apply">Begin a partner conversation<ArrowRight aria-hidden="true"/></Link></Button><p className="mt-5 text-xs leading-6 text-ivory/48">Questions before applying? Use the verified telephone or WhatsApp details on our Contact page.</p></FadeIn></section>
+
+    <section className="bg-sand py-14"><div className="shell flex flex-col gap-6 border-y border-forest/20 py-12 md:flex-row md:items-end md:justify-between"><div><p className="eyebrow">{brand.name}</p><p className="mt-4 max-w-2xl font-serif text-3xl leading-tight">Journeys composed with local knowledge, thoughtful pacing and human care.</p></div><Link href="/contact" className="editorial-link shrink-0">Start a conversation</Link></div></section>
+  </main>;
 }
