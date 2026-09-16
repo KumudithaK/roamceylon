@@ -2,6 +2,7 @@ import {NextResponse} from "next/server";
 import {z} from "zod";
 import {createAdminClient} from "@/lib/supabase/admin";
 import type {Json} from "@/lib/database.types";
+import {districts,provinceForDistrict} from "@/lib/partners/partner-application";
 import {fileMatchesDeclaredType,publicAttemptLimited,publicSubmissionDigest,safeHttpUrlSchema} from "@/lib/security/public-input";
 
 export const runtime="nodejs";
@@ -15,7 +16,7 @@ const schema=z.object({
   phone:z.string().trim().min(7).max(40),
   preferredContactMethod:z.enum(["email","phone","whatsapp"]),
   address:z.string().trim().min(5).max(400),
-  district:z.string().trim().min(2).max(80),
+  district:z.enum(districts as [typeof districts[number],...Array<typeof districts[number]>]),
   province:z.string().trim().min(2).max(80),
   website:safeHttpUrlSchema,
   socialUrl:safeHttpUrlSchema,
@@ -25,13 +26,13 @@ const schema=z.object({
   accurate:z.literal(true),
   honeypot:z.literal(""),
   applicationData:z.record(z.string(),z.unknown()).refine(value=>JSON.stringify(value).length<=100_000,"Application details are too large.")
-}).strict();
+}).strict().superRefine((value,context)=>{if(provinceForDistrict(value.district)!==value.province)context.addIssue({code:"custom",path:["province"],message:"Province must match the selected district."})});
 const safeName=(name:string)=>name.toLowerCase().replace(/\.+/g,"-").replace(/[^a-z0-9_-]+/g,"-").replace(/^-+|-+$/g,"").slice(-100)||"upload";
 const authoritativeKeys=new Set(["id","user_id","supplier_id","status","approval_status","approved_at","approved_by","reviewed_at","reviewed_by","rejected_at","rejected_by","is_verified","verified","is_active","active","is_published","published","role","capability","created_by","internal_notes","licence_verified","commercial_approval"]);
 const publicApplicationData=(value:Record<string,unknown>)=>Object.fromEntries(Object.entries(value).filter(([key])=>!authoritativeKeys.has(key.toLowerCase())));
 
 export async function POST(request:Request){
-  const declaredHeader=request.headers.get("content-length"),declared=Number(declaredHeader);if(!declaredHeader||!Number.isFinite(declared)||declared<=0)return NextResponse.json({error:"A bounded application upload is required."},{status:411});if(declared>200*1024*1024)return NextResponse.json({error:"The application upload is too large."},{status:413});
+  const declaredHeader=request.headers.get("content-length"),declared=Number(declaredHeader);if(!declaredHeader||!Number.isFinite(declared)||declared<=0)return NextResponse.json({error:"A bounded application upload is required."},{status:411});if(declared>4*1024*1024)return NextResponse.json({error:"The application upload is too large."},{status:413});
   const form=await request.formData().catch(()=>null);
   if(!form)return NextResponse.json({error:"Invalid application."},{status:400});
   let raw:unknown=null;try{raw=JSON.parse(String(form.get("payload")||"null"))}catch{}
@@ -69,7 +70,7 @@ export async function POST(request:Request){
       if(media)mediaCount+=1;else documentCount+=1;
       if(mediaCount>10||documentCount>6)throw new Error("Too many files");
       const allowed=media?["image/jpeg","image/png","image/webp"]:["application/pdf","image/jpeg","image/png"];
-      const limit=media?10*1024*1024:15*1024*1024;
+      const limit=3*1024*1024;
       if(!allowed.includes(entry.type)||entry.size>limit||!await fileMatchesDeclaredType(entry))throw new Error("Unsupported file");
       const bucket=media?"partner-application-media" as const:"partner-application-documents" as const;
       const path=`partner-applications/${plural}/${application.id}/${crypto.randomUUID()}-${safeName(entry.name)}`;
@@ -82,7 +83,8 @@ export async function POST(request:Request){
       const {error:fileError}=await database.from("partner_application_files").insert(fileRows);
       if(fileError)throw fileError;
     }
-    await database.from("partner_application_history").insert({application_id:application.id,to_status:"submitted",note:"Application submitted through the partner portal."});
+    const {error:historyError}=await database.from("partner_application_history").insert({application_id:application.id,to_status:"submitted",note:"Application submitted through the partner portal."});
+    if(historyError)throw historyError;
     return NextResponse.json({reference:application.application_reference,type:application.partner_type,replayed:false},{status:201});
   }catch{
     await Promise.all(uploaded.map(item=>database.storage.from(item.bucket).remove([item.path])));

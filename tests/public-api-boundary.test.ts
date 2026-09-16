@@ -40,7 +40,7 @@ test("external URLs allow only http and https schemes",()=>{
 test("upload MIME checks require matching file signatures",async()=>{
   assert.equal(await fileMatchesDeclaredType(new File([new Uint8Array([0xff,0xd8,0xff,0xd9])],"safe.jpg",{type:"image/jpeg"})),true);
   assert.equal(await fileMatchesDeclaredType(new File(["not an image"],"spoofed.jpg",{type:"image/jpeg"})),false);
-  assert.match(partnerApi,/fileMatchesDeclaredType/);assert.match(partnerApi,/200\*1024\*1024/);
+  assert.match(partnerApi,/fileMatchesDeclaredType/);assert.match(partnerApi,/4\*1024\*1024/);
   assert.match(partnerApi,/replace\(\/\\\.\+\/g,"-"\)/);assert.doesNotMatch(partnerApi,/\[\^a-z0-9\._-\]/);
 });
 
