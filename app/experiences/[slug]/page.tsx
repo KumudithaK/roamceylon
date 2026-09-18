@@ -1,6 +1,6 @@
 import type {Metadata} from "next";
 import {notFound} from "next/navigation";
-import {ExperienceEditorialPage} from "@/features/experiences/experience-editorial";
+import {ExperiencePublicDetail} from "@/features/experiences/experience-public-detail";
 import {ExperienceRepository} from "@/lib/repositories/content";
 
 export const dynamic="force-dynamic";
@@ -15,11 +15,11 @@ async function getExperience(slug:string){
 
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
   const {experience}=await getExperience((await params).slug);
-  return experience?{title:experience.name,description:experience.short_description,alternates:{canonical:`/experiences/${experience.slug}`}}:{};
+  return experience?{title:experience.name,description:experience.short_description||undefined,alternates:{canonical:`/experiences/${experience.slug}`},openGraph:{title:`${experience.name} | The Ceylon Edition`,description:experience.short_description||undefined,url:`/experiences/${experience.slug}`,images:experience.hero_image_url?[{url:experience.hero_image_url,alt:experience.image_alt||experience.name}]:undefined}}:{};
 }
 
 export default async function Page({params}:{params:Promise<{slug:string}>}){
   const {experience,related}=await getExperience((await params).slug);
   if(!experience)notFound();
-  return <ExperienceEditorialPage experience={experience} related={related}/>;
+  return <ExperiencePublicDetail experience={experience} related={related}/>;
 }

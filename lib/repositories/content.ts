@@ -44,14 +44,18 @@ export class ExperienceRepository{
     const rows=ensure("Read editorial experiences",await client().from("experiences").select("*").eq("status","published").eq("active",true).order("featured",{ascending:false}).order("display_order").order("name"));
     if(!rows.length)return[];
     const ids=rows.map(row=>row.id);
-    const [links,themes]=await Promise.all([
+    const [links,themeLinks]=await Promise.all([
       client().from("experience_destinations").select("*").in("experience_id",ids).then(result=>ensure("Read experience destinations",result)),
       client().from("experience_themes").select("*").in("experience_id",ids).then(result=>ensure("Read experience themes",result))
     ]);
     const destinationIds=unique(links.map(link=>link.destination_id));
-    const destinations=destinationIds.length?ensure("Read experience destinations",await client().from("destinations").select("id,name,slug,latitude,longitude").in("id",destinationIds)):[];
-    const plans=await new PricingPlanOptionRepository().getFor(rows.map(row=>({type:"experience",id:row.id})));
-    return rows.map(row=>{const rowDestinationIds=unique(links.filter(link=>link.experience_id===row.id).map(link=>link.destination_id));const rowDestinations=destinations.filter(destination=>rowDestinationIds.includes(destination.id));return {...this.map(row),destinationIds:rowDestinationIds,destinationNames:rowDestinations.map(destination=>destination.name),destinations:rowDestinations,themeIds:unique(themes.filter(link=>link.experience_id===row.id).map(link=>link.theme_id)),pricingPlans:plans.get(pricingKey("experience",row.id))??[]}});
+    const themeIds=unique(themeLinks.map(link=>link.theme_id));
+    const [destinations,themes,plans]=await Promise.all([
+      destinationIds.length?client().from("destinations").select("id,name,slug,latitude,longitude").in("id",destinationIds).then(result=>ensure("Read experience destinations",result)):[],
+      themeIds.length?client().from("themes").select("id,name,slug").in("id",themeIds).eq("status","published").eq("active",true).then(result=>ensure("Read experience Editions",result)):[],
+      new PricingPlanOptionRepository().getFor(rows.map(row=>({type:"experience",id:row.id})))
+    ]);
+    return rows.map(row=>{const rowDestinationIds=unique(links.filter(link=>link.experience_id===row.id).map(link=>link.destination_id));const rowThemeIds=unique(themeLinks.filter(link=>link.experience_id===row.id).map(link=>link.theme_id));const rowDestinations=destinations.filter(destination=>rowDestinationIds.includes(destination.id));return {...this.map(row),destinationIds:rowDestinationIds,destinationNames:rowDestinations.map(destination=>destination.name),destinations:rowDestinations,themeIds:rowThemeIds,themes:themes.filter(theme=>rowThemeIds.includes(theme.id)),pricingPlans:plans.get(pricingKey("experience",row.id))??[]}});
   }
   async getByDestinationIds(destinationIds:string[]):Promise<JourneyExperience[]>{if(!destinationIds.length)return[];const links=ensure("Read experiences for destinations",await client().from("experience_destinations").select("*").in("destination_id",destinationIds));const ids=unique(links.map(x=>x.experience_id));if(!ids.length)return[];const [rowsResult,themeLinksResult,destinationRowsResult]=await Promise.all([client().from("experiences").select("*").eq("status","published").eq("active",true).in("id",ids).order("display_order").order("name"),client().from("experience_themes").select("*").in("experience_id",ids),client().from("destinations").select("id,name,slug,latitude,longitude").in("id",destinationIds)]);const rows=ensure("Read linked published experiences",await rowsResult),themeLinks=ensure("Read experience themes",await themeLinksResult),destinations=ensure("Read experience destinations",await destinationRowsResult);return rows.map(row=>{const rowDestinationIds=unique(links.filter(x=>x.experience_id===row.id).map(x=>x.destination_id));const rowDestinations=destinations.filter(destination=>rowDestinationIds.includes(destination.id));return {...this.map(row),destinationIds:rowDestinationIds,destinationNames:rowDestinations.map(destination=>destination.name),destinations:rowDestinations,matchedDestinationIds:unique(links.filter(x=>x.experience_id===row.id&&destinationIds.includes(x.destination_id)).map(x=>x.destination_id)),themeIds:unique(themeLinks.filter(x=>x.experience_id===row.id).map(x=>x.theme_id)),pricingPlans:[]}})}
 }

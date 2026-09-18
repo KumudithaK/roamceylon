@@ -50,14 +50,15 @@ test("catalogue and detail surfaces use image-led editorial composition",()=>{
   const destination=source("app/destinations/[slug]/page.tsx");
   const edition=source("app/discover/[slug]/page.tsx");
   const experiences=source("app/experiences/page.tsx");
+  const experienceCatalogue=source("features/experiences/experience-catalogue.tsx");
   const experienceEditorial=source("features/experiences/experience-editorial.tsx");
-  for(const code of [listing,destination,edition,experiences])assert.match(code,/bg-(?:forest|sand)|editorial|image-lift/);
+  for(const code of [listing,destination,edition,`${experiences}\n${experienceCatalogue}`])assert.match(code,/bg-(?:forest|sand)|editorial|image-lift/);
   assert.match(listing,/lg:col-span-7/);
   assert.match(mediaCard,/onError=\{\(\)=>setImageFailed\(true\)\}/);
   assert.match(mediaCard,/Image awaiting review/);
   assert.match(destination,/divide-y divide-forest\/20/);
   assert.match(edition,/Edition highlights/);
-  assert.match(experiences,/A considered collection/);
+  assert.match(experienceCatalogue,/Experiences, thoughtfully chosen/);
   assert.match(experienceEditorial,/roam ceylon recommended/);
   assert.match(experienceEditorial,/The Ceylon Edition Recommended/);
 });
