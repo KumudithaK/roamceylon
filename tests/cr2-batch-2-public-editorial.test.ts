@@ -58,7 +58,7 @@ test("catalogue and detail surfaces use image-led editorial composition",()=>{
   assert.match(mediaCard,/Image awaiting review/);
   assert.match(destination,/divide-y divide-forest\/20/);
   assert.match(edition,/Edition highlights/);
-  assert.match(experienceCatalogue,/Experiences, thoughtfully chosen/);
+  assert.match(experienceCatalogue,/Experiences for your journey/);
   assert.match(experienceEditorial,/roam ceylon recommended/);
   assert.match(experienceEditorial,/The Ceylon Edition Recommended/);
 });

@@ -1,6 +1,7 @@
 import type {Metadata} from "next";
 import {notFound} from "next/navigation";
 import {ExperiencePublicDetail} from "@/features/experiences/experience-public-detail";
+import {publiclyDiscoverableExperiences} from "@/lib/experience-discovery";
 import {ExperienceRepository} from "@/lib/repositories/content";
 
 export const dynamic="force-dynamic";
@@ -9,7 +10,7 @@ async function getExperience(slug:string){
   const experiences=await new ExperienceRepository().getEditorial();
   const experience=experiences.find(item=>item.slug===slug);
   if(!experience)return {experience:null,related:[]};
-  const related=experiences.filter(item=>item.id!==experience.id&&(item.category===experience.category||item.destinationIds.some(id=>experience.destinationIds.includes(id)))).slice(0,4);
+  const related=publiclyDiscoverableExperiences(experiences).filter(item=>item.id!==experience.id&&(item.category===experience.category||item.destinationIds.some(id=>experience.destinationIds.includes(id)))).slice(0,4);
   return {experience,related};
 }
 

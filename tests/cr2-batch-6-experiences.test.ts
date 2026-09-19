@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import test from "node:test";
-import {experienceContext,experienceDestinationOptions,experienceEditionLabels,experienceEditionOptions,filterExperiences,selectSignatureExperience} from "../lib/experience-discovery.ts";
+import {experienceContext,experienceDestinationOptions,experienceEditionLabels,experienceEditionOptions,experienceMerchandising,filterExperiences,publicExperienceExcludedSlugs,publiclyDiscoverableExperiences,selectExperienceMerchandising} from "../lib/experience-discovery.ts";
 import type {JourneyExperience} from "../lib/types.ts";
 
 const source=(path:string)=>readFileSync(new URL(`../${path}`,import.meta.url),"utf8");
@@ -15,9 +15,25 @@ const experiences=[
   makeExperience({id:"experience-3",slug:"coastal-sailing",name:"Sail the southern coast",category:"Coast",short_description:"A slow morning on the Indian Ocean.",featured:true,destinationIds:["destination-galle"],destinationNames:["Galle"],destinations:[{id:"destination-galle",slug:"galle",name:"Galle",latitude:null,longitude:null}],themeIds:["theme-tropical"],themes:[{id:"theme-tropical",slug:"tropical",name:"Tropical Paradise"}]})
 ];
 
-test("signature selection resolves from the strongest valid published candidate rather than a fixed slug",()=>{
-  assert.equal(selectSignatureExperience(experiences)?.slug,"coastal-sailing");
-  assert.equal(selectSignatureExperience([]),null);
+test("signature and supporting curation use explicit stable slugs with graceful fallback",()=>{
+  const yala=makeExperience({slug:experienceMerchandising.signature.slug});
+  const sigiriya=makeExperience({id:"sigiriya",slug:experienceMerchandising.supporting[0].slug});
+  const selected=selectExperienceMerchandising([experiences[2],sigiriya,yala]);
+  assert.equal(selected.signature?.slug,experienceMerchandising.signature.slug);
+  assert.equal(selected.supporting[0]?.slug,experienceMerchandising.supporting[0].slug);
+  assert.equal(selectExperienceMerchandising([experiences[2]]).signature?.slug,"coastal-sailing");
+  assert.equal(selectExperienceMerchandising([]).signature,null);
+  assert.doesNotMatch(source("lib/experience-discovery.ts"),/score\s*=|completeness/i);
+});
+
+test("the exact cricket record is excluded from public discovery without deleting direct-route compatibility",()=>{
+  const cricket=makeExperience({id:"cricket",slug:"cricket-with-local-players",name:"Cricket with Local Players"});
+  assert.deepEqual(publicExperienceExcludedSlugs,["cricket-with-local-players"]);
+  assert.deepEqual(publiclyDiscoverableExperiences([...experiences,cricket]).map(item=>item.slug),experiences.map(item=>item.slug));
+  assert.equal(publiclyDiscoverableExperiences([...experiences,cricket]).length,[...experiences,cricket].length-1);
+  const route=source("app/experiences/[slug]/page.tsx");
+  assert.match(route,/const experience=experiences\.find\(item=>item\.slug===slug\)/);
+  assert.match(route,/publiclyDiscoverableExperiences\(experiences\)\.filter/);
 });
 
 test("approved technical theme slugs become exact public Edition labels",()=>{
@@ -60,6 +76,19 @@ test("catalogue is paginated from the actual collection and is not a hardcoded t
   assert.doesNotMatch(catalogue,/\.slice\(0,6\)/);
 });
 
+test("catalogue removes the rejected opening treatment and presents travel-led merchandising",()=>{
+  const catalogue=source("features/experiences/experience-catalogue.tsx");
+  assert.doesNotMatch(catalogue,/editorial-index[^\n]*>06<|Meet Sri Lanka through what you do/i);
+  assert.match(catalogue,/Experience Sri Lanka, your way\./);
+  assert.match(catalogue,/Experiences for your journey/);
+  assert.match(catalogue,/Plan Your Journey/);
+  assert.match(catalogue,/Build your journey around/);
+  assert.match(catalogue,/Journey inspiration/);
+  assert.match(catalogue,/All experiences/);
+  assert.match(catalogue,/experiencePlace\(experience\)/);
+  assert.match(catalogue,/experienceEditionLabels\(experience\)/);
+});
+
 test("catalogue uses navigable Experience links, URL filter state, reset and an editorial empty state",()=>{
   const catalogue=source("features/experiences/experience-catalogue.tsx");
   assert.match(catalogue,/href=\{`\/experiences\/\$\{experience\.slug\}`\}/);
@@ -83,7 +112,18 @@ test("detail presentation links destinations, Editions and established Journey p
   assert.match(detail,/href=\{`\/discover\/\$\{theme\.slug\}`\}/);
   assert.match(detail,/includeExperienceSelection/);
   assert.match(detail,/journey-builder\?\$\{query\}/);
+  assert.match(detail,/Plan this into your journey/);
+  assert.match(detail,/How it fits your journey/);
+  assert.match(detail,/id="plan-this-experience"/);
   assert.match(source("features/experiences/experience-editorial.tsx"),/"Plan Your Journey"/);
+});
+
+test("public discovery surfaces share the non-destructive exclusion contract",()=>{
+  assert.match(source("app/experiences/page.tsx"),/publiclyDiscoverableExperiences\(experiences\)/);
+  assert.match(source("lib/journey/journey-service.ts"),/publiclyDiscoverableExperiences\(await this\.experiences\.getByDestinationIds/);
+  assert.match(source("lib/homepage-experience-curation.ts"),/publiclyDiscoverableExperiences\(experiences\)/);
+  assert.match(source("app/partners/page.tsx"),/publiclyDiscoverableExperiences\(experiences\)/);
+  assert.match(source("docs/cr2-batch-6-experience-merchandising.md"),/not deleted or unpublished/i);
 });
 
 test("image fallback and responsive editorial contracts remain present",()=>{
@@ -92,6 +132,7 @@ test("image fallback and responsive editorial contracts remain present",()=>{
   assert.match(media,/A Sri Lankan experience, thoughtfully selected/);
   assert.match(media,/alt=\{alt\}/);
   assert.match(catalogue,/md:grid-cols-2 xl:grid-cols-12/);
+  assert.match(catalogue,/lg:grid-cols-\[\.82fr_1\.18fr\]/);
   assert.match(catalogue,/min-h-12/);
   assert.doesNotMatch(catalogue,/overflow-x-auto/);
 });

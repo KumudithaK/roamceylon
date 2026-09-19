@@ -1,6 +1,7 @@
 import "server-only";
 import {AccommodationRepository,DestinationRepository,ExperienceRepository,GuideRepository,PricingPlanOptionRepository,ThemeRepository,VehicleRepository} from "@/lib/repositories/content";
 import type {JourneyDestination,JourneyExperience,JourneyGuide,JourneyPricingEntityType,JourneyStay,JourneyTheme,JourneyVehicle} from "@/lib/types";
+import {publiclyDiscoverableExperiences} from "@/lib/experience-discovery";
 import {availableDestinations,availableExperiences,availableStays} from "./journey-selectors";
 
 export type JourneyBootstrap={themes:JourneyTheme[];destinations:JourneyDestination[];experiences:JourneyExperience[];stays:JourneyStay[];vehicles:JourneyVehicle[];guides:JourneyGuide[]};
@@ -17,7 +18,7 @@ export class JourneyService{
     let experiences:JourneyExperience[]=[];
     try{themes=await this.themes.getWithDestinations()}catch(error){reportBootstrapFailure("themes",error);return {themes:[],destinations:[],experiences:[],stays:[],vehicles:[],guides:[]}}
     try{destinations=await this.destinations.getByThemeIds(themes.map(item=>item.id))}catch(error){reportBootstrapFailure("destinations",error)}
-    try{experiences=await this.experiences.getByDestinationIds(destinations.map(item=>item.id))}catch(error){reportBootstrapFailure("experiences",error)}
+    try{experiences=publiclyDiscoverableExperiences(await this.experiences.getByDestinationIds(destinations.map(item=>item.id)))}catch(error){reportBootstrapFailure("experiences",error)}
     const results=await Promise.allSettled([
       this.stays.getByDestinationIds(destinations.map(item=>item.id)),
       this.vehicles.getPublished(destinations.map(item=>item.id)),

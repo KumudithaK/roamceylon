@@ -6,6 +6,7 @@ import {PartnerEditorialImage} from "@/components/partners/partner-editorial-ima
 import {Button} from "@/components/ui/button";
 import {brand,editionDisplayName} from "@/lib/brand";
 import {listContent} from "@/lib/data";
+import {publiclyDiscoverableExperiences} from "@/lib/experience-discovery";
 
 export const metadata:Metadata={
   title:"Work with The Ceylon Edition",
@@ -31,7 +32,8 @@ export default async function Page(){
   const [editions,destinations,experiences]=await Promise.all([listContent("themes"),listContent("destinations"),listContent("experiences")]);
   const edition=editions.find(item=>item.slug==="heritage")??editions.find(item=>item.hero_image_url)??null;
   const destination=destinations.find(item=>item.slug==="sigiriya")??destinations.find(item=>item.hero_image_url)??null;
-  const experience=experiences.find(item=>item.slug.includes("sigiriya"))??experiences.find(item=>item.hero_image_url)??null;
+  const discoverableExperiences=publiclyDiscoverableExperiences(experiences);
+  const experience=discoverableExperiences.find(item=>item.slug.includes("sigiriya"))??discoverableExperiences.find(item=>item.hero_image_url)??null;
   const publicJourney=[
     edition?{eyebrow:"Editions",title:editionDisplayName(edition),copy:edition.short_description,href:`/discover/${edition.slug}`,image:edition.hero_image_url,alt:edition.image_alt||editionDisplayName(edition)}:null,
     destination?{eyebrow:"Destinations",title:destination.name,copy:destination.short_description,href:`/destinations/${destination.slug}`,image:destination.hero_image_url,alt:destination.image_alt||destination.name}:null,

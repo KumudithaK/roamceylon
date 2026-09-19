@@ -1,4 +1,5 @@
-import type {JourneyExperience} from "@/lib/types";
+import {publiclyDiscoverableExperiences} from "./experience-discovery.ts";
+import type {JourneyExperience} from "./types.ts";
 
 export const homepageExperienceSlugs=[
   "yala-morning-and-evening-4x4-jeep-safaris-in-block-1-world-renowned-leopard-d",
@@ -7,12 +8,13 @@ export const homepageExperienceSlugs=[
 ] as const;
 
 export function curateHomepageExperiences(experiences:JourneyExperience[]){
-  const bySlug=new Map(experiences.map(experience=>[experience.slug,experience]));
+  const discoverable=publiclyDiscoverableExperiences(experiences);
+  const bySlug=new Map(discoverable.map(experience=>[experience.slug,experience]));
   const selected=homepageExperienceSlugs.flatMap(slug=>{
     const experience=bySlug.get(slug);
     return experience?[experience]:[];
   });
   if(selected.length===homepageExperienceSlugs.length)return selected;
   const selectedIds=new Set(selected.map(experience=>experience.id));
-  return [...selected,...experiences.filter(experience=>!selectedIds.has(experience.id))].slice(0,homepageExperienceSlugs.length);
+  return [...selected,...discoverable.filter(experience=>!selectedIds.has(experience.id))].slice(0,homepageExperienceSlugs.length);
 }
