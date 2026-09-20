@@ -40,7 +40,7 @@ export default async function Page(){
     experience?{eyebrow:"Experiences",title:experience.name,copy:experience.short_description,href:`/experiences/${experience.slug}`,image:experience.hero_image_url,alt:experience.image_alt||experience.name}:null
   ].filter(item=>item!==null);
 
-  return <main id="content">
+  return <main>
     <section className="relative isolate min-h-[76svh] overflow-hidden bg-forest text-ivory">
       <PartnerEditorialImage src={heroImage} alt="Evening light over Kandalama Lake and the Sri Lankan landscape" sizes="100vw" priority className="object-cover object-center"/>
       <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,48,42,.92)_0%,rgba(11,48,42,.68)_48%,rgba(11,48,42,.18)_100%)]"/>

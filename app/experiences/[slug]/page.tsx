@@ -2,6 +2,7 @@ import type {Metadata} from "next";
 import {notFound} from "next/navigation";
 import {ExperiencePublicDetail} from "@/features/experiences/experience-public-detail";
 import {publiclyDiscoverableExperiences} from "@/lib/experience-discovery";
+import {publicBrandText} from "@/lib/brand";
 import {ExperienceRepository} from "@/lib/repositories/content";
 
 export const dynamic="force-dynamic";
@@ -16,7 +17,7 @@ async function getExperience(slug:string){
 
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{
   const {experience}=await getExperience((await params).slug);
-  return experience?{title:experience.name,description:experience.short_description||undefined,alternates:{canonical:`/experiences/${experience.slug}`},openGraph:{title:`${experience.name} | The Ceylon Edition`,description:experience.short_description||undefined,url:`/experiences/${experience.slug}`,images:experience.hero_image_url?[{url:experience.hero_image_url,alt:experience.image_alt||experience.name}]:undefined}}:{};
+  return experience?{title:publicBrandText(experience.name),description:experience.short_description?publicBrandText(experience.short_description):undefined,alternates:{canonical:`/experiences/${experience.slug}`},openGraph:{title:`${publicBrandText(experience.name)} | The Ceylon Edition`,description:experience.short_description?publicBrandText(experience.short_description):undefined,url:`/experiences/${experience.slug}`,images:experience.hero_image_url?[{url:experience.hero_image_url,alt:publicBrandText(experience.image_alt||experience.name)}]:undefined}}:{};
 }
 
 export default async function Page({params}:{params:Promise<{slug:string}>}){

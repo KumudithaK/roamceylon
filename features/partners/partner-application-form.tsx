@@ -122,7 +122,7 @@ export function PartnerApplicationForm({initialType,explicitType,destinationOpti
     }
   };
 
-  return <main id="content" className="bg-ivory">
+  return <main className="bg-ivory">
     <section className="editorial-noise bg-forest py-16 text-ivory md:py-24">
       <div className="shell grid gap-8 lg:grid-cols-[.65fr_1.35fr] lg:items-end"><div><p className="editorial-index text-gold-light/35">03</p><p className="eyebrow mt-7 text-gold-light">Begin a partner conversation</p></div><div><h1 id="partner-form-title" className="font-serif text-[clamp(2.8rem,6vw,5.5rem)] leading-[1] tracking-[-.035em]">Tell us what you bring to the journey.</h1><p className="mt-6 max-w-2xl text-lg leading-8 text-ivory/68">Your draft is saved only in this browser. Submission starts a manual review and never creates a public listing, account or agreement automatically.</p></div></div>
     </section>

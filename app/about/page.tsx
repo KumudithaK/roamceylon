@@ -44,6 +44,6 @@ export default async function Page(){
   };
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(organisation).replace(/</g,"\\u003c")}}/>
-    <AboutPage email={company.email} telephone={company.telephone}/>
+    <main><AboutPage email={company.email} telephone={company.telephone}/></main>
   </>;
 }

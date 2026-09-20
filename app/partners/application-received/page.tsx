@@ -10,7 +10,7 @@ const names={accommodation:"Accommodation",vehicle:"Vehicle or fleet",guide:"Loc
 export default async function Page({searchParams}:{searchParams:Promise<{reference?:string;type?:string}>}){
   const query=await searchParams;
   const type=query.type==="accommodation"||query.type==="vehicle"||query.type==="guide"?query.type:"accommodation";
-  return <main id="content" className="grid min-h-[75svh] place-items-center bg-forest px-5 py-16 text-ivory md:py-24">
+  return <main className="grid min-h-[75svh] place-items-center bg-forest px-5 py-16 text-ivory md:py-24">
     <section aria-labelledby="received-title" className="w-full max-w-5xl border border-ivory/20 bg-ivory text-slate shadow-[0_30px_100px_rgba(0,0,0,.2)]">
       <div className="grid lg:grid-cols-[.58fr_1fr]">
         <div className="editorial-noise flex min-h-72 flex-col justify-between bg-forest p-8 text-ivory md:p-12"><span className="grid size-14 place-items-center rounded-full border border-gold text-gold-light"><Check className="size-6" aria-hidden="true"/></span><div><p className="eyebrow mt-12 text-gold-light">Application received</p><p className="mt-4 font-serif text-3xl leading-tight">A conversation has begun.</p></div></div>

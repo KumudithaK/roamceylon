@@ -18,5 +18,5 @@ export const metadata:Metadata={
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}){
-  return <html lang="en"><body className={`${manrope.variable} ${playfair.variable}`}><a href="#content" className="fixed -top-20 left-4 z-[100] rounded bg-ivory px-4 py-2 focus:top-4">Skip to content</a><SiteHeader/><main id="content">{children}</main><SiteFooter/></body></html>;
+  return <html lang="en"><body className={`${manrope.variable} ${playfair.variable}`}><a href="#content" className="fixed -top-20 left-4 z-[100] rounded bg-ivory px-4 py-2 focus:top-4">Skip to content</a><SiteHeader/><div id="content" tabIndex={-1}>{children}</div><SiteFooter/></body></html>;
 }

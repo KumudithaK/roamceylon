@@ -33,3 +33,11 @@ export const legacyBrandCompatibility={
   quotationHandoffKey:"roam-ceylon-quotation-handoff-v1",
   partnerDraftKey:"roam-ceylon-partner-draft"
 } as const;
+
+/**
+ * Keeps production-managed public copy aligned with the active trading brand
+ * without rewriting historical records or internal compatibility identifiers.
+ */
+export function publicBrandText(value:string){
+  return value.replace(/\bRoam Ceylon Atelier\b/gi,brand.name).replace(/\bRoam Ceylon\b/gi,brand.name);
+}

@@ -22,7 +22,7 @@ export function SiteFooter(){
       </div>
       <nav aria-label="Footer">
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-[.16em]">Explore</h2>
-        <ul className="grid gap-1">{[...publicNavigation,{label:"Contact",href:"/contact"},{label:"Partner with us",href:"/partners"}].map(({label,href})=><li key={href}><Link href={href} className="text-link inline-flex min-h-11 items-center text-sm">{label}</Link></li>)}</ul>
+        <ul className="grid gap-1">{[...publicNavigation,{label:brand.journalName,href:"/blog"},{label:"Contact",href:"/contact"},{label:"Partner with us",href:"/partners"}].map(({label,href})=><li key={href}><Link href={href} className="text-link inline-flex min-h-11 items-center text-sm">{label}</Link></li>)}</ul>
       </nav>
       <div>
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-[.16em]">Stay in touch</h2>
@@ -34,6 +34,9 @@ export function SiteFooter(){
         </div>
       </div>
     </div>
-    <div className="shell border-t border-forest/25 py-6 text-sm leading-6 text-muted">© {new Date().getFullYear()} {brand.name}. <span className="block sm:inline">{brand.tagline}</span></div>
+    <div className="shell flex flex-col gap-4 border-t border-forest/25 py-6 text-sm leading-6 text-muted sm:flex-row sm:items-center sm:justify-between">
+      <p>© {new Date().getFullYear()} {brand.name}. <span className="block sm:inline">{brand.tagline}</span></p>
+      <nav aria-label="Legal"><ul className="flex flex-wrap gap-x-5 gap-y-2"><li><Link href="/privacy" className="text-link inline-flex min-h-11 items-center">Privacy</Link></li><li><Link href="/terms" className="text-link inline-flex min-h-11 items-center">Terms</Link></li></ul></nav>
+    </div>
   </footer>;
 }

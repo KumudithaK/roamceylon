@@ -115,7 +115,10 @@ test("footer includes only verified contacts, safe external links and no invente
   assert.equal((html.match(/inline-flex size-11 items-center justify-center rounded-md border border-forest\/40/g)??[]).length,2);
   assert.doesNotMatch(html,/>WhatsApp<|bright WhatsApp green/);
   assert.doesNotMatch(source("components/site/site-footer.tsx"),/\bPhone\b|rounded-full border border-forest\/45|text-link inline-flex min-h-11 items-center gap-2\.5/);
-  assert.doesNotMatch(html,/mailto:|Roam Ceylon|Private Limited|Pvt Ltd|licen[cs]e|href="\/blog"/i);
+  assert.match(html,/href="\/blog"[^>]*>The Ceylon Journal</);
+  assert.match(html,/href="\/privacy"[^>]*>Privacy</);
+  assert.match(html,/href="\/terms"[^>]*>Terms</);
+  assert.doesNotMatch(html,/mailto:|Roam Ceylon|Private Limited|Pvt Ltd|licen[cs]e/i);
   assert.equal(render("components/site/site-footer.tsx","SiteFooter",{},"/admin/dashboard"),"");
 });
 
