@@ -18,6 +18,7 @@
 - A branded, navigable not-found state replaces the generic framework result.
 - Existing Journal, Privacy and Terms routes are exposed in the footer.
 - The Journey Builder's animated primary grid item now permits responsive shrinking, and its mobile navigation is contained to that column without changing the sticky interaction.
+- The About page no longer publishes the unverified legacy enquiry mailbox from managed settings; the verified public telephone remains available.
 
 ## Preserved contracts
 

@@ -84,6 +84,14 @@ test("footer exposes only verified contact channels and real editorial/legal rou
   assert.doesNotMatch(footer,/private limited|pvt\.?\s+ltd/i);
 });
 
+test("About publishes verified contact channels without the unverified legacy mailbox",()=>{
+  const route=source("app/about/page.tsx");
+  const page=source("features/about/about-page.tsx");
+  assert.match(route,/select\("contact_phone"\)/);
+  assert.doesNotMatch(route,/enquiry_email|business_email/);
+  assert.doesNotMatch(page,/\["Email"|mailto:|@roamceylon\.com/i);
+});
+
 test("public vocabulary aliases resolve to canonical active routes",()=>{
   assert.match(source("app/editions/page.tsx"),/permanentRedirect\("\/discover"\)/);
   assert.match(source("app/journal/page.tsx"),/permanentRedirect\("\/blog"\)/);

@@ -19,15 +19,15 @@ export const metadata:Metadata={
 };
 
 async function companyDetails(){
-  const fallback={email:null as string|null,telephone:"+94 78 799 7897"};
+  const fallback={telephone:"+94 78 799 7897"};
   const supabase=createPublicClient();
   if(!supabase)return fallback;
-  const {data,error}=await supabase.from("website_public_settings").select("enquiry_email,contact_phone").limit(1).maybeSingle();
+  const {data,error}=await supabase.from("website_public_settings").select("contact_phone").limit(1).maybeSingle();
   if(error){
     console.error(`[about:website-settings] ${error.code}: ${error.message}`);
     return fallback;
   }
-  return {email:data?.enquiry_email||fallback.email,telephone:data?.contact_phone||fallback.telephone};
+  return {telephone:data?.contact_phone||fallback.telephone};
 }
 
 export default async function Page(){
@@ -37,13 +37,12 @@ export default async function Page(){
     "@type":["Organization","TravelAgency"],
     name:brand.name,
     url:siteUrl,
-    ...(company.email?{email:company.email}:{}),
     telephone:company.telephone,
     areaServed:{"@type":"Country",name:"Sri Lanka"},
     description:"A Sri Lankan journey atelier creating and coordinating deeply personal, tailor-made journeys across the island."
   };
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(organisation).replace(/</g,"\\u003c")}}/>
-    <main><AboutPage email={company.email} telephone={company.telephone}/></main>
+    <main><AboutPage telephone={company.telephone}/></main>
   </>;
 }
