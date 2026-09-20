@@ -17,7 +17,7 @@
 - Production-managed Experience copy is presentation-normalized to the active brand without rewriting database records or compatibility identifiers.
 - A branded, navigable not-found state replaces the generic framework result.
 - Existing Journal, Privacy and Terms routes are exposed in the footer.
-- The mobile Journey Builder navigation is contained to its content column without changing its sticky interaction.
+- The Journey Builder's animated primary grid item now permits responsive shrinking, and its mobile navigation is contained to that column without changing the sticky interaction.
 
 ## Preserved contracts
 
