@@ -59,7 +59,7 @@ export function JourneyChapter({phase,title,intro,children}:{phase:string;title:
 
 export function JourneyNavigation({step,total,onBack,onContinue,onSubmit,submitDisabled=false}:{step:number;total:number;onBack:()=>void;onContinue:()=>void;onSubmit:(event:MouseEvent<HTMLButtonElement>)=>void;submitDisabled?:boolean}){
   const final=step===total-1;
-  return <div className="sticky bottom-0 z-30 -mx-4 mt-12 flex items-center justify-between gap-4 border-t border-forest/15 bg-ivory/95 px-4 py-4 shadow-[0_-16px_40px_rgba(11,48,42,.08)] backdrop-blur md:static md:mx-0 md:bg-transparent md:px-0 md:shadow-none">
+  return <div className="sticky bottom-0 z-30 mt-12 flex w-full max-w-full items-center justify-between gap-4 border-t border-forest/15 bg-ivory/95 py-4 shadow-[0_-16px_40px_rgba(11,48,42,.08)] backdrop-blur md:static md:bg-transparent md:shadow-none">
     <Button variant="ghost" disabled={step===0} onClick={onBack} aria-label="Return to the previous journey chapter"><ChevronLeft/>Back</Button>
     <div className="hidden text-center text-[.65rem] font-bold uppercase tracking-[.16em] text-stone sm:block">Chapter {step+1} of {total}</div>
     {final?<Button onClick={onSubmit} disabled={submitDisabled} variant="accent">Request Journey Proposal</Button>:<Button onClick={onContinue}>Continue<ChevronRight/></Button>}

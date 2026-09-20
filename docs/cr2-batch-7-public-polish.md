@@ -7,6 +7,7 @@
 - **P1:** One published Experience narrative still exposed the legacy Roam Ceylon name.
 - **P1:** Unknown routes fell through to the unbranded framework not-found presentation.
 - **P2:** The public footer omitted the existing Journal, Privacy and Terms destinations.
+- **P1:** The Journey Builder's sticky mobile navigation used negative horizontal margins and widened the document beyond the 390 px viewport.
 - **DEFER:** Creative refinement of the frozen wordmark, catalogue copy remediation, legal-readiness expansion and admin-interface redesign remain outside Batch 7.
 
 ## Corrections
@@ -16,6 +17,7 @@
 - Production-managed Experience copy is presentation-normalized to the active brand without rewriting database records or compatibility identifiers.
 - A branded, navigable not-found state replaces the generic framework result.
 - Existing Journal, Privacy and Terms routes are exposed in the footer.
+- The mobile Journey Builder navigation is contained to its content column without changing its sticky interaction.
 
 ## Preserved contracts
 

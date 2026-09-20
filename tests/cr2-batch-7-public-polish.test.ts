@@ -105,7 +105,11 @@ test("Batch 6 Experience exclusion and explicit merchandising stay intact",()=>{
 
 test("Journey Builder and proposal flow contracts remain present",()=>{
   assert.match(source("app/journey-builder/page.tsx"),/JourneyBuilder/);
-  assert.match(source("features/journey/journey-builder.tsx"),/Request Journey Proposal/);
+  const builder=source("features/journey/journey-builder.tsx");
+  const primitives=source("components/journey/journey-builder-primitives.tsx");
+  assert.match(builder,/Request Journey Proposal/);
+  assert.match(primitives,/sticky bottom-0 z-30 mt-12 flex w-full max-w-full/);
+  assert.doesNotMatch(primitives,/sticky bottom-0[^"\n]*-mx-/);
   assert.match(source("app/api/enquiries/route.ts"),/enquir/i);
   assert.match(source("app/proposal/[token]/page.tsx"),/TravellerProposal/);
 });
