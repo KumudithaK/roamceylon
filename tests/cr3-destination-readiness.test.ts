@@ -33,7 +33,7 @@ test("Journey Builder only receives published Edition-linked destinations",()=>{
 
 test("destination Experience discovery keeps the established cricket exclusion",()=>{
   const service=source("lib/journey/journey-service.ts");
-  assert.deepEqual(publicExperienceExcludedSlugs,["cricket-with-local-players"]);
+  assert.ok(publicExperienceExcludedSlugs.includes("cricket-with-local-players"));
   assert.match(service,/publiclyDiscoverableExperiences\(await this\.experiences\.getByDestinationIds/);
 });
 

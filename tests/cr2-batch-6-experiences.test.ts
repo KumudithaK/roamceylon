@@ -28,7 +28,7 @@ test("signature and supporting curation use explicit stable slugs with graceful 
 
 test("the exact cricket record is excluded from public discovery without deleting direct-route compatibility",()=>{
   const cricket=makeExperience({id:"cricket",slug:"cricket-with-local-players",name:"Cricket with Local Players"});
-  assert.deepEqual(publicExperienceExcludedSlugs,["cricket-with-local-players"]);
+  assert.ok(publicExperienceExcludedSlugs.includes("cricket-with-local-players"));
   assert.deepEqual(publiclyDiscoverableExperiences([...experiences,cricket]).map(item=>item.slug),experiences.map(item=>item.slug));
   assert.equal(publiclyDiscoverableExperiences([...experiences,cricket]).length,[...experiences,cricket].length-1);
   const route=source("app/experiences/[slug]/page.tsx");

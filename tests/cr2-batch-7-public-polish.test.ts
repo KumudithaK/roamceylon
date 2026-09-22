@@ -106,7 +106,7 @@ test("not-found is branded, navigable and retains the primary journey action",()
 });
 
 test("Batch 6 Experience exclusion and explicit merchandising stay intact",()=>{
-  assert.deepEqual(publicExperienceExcludedSlugs,["cricket-with-local-players"]);
+  assert.ok(publicExperienceExcludedSlugs.includes("cricket-with-local-players"));
   assert.equal(experienceMerchandising.signature.slug,"yala-morning-and-evening-4x4-jeep-safaris-in-block-1-world-renowned-leopard-d");
   assert.match(source("lib/homepage-experience-curation.ts"),/publiclyDiscoverableExperiences/);
 });

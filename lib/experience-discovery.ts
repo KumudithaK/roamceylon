@@ -3,7 +3,67 @@ import type {JourneyExperience} from "./types.ts";
 
 export type ExperienceFilters={query:string;edition:string;destination:string};
 
-export const publicExperienceExcludedSlugs=["cricket-with-local-players"] as const;
+/**
+ * Published records that remain available by their stable direct URL but must
+ * not appear in normal discovery, merchandising or Journey Builder selection.
+ * CR4 keeps this presentation-layer hold non-destructive while the founder
+ * reviews operational, ethical or overlap concerns.
+ */
+export const publicExperienceExcludedSlugs=[
+  "cricket-with-local-players",
+  "nuwaraeliya-boating-pony-riding-and-lakeside-walking-at-gregory-lake",
+  "balapitiya-jet-skiing-and-speed-boating-along-madu-ganga-estuary",
+  "yala-spotting-sloth-bears-wild-elephants-mugger-crocodiles-and-spotted-deer",
+  "wilpattu-tracking-elusive-sri-lankan-leopards-sloth-bears-and-wild-boars-in-dense",
+  "nilaveli-snorkeling-among-blacktip-reef-sharks-sea-turtles-and-colorful-corals",
+  "hikkaduwa-visiting-local-sea-turtle-hatcheries-and-conservation-centers"
+] as const;
+
+const publicExperienceTitleReplacements={
+  "udawalawe-guaranteed-year-round-wild-elephant-sightings-across-open-grasslands":{
+    from:"Guaranteed year-round wild elephant sightings across open grasslands",
+    to:"Udawalawe Wild Elephant Safari",
+    summary:"Explore Udawalawe's open grasslands with a responsibly arranged safari, where free-ranging elephant and other wildlife sightings remain entirely dependent on nature."
+  },
+  "nilaveli-boat-trips-to-pigeon-island-national-park-for-world-class-snorkeling":{
+    from:"Boat trips to Pigeon Island National Park for world-class snorkeling",
+    to:"Pigeon Island National Park Snorkelling Journey"
+  },
+  "yala-morning-and-evening-4x4-jeep-safaris-in-block-1-world-renowned-leopard-d":{
+    from:"Morning and evening 4x4 jeep safaris in Block 1 (world-renowned leopard density)",
+    to:"Yala Block 1 Wildlife Safari"
+  },
+  "sigiriya-hiking-pidurangala-rock-for-breathtaking-dawn-vistas-over-sigiriya-citad":{
+    from:"Hiking Pidurangala Rock for breathtaking dawn vistas over Sigiriya Citadel",
+    to:"Pidurangala Rock Dawn Hike"
+  }
+} as const;
+
+type PublicExperienceCopy={
+  slug:string;
+  name:string;
+  short_description:string|null;
+  full_description:string|null;
+  image_alt:string|null;
+  highlights:unknown;
+};
+
+function replaceCopy(value:string|null,from:string,to:string){
+  return value?.replaceAll(from,to).replaceAll(from.toLocaleLowerCase(),to)??value;
+}
+
+/**
+ * Applies a deliberately small public-display correction without rewriting the
+ * staging catalogue or changing compatibility slugs. Admin and historical data
+ * retain the source record; all public repository consumers receive the safer
+ * traveller-facing copy.
+ */
+export function applyPublicExperienceCopy<T extends PublicExperienceCopy>(experience:T):T{
+  const replacement=publicExperienceTitleReplacements[experience.slug as keyof typeof publicExperienceTitleReplacements];
+  if(!replacement)return experience;
+  const highlights=Array.isArray(experience.highlights)?experience.highlights.map(item=>typeof item==="string"?replaceCopy(item,replacement.from,replacement.to):item):experience.highlights;
+  return {...experience,name:replacement.to,short_description:"summary" in replacement?replacement.summary:replaceCopy(experience.short_description,replacement.from,replacement.to),full_description:replaceCopy(experience.full_description,replacement.from,replacement.to),image_alt:replaceCopy(experience.image_alt,replacement.from,replacement.to),highlights} as T;
+}
 
 export const experienceMerchandising={
   signature:{slug:"yala-morning-and-evening-4x4-jeep-safaris-in-block-1-world-renowned-leopard-d",imageClassName:"object-[center_42%]"},
