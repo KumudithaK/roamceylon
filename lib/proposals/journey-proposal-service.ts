@@ -8,6 +8,7 @@ import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import {resolveJourneyDesign} from "@/lib/journey/curated-journey-server";
 import {completeJourneyLegs} from "@/lib/journey/travel-preferences";
 import {reviewProposalAgainstEstimate} from "./proposal-range-review";
+import {validateProposalPaymentTerms} from "@/lib/pricing/proposal-payment";
 import {composeCustomerProposal,customerProposalJson} from "./customer-proposal";
 import {customerBenefitsForProposal} from "@/lib/benefits/journey-benefit-service";
 import {validateCustomerProposal} from "./customer-proposal-types";
@@ -55,7 +56,10 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
   const {count:reviewCount,error:reviewError}=await database.from("journey_supplier_allocations").select("id",{count:"exact",head:true}).eq("enquiry_id",enquiryId).eq("review_required",true).neq("confirmation_status","cancelled");
   if(reviewError)throw new ProposalError("DATABASE",reviewError.message);
   if(reviewCount)throw new ProposalError("INCOMPLETE",`Review ${reviewCount} supplier allocation${reviewCount===1?"":"s"} affected by the Curated Journey before generating the proposal.`);
-  const commercial=await allocationCommercialSnapshot(enquiryId,details.commercialOverrides);
+  const commercial=await allocationCommercialSnapshot(enquiryId,details.commercialOverrides).catch(error=>{
+    if(error instanceof Error&&error.message.startsWith("Complete Business Pricing settings"))throw new ProposalError("INCOMPLETE",error.message);
+    throw error;
+  });
   const active=commercial.allocations.filter(row=>row.confirmation_status!=="cancelled");
   const available=new Set(active.map(allocationKey));
   const missing=required.filter(scope=>!available.has(scope.key));
@@ -73,6 +77,8 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
   const incompleteServices=active.filter(row=>!row.service_name||!row.quantity||!row.quantity_label||!row.pricing_plan_id&&(!row.pricing_plan_snapshot||typeof row.pricing_plan_snapshot!=="object"));
   if(incompleteServices.length)throw new ProposalError("INCOMPLETE",`Select or record a complete service rate and quantity for ${incompleteServices.length} allocation${incompleteServices.length===1?"":"s"} before generating the proposal.`);
   if(commercial.summary.incompleteLines)throw new ProposalError("INCOMPLETE","Complete supplier cost and selling price for every active allocation before generating the proposal.");
+  const paymentTermsError=validateProposalPaymentTerms(commercial.summary.totalSellingPrice,details.depositAmount,details.depositDueDate,details.balanceDueDate);
+  if(paymentTermsError)throw new ProposalError("INCOMPLETE",paymentTermsError);
   const currencies=new Set(commercial.snapshot.filter(line=>line.confirmationStatus!=="cancelled").map(line=>line.currency));
   if(currencies.size>1)throw new ProposalError("INCOMPLETE","All proposal allocations must use the same currency.");
   const {data:last,error:lastError}=await database.from("journey_proposals").select("version").eq("enquiry_id",enquiryId).order("version",{ascending:false}).limit(1).maybeSingle();

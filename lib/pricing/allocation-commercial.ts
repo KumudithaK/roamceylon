@@ -12,10 +12,42 @@ export type AllocationCommercialOverrides={
   driverOperations?:number|null;fuel?:number|null;tolls?:number|null;parking?:number|null;guideAccommodation?:number|null;
   administration?:number|null;contingency?:number|null;
 };
+export type IncompleteAllocationCommercialConfig={
+  [K in keyof AllocationCommercialConfig]:number|null;
+};
 
 const money=(value:number)=>Math.round((value+1e-9)*100)/100;
 const record=(value:Json):Record<string,Json|undefined>=>value&&typeof value==="object"&&!Array.isArray(value)?value:{};
 const flag=(value:Json,key:string)=>record(value)[key]===true;
+
+export function missingAllocationCommercialConfig(lines:AllocationCommercialLine[],config:IncompleteAllocationCommercialConfig,overrides:AllocationCommercialOverrides={}):string[]{
+  const active=lines.filter(line=>line.confirmationStatus!=="cancelled");
+  const vehicles=active.filter(line=>line.type==="vehicle");
+  const guides=active.filter(line=>line.type==="guide");
+  const vehicleIncludes=(key:string)=>vehicles.length>0&&vehicles.every(line=>{
+    const details=record(line.pricingPlanSnapshot).details;
+    return flag(details??{},key)||flag(line.serviceDetails,key);
+  });
+  const overridden=(value:number|null|undefined)=>value!==null&&value!==undefined;
+  const required:Array<[keyof AllocationCommercialConfig,boolean]>=[
+    ["administrationFixed",!overridden(overrides.administration)],
+    ["administrationPercent",!overridden(overrides.administration)],
+    ["contingencyPercent",!overridden(overrides.contingency)],
+    ["serviceFeeFixed",true],["serviceFeePercent",true],["targetProfitMarginPercent",true],
+    ["driverSalaryPerDay",vehicles.length>0&&!vehicleIncludes("driverIncluded")&&!overridden(overrides.driverOperations)],
+    ["fuelPricePerLitre",vehicles.length>0&&!vehicleIncludes("fuelIncluded")&&!overridden(overrides.fuel)],
+    ["vehicleKmPerLitre",vehicles.length>0&&!vehicleIncludes("fuelIncluded")&&!overridden(overrides.fuel)],
+    ["tollsPerJourney",vehicles.length>0&&!vehicleIncludes("tollsIncluded")&&!overridden(overrides.tolls)],
+    ["parkingPerDay",vehicles.length>0&&!vehicleIncludes("parkingIncluded")&&!overridden(overrides.parking)],
+    ["guideAccommodationPerNight",guides.length>0&&!guides.every(line=>flag(line.serviceDetails,"accommodationIncluded"))&&!overridden(overrides.guideAccommodation)]
+  ];
+  return required.filter(([key,needed])=>{
+    if(!needed)return false;
+    const value=config[key];
+    return typeof value!=="number"||!Number.isFinite(value)||value<0||
+      key==="vehicleKmPerLitre"&&value===0||key==="targetProfitMarginPercent"&&value>=100;
+  }).map(([key])=>key);
+}
 
 export function calculateAllocationCommercials(lines:AllocationCommercialLine[],config:AllocationCommercialConfig,context:{days:number;nights:number;distanceKm:number},overrides:AllocationCommercialOverrides={}):AllocationCommercialResult{
   const active=lines.filter(line=>line.confirmationStatus!=="cancelled");

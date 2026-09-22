@@ -3,7 +3,7 @@ import {createAdminClient} from "@/lib/supabase/admin";
 import {getRouteEstimate} from "@/lib/journey/route";
 import {endpointRouteLocation} from "@/lib/journey/journey-endpoints";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
-import {calculateAllocationCommercials,type AllocationCommercialConfig,type AllocationCommercialOverrides} from "@/lib/pricing/allocation-commercial";
+import {calculateAllocationCommercials,missingAllocationCommercialConfig,type AllocationCommercialConfig,type AllocationCommercialOverrides,type IncompleteAllocationCommercialConfig} from "@/lib/pricing/allocation-commercial";
 import {resolveJourneyDesign} from "@/lib/journey/curated-journey-server";
 import type {Database,Json} from "@/lib/database.types";
 
@@ -110,14 +110,18 @@ export async function allocationCommercialSnapshot(enquiryId:string,overrides:Al
   const start=startDate?new Date(`${startDate}T00:00:00Z`).getTime():NaN;
   const end=endDate?new Date(`${endDate}T00:00:00Z`).getTime():NaN;
   const days=Number.isFinite(start)&&Number.isFinite(end)&&end>=start?Math.max(1,Math.ceil((end-start)/86400000)+1):Math.max(1,selectedDestinationIds.length);
-  const pricingConfig:AllocationCommercialConfig={
-    driverSalaryPerDay:Number(config.driver_salary_per_day??0),fuelPricePerLitre:Number(config.fuel_price_per_litre??0),vehicleKmPerLitre:Number(config.vehicle_km_per_litre??0),
-    tollsPerJourney:Number(config.tolls_per_journey??0),parkingPerDay:Number(config.parking_per_day??0),guideAccommodationPerNight:Number(config.guide_accommodation_per_night??0),
-    administrationFixed:Number(config.administration_fixed??0),administrationPercent:Number(config.administration_percent??0),contingencyPercent:Number(config.contingency_percent??0),
-    serviceFeeFixed:Number(config.service_fee_fixed??0),serviceFeePercent:Number(config.service_fee_percent??0),targetProfitMarginPercent:Number(config.target_profit_margin_percent??0),
+  const nullablePricingConfig:IncompleteAllocationCommercialConfig={
+    driverSalaryPerDay:config.driver_salary_per_day===null?null:Number(config.driver_salary_per_day),fuelPricePerLitre:config.fuel_price_per_litre===null?null:Number(config.fuel_price_per_litre),vehicleKmPerLitre:config.vehicle_km_per_litre===null?null:Number(config.vehicle_km_per_litre),
+    tollsPerJourney:config.tolls_per_journey===null?null:Number(config.tolls_per_journey),parkingPerDay:config.parking_per_day===null?null:Number(config.parking_per_day),guideAccommodationPerNight:config.guide_accommodation_per_night===null?null:Number(config.guide_accommodation_per_night),
+    administrationFixed:config.administration_fixed===null?null:Number(config.administration_fixed),administrationPercent:config.administration_percent===null?null:Number(config.administration_percent),contingencyPercent:config.contingency_percent===null?null:Number(config.contingency_percent),
+    serviceFeeFixed:config.service_fee_fixed===null?null:Number(config.service_fee_fixed),serviceFeePercent:config.service_fee_percent===null?null:Number(config.service_fee_percent),targetProfitMarginPercent:config.target_profit_margin_percent===null?null:Number(config.target_profit_margin_percent),
     routeDistanceBufferPercent:Number(config.route_distance_buffer_percent??0)
   };
-  const summary=calculateAllocationCommercials(allocations.map(row=>({type:row.allocation_type,supplierCost:row.supplier_cost===null?null:Number(row.supplier_cost),sellingPrice:row.selling_price===null?null:Number(row.selling_price),pricingPlanSnapshot:row.pricing_plan_snapshot,serviceDetails:row.service_details,confirmationStatus:row.confirmation_status})),pricingConfig,{days,nights:Math.max(0,days-1),distanceKm:route.estimatedDistance},overrides);
+  const commercialLines=allocations.map(row=>({type:row.allocation_type,supplierCost:row.supplier_cost===null?null:Number(row.supplier_cost),sellingPrice:row.selling_price===null?null:Number(row.selling_price),pricingPlanSnapshot:row.pricing_plan_snapshot,serviceDetails:row.service_details,confirmationStatus:row.confirmation_status}));
+  const missingConfig=missingAllocationCommercialConfig(commercialLines,nullablePricingConfig,overrides);
+  if(missingConfig.length)throw new Error(`Complete Business Pricing settings before preparing a proposal: ${missingConfig.join(", ")}.`);
+  const pricingConfig=Object.fromEntries(Object.entries(nullablePricingConfig).map(([key,value])=>[key,value??0])) as AllocationCommercialConfig;
+  const summary=calculateAllocationCommercials(commercialLines,pricingConfig,{days,nights:Math.max(0,days-1),distanceKm:route.estimatedDistance},overrides);
   return {allocations,snapshot,summary,commercialContext:{days,nights:Math.max(0,days-1),distanceKm:route.estimatedDistance,config:pricingConfig,overrides}};
 }
 
