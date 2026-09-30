@@ -3,6 +3,7 @@ import {z} from "zod";
 import {createAdminClient} from "@/lib/supabase/admin";
 import type {Json} from "@/lib/database.types";
 import {PublicInputError,publicAttemptLimited,publicSubmissionDigest,readBoundedJson} from "@/lib/security/public-input";
+import {isCentPrecise} from "@/lib/pricing/money-precision";
 
 export const runtime="nodejs";
 const counts=z.object({adults:z.number().int().min(0).max(100),children:z.number().int().min(0).max(100),infants:z.number().int().min(0).max(100)}).strict();
@@ -12,7 +13,7 @@ const journey=z.object({
   travelStartDate:z.iso.date().nullable(),travelEndDate:z.iso.date().nullable(),travellerCounts:counts,
   selectedThemeIds:uuidArray(20),selectedDestinationIds:uuidArray(40),selectedExperienceIds:uuidArray(100),
   experienceParticipants:z.record(z.uuid(),counts),selectedStayIds:uuidArray(40),selectedVehicleId:z.uuid().nullable(),selectedGuideId:z.uuid().nullable(),
-  estimate:z.object({perPersonMin:z.number().min(0).max(100_000_000).nullable(),perPersonMax:z.number().min(0).max(100_000_000).nullable(),currency:z.string().length(3),basis:z.enum(["per_person","total"]),estimatedAt:z.iso.datetime(),snapshot:z.record(z.string(),z.unknown())}).strict().nullable()
+  estimate:z.object({perPersonMin:z.number().min(0).max(100_000_000).refine(isCentPrecise,"Enter a cent-precise estimate minimum.").nullable(),perPersonMax:z.number().min(0).max(100_000_000).refine(isCentPrecise,"Enter a cent-precise estimate maximum.").nullable(),currency:z.string().length(3),basis:z.enum(["per_person","total"]),estimatedAt:z.iso.datetime(),snapshot:z.record(z.string(),z.unknown())}).strict().nullable()
 }).strict().superRefine((value,context)=>{
   if(value.travelStartDate&&value.travelEndDate&&value.travelEndDate<value.travelStartDate)context.addIssue({code:"custom",message:"Departure must be after arrival."});
   if(value.travellerCounts.adults<1)context.addIssue({code:"custom",message:"At least one adult traveller is required."});

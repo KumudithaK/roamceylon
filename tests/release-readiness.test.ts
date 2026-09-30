@@ -13,11 +13,16 @@ const manifest=(path:string)=>source(path).trim().split("\n").map(line=>{
   return {checksum:match[1],path:match[2]};
 });
 
-test("Phase 16 freezes the complete unique migration chain by checksum",()=>{
+test("Phase 16 migration baseline remains frozen while CR6 adds exactly two ordered migrations",()=>{
   const repository=manifest("repository-migration-manifest.sha256");
   const stabilization=manifest("stabilization-migration-manifest.sha256");
-  assert.equal(migrations.length,84);
-  assert.equal(repository.length,migrations.length);
+  assert.equal(repository.length,84);
+  assert.equal(migrations.length,repository.length+2);
+  assert.deepEqual(migrations.slice(repository.length),[
+    "202609230001_cr6_cent_precision.sql",
+    "202609270001_cr6_allocation_command_ambiguity.sql"
+  ]);
+  assert.deepEqual(migrations.slice(0,repository.length),repository.map(entry=>basename(entry.path)));
   assert.equal(new Set(migrations.map(name=>name.slice(0,12))).size,migrations.length);
   for(const entry of repository){
     assert.equal(createHash("sha256").update(source(entry.path)).digest("hex"),entry.checksum);

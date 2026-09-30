@@ -3,6 +3,7 @@ import {z} from "zod";
 import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
 import {referenceComparison} from "@/lib/benefits/preferred-benefits";
 import type {Database} from "@/lib/database.types";
+import {isCentPrecise} from "@/lib/pricing/money-precision";
 
 type Definition=Database["public"]["Tables"]["benefit_definitions"]["Row"];
 const optionalText=z.string().trim().max(1000).nullable().optional();
@@ -11,7 +12,7 @@ const schema=z.object({
   benefitType:z.enum(["roam_ceylon_complimentary","preferred_rate","partner_privilege","complimentary_upgrade","meal_benefit","arrival_departure_benefit","celebration_benefit","experience_benefit","roam_ceylon_service_benefit","other"]),
   confidenceStatus:z.enum(["guaranteed_by_roam_ceylon","confirmed_partner_benefit","subject_to_availability"]),defaultScope:z.enum(["journey","traveller","stay","destination","experience","transport","guide","day"]),
   customerDescription:z.string().trim().min(10).max(1000),entityType:z.enum(["accommodation","vehicle","guide","experience","destination"]).nullable(),entityId:z.uuid().nullable(),
-  validFrom:z.iso.date().nullable(),validTo:z.iso.date().nullable(),defaultIncluded:z.boolean(),active:z.boolean(),customerRate:z.number().min(0).nullable(),referenceRate:z.number().min(0).nullable(),currency:z.string().trim().length(3).nullable(),rateUnit:optionalText,
+  validFrom:z.iso.date().nullable(),validTo:z.iso.date().nullable(),defaultIncluded:z.boolean(),active:z.boolean(),customerRate:z.number().min(0).refine(isCentPrecise,"Enter a cent-precise customer rate.").nullable(),referenceRate:z.number().min(0).refine(isCentPrecise,"Enter a cent-precise reference rate.").nullable(),currency:z.string().trim().length(3).nullable(),rateUnit:optionalText,
   comparisonVerified:z.boolean(),referenceRateBasis:optionalText,referenceRateSource:optionalText,verificationDate:z.iso.date().nullable(),occupancyBasis:optionalText,roomCategory:optionalText,mealPlan:optionalText,applicableFrom:z.iso.date().nullable(),applicableTo:z.iso.date().nullable(),taxesFeesBasis:optionalText,cancellationTermsBasis:optionalText,internalNotes:optionalText
 }).refine(value=>(value.entityType===null)===(value.entityId===null),{message:"Choose both the associated resource type and record, or leave both empty."});
 

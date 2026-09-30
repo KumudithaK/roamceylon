@@ -3,10 +3,11 @@ import {z} from "zod";
 import {AccountingPostError,activateJourneyAccount} from "@/lib/accounting/post-journey-account";
 import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
 import {financeAccountForStaff} from "@/lib/admin/traveller-pii";
+import {isCentPrecise} from "@/lib/pricing/money-precision";
 
 const schema=z.object({
   enquiryId:z.uuid(),
-  depositAmount:z.coerce.number().positive().max(100000000),
+  depositAmount:z.coerce.number().positive().max(100000000).refine(isCentPrecise,"Enter a cent-precise deposit amount."),
   paymentDate:z.iso.date(),
   paymentMethod:z.string().trim().max(80).optional(),
   reference:z.string().trim().max(120).optional(),

@@ -2,13 +2,16 @@ import {NextResponse} from "next/server";
 import {z} from "zod";
 import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
 import {createCancellationAssessment,summarizeSupplierExposure} from "@/lib/accounting/cancellation";
+import {isCentPrecise} from "@/lib/pricing/money-precision";
+
+const moneyAmount=z.coerce.number().min(0).max(100000000).refine(isCentPrecise,"Enter a cent-precise amount.");
 
 const settlementSchema=z.object({
   action:z.literal("review_settlement"),
   accountId:z.uuid(),
   settlementId:z.uuid(),
   resolution:z.enum(["cancelled_without_cost","recoverable","waived","non_recoverable"]),
-  nonRecoverableAmount:z.coerce.number().min(0).max(100000000),
+  nonRecoverableAmount:moneyAmount,
   notes:z.string().trim().min(3,"Enter a supplier confirmation or reference (at least 3 characters).").max(500,"Supplier confirmation must be 500 characters or fewer.")
 });
 const calculateSchema=z.object({
@@ -17,15 +20,15 @@ const calculateSchema=z.object({
   outcome:z.enum(["refund","credit_note","rebook","no_refund"]),
   cancellationReason:z.string().trim().min(3).max(1000),
   policyUsed:z.string().trim().min(2).max(500),
-  cancellationFee:z.coerce.number().min(0).max(100000000),
-  adminCharge:z.coerce.number().min(0).max(100000000),
-  otherNonRecoverableCost:z.coerce.number().min(0).max(100000000),
+  cancellationFee:moneyAmount,
+  adminCharge:moneyAmount,
+  otherNonRecoverableCost:moneyAmount,
   notes:z.string().trim().max(1000).optional()
 });
 const transitionSchema=z.object({
   action:z.enum(["approve","close"]),
   accountId:z.uuid(),
-  approvedRefund:z.coerce.number().min(0).max(100000000).optional()
+  approvedRefund:moneyAmount.optional()
 });
 const schema=z.discriminatedUnion("action",[settlementSchema,calculateSchema,transitionSchema]);
 

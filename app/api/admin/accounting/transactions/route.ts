@@ -2,13 +2,14 @@ import {NextResponse} from "next/server";
 import {z} from "zod";
 import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
 import {fileMatchesDeclaredType} from "@/lib/security/public-input";
+import {isCentPrecise} from "@/lib/pricing/money-precision";
 
 export const runtime="nodejs";
 
 const schema=z.object({
   accountId:z.uuid(),settlementId:z.union([z.uuid(),z.literal(""),z.null()]).optional(),
   type:z.enum(["customer_receipt","customer_refund","supplier_payment","supplier_recovery"]),
-  amount:z.coerce.number().min(0).max(100000000),waivedAmount:z.coerce.number().min(0).max(100000000).default(0),
+  amount:z.coerce.number().min(0).max(100000000).refine(isCentPrecise,"Enter a cent-precise amount."),waivedAmount:z.coerce.number().min(0).max(100000000).refine(isCentPrecise,"Enter a cent-precise waiver amount.").default(0),
   waiverReason:z.string().trim().max(500).optional(),paymentDate:z.iso.date(),paymentMethod:z.string().trim().max(80).optional(),
   reference:z.string().trim().max(120).optional(),notes:z.string().trim().max(500).optional(),idempotencyKey:z.string().trim().min(8).max(180).optional()
 }).strict().superRefine((value,context)=>{

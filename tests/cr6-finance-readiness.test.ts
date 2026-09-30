@@ -94,3 +94,28 @@ test("posted payments, supplier payables and confidential finance data retain th
   assert.match(roles,/"finance\.payments\.manage"/);
   assert.doesNotMatch(publicProposal,/supplierCost|grossProfit|profitMargin|paymentReference|bankDetails/);
 });
+
+test("staging finance proof is rollback-only and checks lifecycle, replay, capability and audit boundaries",()=>{
+  const proof=source("scripts/cr6-r1-staging-finance-rollback.sql");
+  assert.match(proof,/(?:^|\n)begin;\s*set local request\.jwt\.claim\.role = 'service_role';/);
+  assert.match(proof,/rollback;\s*select 'CR6_ROLLBACK_FINANCE_MATRIX_PASS'/);
+  assert.doesNotMatch(proof,/\bcommit\s*;/i);
+  for(const contract of [
+    "Acceptance did not remain distinct from account/cash creation",
+    "Allocation change rewrote or failed to invalidate the sent snapshot",
+    "Receipt idempotency key accepted a different amount",
+    "Receipt command accepted overpayment",
+    "Supplier-payment replay double-posted",
+    "Supplier-payment idempotency collision accepted",
+    "Supplier overpayment accepted",
+    "Repeated reversal changed the ledger",
+    "Original supplier payment was erased or unauditable",
+    "Finance-only capability fixture was not fully rolled back",
+    "Full financial settlement fabricated operational completion",
+    "Account-number sequence unexpectedly consumed"
+  ]) assert.ok(proof.includes(contract),contract);
+  assert.match(proof,/select account,marker,e\.id,e\.journey_reference,marker,v_email/);
+  assert.equal((proof.match(/accept_journey_proposal_command\(token,marker,v_email/g)??[]).length,2);
+  assert.doesNotMatch(proof,/accept_journey_proposal_command\(proposal,/);
+  assert.match(proof,/This proposal version is out of date\./);
+});

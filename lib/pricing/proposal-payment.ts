@@ -1,5 +1,6 @@
-const isCentAmount=(value:number)=>Number.isFinite(value)&&value>=0&&
-  Math.abs(value*100-Math.round(value*100))<1e-7;
+import {isCentPrecise} from "./money-precision.ts";
+
+const isCentAmount=(value:number)=>value>=0&&isCentPrecise(value);
 
 export function proposalBalance(total:number,deposit:number|null):number|null{
   return deposit===null?null:(Math.round(total*100)-Math.round(deposit*100))/100;

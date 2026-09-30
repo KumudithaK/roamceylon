@@ -3,16 +3,19 @@ import {z} from "zod";
 import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
 import {proposalChangeForStaff,proposalForStaff} from "@/lib/admin/traveller-pii";
 import {generateJourneyProposal,ProposalError,revokeJourneyProposalAccess,transitionJourneyProposal} from "@/lib/proposals/journey-proposal-service";
+import {isCentPrecise} from "@/lib/pricing/money-precision";
+
+const moneyInput=z.number().min(0).refine(isCentPrecise,"Enter a cent-precise monetary amount.");
 
 const generateSchema=z.object({
   action:z.literal("generate"),enquiryId:z.uuid(),
   introduction:z.string().trim().max(3000).optional(),terms:z.string().trim().max(5000).optional(),validUntil:z.iso.date().optional(),rangeOverrideReason:z.string().trim().max(1500).optional(),
-  depositAmount:z.number().min(0).nullable().optional(),depositDueDate:z.iso.date().optional(),balanceDueDate:z.iso.date().optional(),
+  depositAmount:moneyInput.nullable().optional(),depositDueDate:z.iso.date().optional(),balanceDueDate:z.iso.date().optional(),
   additionalInclusions:z.array(z.string().trim().min(2).max(300)).max(30).optional(),additionalExclusions:z.array(z.string().trim().min(2).max(300)).max(30).optional(),importantInformation:z.array(z.string().trim().min(2).max(500)).max(30).optional(),
-  optionalItems:z.array(z.object({name:z.string().trim().min(2).max(200),description:z.string().trim().min(2).max(500),price:z.number().min(0).optional(),currency:z.string().length(3).optional()})).max(20).optional(),
+  optionalItems:z.array(z.object({name:z.string().trim().min(2).max(200),description:z.string().trim().min(2).max(500),price:moneyInput.optional(),currency:z.string().length(3).optional()})).max(20).optional(),
   commercialOverrides:z.object({
-    driverOperations:z.number().min(0).nullable().optional(),fuel:z.number().min(0).nullable().optional(),tolls:z.number().min(0).nullable().optional(),
-    parking:z.number().min(0).nullable().optional(),guideAccommodation:z.number().min(0).nullable().optional(),administration:z.number().min(0).nullable().optional(),contingency:z.number().min(0).nullable().optional()
+    driverOperations:moneyInput.nullable().optional(),fuel:moneyInput.nullable().optional(),tolls:moneyInput.nullable().optional(),
+    parking:moneyInput.nullable().optional(),guideAccommodation:moneyInput.nullable().optional(),administration:moneyInput.nullable().optional(),contingency:moneyInput.nullable().optional()
   }).optional()
 });
 const transitionSchema=z.object({action:z.enum(["internal_approve","sent"]),proposalId:z.uuid()});

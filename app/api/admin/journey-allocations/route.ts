@@ -6,6 +6,7 @@ import {resolveJourneyDesign} from "@/lib/journey/curated-journey-server";
 import {completeJourneyLegs} from "@/lib/journey/travel-preferences";
 import {completeCustomJourneyRate,usesCustomJourneyRate} from "@/lib/admin/allocation-rate";
 import type {Json} from "@/lib/database.types";
+import {isCentPrecise} from "@/lib/pricing/money-precision";
 
 const allocationSchema=z.object({
   id:z.uuid().nullable().optional().default(null),
@@ -26,8 +27,8 @@ const allocationSchema=z.object({
   serviceDetails:z.record(z.string(),z.union([z.string(),z.number(),z.boolean(),z.null()])),
   providerName:z.string().trim().max(160).nullable(),
   supplierContact:z.string().trim().max(500).nullable(),
-  supplierCost:z.number().min(0).max(100000000).nullable(),
-  sellingPrice:z.number().min(0).max(100000000).nullable(),
+  supplierCost:z.number().min(0).max(100000000).refine(isCentPrecise,"Enter a cent-precise supplier cost.").nullable(),
+  sellingPrice:z.number().min(0).max(100000000).refine(isCentPrecise,"Enter a cent-precise selling price.").nullable(),
   currency:z.string().trim().length(3).transform(value=>value.toUpperCase()),
   confirmationStatus:z.enum(["pending","confirmed","cancelled"]),
   invoiceStatus:z.enum(["not_requested","requested","received","not_required"]),
