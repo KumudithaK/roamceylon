@@ -23,6 +23,16 @@ test("experience participants cannot exceed revised journey traveller counts",()
   assert(validateCuratedJourney(itinerary).errors.some(error=>error.includes("Experience participants")));
 });
 
+test("impossible dates and mismatched pickup or drop-off cannot reach allocation or proposal",()=>{
+  const base=createCuratedItinerary(state);
+  assert(validateCuratedJourney({...base,travelDates:{start:"2027-02-30",end:"2027-03-03"}}).errors.some(error=>error.includes("valid journey")));
+  assert(validateCuratedJourney({...base,travelDates:{start:"2027-03-01",end:"2027-02-16"}}).errors.some(error=>error.includes("valid journey")));
+  assert(validateCuratedJourney({...base,pickup:{...base.pickup,date:"2027-02-13"}}).errors.some(error=>error.includes("Pickup date")));
+  assert(validateCuratedJourney({...base,dropoff:{...base.dropoff,date:"2027-02-17"}}).errors.some(error=>error.includes("Drop-off date")));
+  assert.deepEqual(validateCuratedJourney(base).errors,[]);
+  assert.match(readFileSync(new URL("../lib/proposals/journey-proposal-service.ts",import.meta.url),"utf8"),/validateCuratedJourney\(design\.itinerary\)/);
+});
+
 test("route, stay, guide, experience and transport changes require allocation review",()=>{const before=createCuratedItinerary(state),after=normaliseCuratedItinerary({...before,selectedDestinationIds:["kandy","galle"],destinationPreferences:{...before.destinationPreferences,galle:{...before.destinationPreferences.galle,nights:2}},selectedExperienceIds:[],journeyGuideLanguages:["English","Italian"]},state);assert(allocationReviewReason({allocation_type:"accommodation",destination_id:"galle",experience_id:null,from_location_key:null,to_location_key:null},before,after));assert(allocationReviewReason({allocation_type:"experience",destination_id:"galle",experience_id:"fort",from_location_key:null,to_location_key:null},before,after));assert(allocationReviewReason({allocation_type:"guide",destination_id:null,experience_id:null,from_location_key:null,to_location_key:null},before,after));assert(allocationReviewReason({allocation_type:"vehicle",destination_id:null,experience_id:null,from_location_key:"pickup",to_location_key:"destination:galle"},before,after))});
 
 test("migration protects the brief and proposal generation resolves curated state",()=>{

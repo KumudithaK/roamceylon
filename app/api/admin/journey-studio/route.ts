@@ -19,19 +19,20 @@ const legacyState=(enquiry:Enquiry):JourneyState=>({
 const briefState=(enquiry:Enquiry)=>parseJourneyHandoff(enquiry.trip_state)?.state??legacyState(enquiry);
 
 async function load(database:SupabaseClient<Database>,enquiryId:string){
-  const [enquiryResult,curatedResult,destinationsResult,experiencesResult,linksResult]=await Promise.all([
+  const [enquiryResult,curatedResult,destinationsResult,experiencesResult,linksResult,acceptedResult]=await Promise.all([
     database.from("enquiries").select("*").eq("id",enquiryId).maybeSingle(),
     database.from("curated_journeys").select("*").eq("enquiry_id",enquiryId).maybeSingle(),
     database.from("destinations").select("id,slug,name,province,region,latitude,longitude").eq("status","published").eq("active",true).order("name"),
     database.from("experiences").select("id,name,category").eq("status","published").eq("active",true).order("name"),
-    database.from("experience_destinations").select("experience_id,destination_id")
+    database.from("experience_destinations").select("experience_id,destination_id"),
+    database.from("journey_proposals").select("id").eq("enquiry_id",enquiryId).eq("status","approved").limit(1).maybeSingle()
   ]);
-  const error=enquiryResult.error??curatedResult.error??destinationsResult.error??experiencesResult.error??linksResult.error;
+  const error=enquiryResult.error??curatedResult.error??destinationsResult.error??experiencesResult.error??linksResult.error??acceptedResult.error;
   if(error)throw new Error(error.message);
   if(!enquiryResult.data)throw new Error("Traveller enquiry not found.");
   const changes=curatedResult.data?await database.from("curated_journey_changes").select("*").eq("curated_journey_id",curatedResult.data.id).order("changed_at",{ascending:false}).limit(100):{data:[],error:null};
   if(changes.error)throw new Error(changes.error.message);
-  return {enquiry:enquiryResult.data,briefItinerary:curatedItineraryToJson(createCuratedItinerary(briefState(enquiryResult.data))),curated:curatedResult.data as Curated|null,destinations:destinationsResult.data??[],experiences:experiencesResult.data??[],experienceDestinations:linksResult.data??[],changes:changes.data??[]};
+  return {enquiry:enquiryResult.data,briefItinerary:curatedItineraryToJson(createCuratedItinerary(briefState(enquiryResult.data))),curated:curatedResult.data as Curated|null,accepted:Boolean(acceptedResult.data),destinations:destinationsResult.data??[],experiences:experiencesResult.data??[],experienceDestinations:linksResult.data??[],changes:changes.data??[]};
 }
 
 export async function GET(request:Request){
@@ -50,6 +51,7 @@ export async function POST(request:Request){
   const {database,user}=actor;
   try{
     const context=await load(database,parsed.data.enquiryId),brief=briefState(context.enquiry);
+    if(context.accepted)return NextResponse.json({error:"This journey has an accepted proposal. Preserve the agreed itinerary and use a separately authorised amendment process for changes."},{status:409});
     if(parsed.data.action==="initialise"){
       if(context.curated)return NextResponse.json({curated:context.curated,changes:context.changes,validation:validateCuratedJourney(normaliseCuratedItinerary(context.curated.itinerary,brief))});
       const itinerary=createCuratedItinerary(brief);

@@ -1,8 +1,15 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import test from "node:test";
+import {enquiryLifecyclePayload} from "../lib/enquiries/enquiry-lifecycle.ts";
 
 const read=(path:string)=>readFileSync(new URL(path,import.meta.url),"utf8");
+
+test("admin lifecycle actions never send internal notes in the same command",()=>{
+  assert.deepEqual(enquiryLifecyclePayload("journey-id","Draft note","prepare_operations"),{enquiryId:"journey-id",action:"prepare_operations"});
+  assert.deepEqual(enquiryLifecyclePayload("journey-id","Saved note"),{enquiryId:"journey-id",internalNotes:"Saved note"});
+  assert.match(read("../features/admin/enquiry-review.tsx"),/Save internal notes separately before changing journey status/);
+});
 
 test("supplier allocations remain independent from immutable traveller preferences",()=>{
   const route=read("../app/api/admin/journey-allocations/route.ts");

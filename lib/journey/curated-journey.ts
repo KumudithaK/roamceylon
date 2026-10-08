@@ -76,10 +76,21 @@ export function normaliseCuratedItinerary(value:unknown,brief:JourneyState):Cura
 }
 
 export const curatedJourneyNights=(itinerary:CuratedItinerary)=>itinerary.selectedDestinationIds.reduce((total,id)=>total+(itinerary.destinationPreferences[id]?.nights??0),0);
-export const curatedJourneyDuration=(itinerary:CuratedItinerary)=>{const start=new Date(`${itinerary.travelDates.start}T00:00:00Z`).getTime(),end=new Date(`${itinerary.travelDates.end}T00:00:00Z`).getTime();return Number.isFinite(start)&&Number.isFinite(end)&&end>start?Math.ceil((end-start)/86_400_000):0};
+const validDate=(value:string)=>{
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;
+  const time=new Date(`${value}T00:00:00Z`).getTime();
+  return Number.isFinite(time)&&new Date(time).toISOString().slice(0,10)===value;
+};
+export const curatedJourneyDuration=(itinerary:CuratedItinerary)=>{
+  if(!validDate(itinerary.travelDates.start)||!validDate(itinerary.travelDates.end))return 0;
+  const start=new Date(`${itinerary.travelDates.start}T00:00:00Z`).getTime(),end=new Date(`${itinerary.travelDates.end}T00:00:00Z`).getTime();
+  return end>start?Math.ceil((end-start)/86_400_000):0;
+};
 export function validateCuratedJourney(itinerary:CuratedItinerary){
   const duration=curatedJourneyDuration(itinerary),plannedNights=curatedJourneyNights(itinerary),availableNights=Math.max(0,duration-1),errors:string[]=[],warnings:string[]=[];
   if(!duration)errors.push("Choose valid journey start and end dates.");
+  if(itinerary.pickup.type&&itinerary.pickup.date!==itinerary.travelDates.start)errors.push("Pickup date must match the journey start date.");
+  if(itinerary.dropoff.type&&itinerary.dropoff.date!==itinerary.travelDates.end)errors.push("Drop-off date must match the journey end date.");
   const totalTravellers=itinerary.travellerCounts.adults+itinerary.travellerCounts.children+itinerary.travellerCounts.infants;
   if(totalTravellers<1)errors.push("Add at least one traveller.");
   for(const experienceId of itinerary.selectedExperienceIds){

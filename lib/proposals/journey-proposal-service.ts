@@ -6,6 +6,7 @@ import {experienceAllocationKey,hasOwnJourneyGuideSnapshot,journeyAllocationScop
 import {endpointLabel} from "@/lib/journey/journey-endpoints";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
 import {resolveJourneyDesign} from "@/lib/journey/curated-journey-server";
+import {validateCuratedJourney} from "@/lib/journey/curated-journey";
 import {completeJourneyLegs} from "@/lib/journey/travel-preferences";
 import {reviewProposalAgainstEstimate} from "./proposal-range-review";
 import {validateProposalPaymentTerms} from "@/lib/pricing/proposal-payment";
@@ -32,7 +33,15 @@ export async function generateJourneyProposal(enquiryId:string,userId:string,det
   const {data:enquiry,error}=await database.from("enquiries").select("*").eq("id",enquiryId).maybeSingle();
   if(error)throw new ProposalError("DATABASE",error.message);
   if(!enquiry)throw new ProposalError("NOT_FOUND","Traveller enquiry not found.");
+  const {count:acceptedCount,error:acceptedError}=await database.from("journey_proposals")
+    .select("id",{count:"exact",head:true}).eq("enquiry_id",enquiryId).eq("status","approved");
+  if(acceptedError)throw new ProposalError("DATABASE",acceptedError.message);
+  if(acceptedCount)throw new ProposalError("INCOMPLETE","This journey already has an accepted proposal. A new version requires a separately authorised amendment process.");
   const design=await resolveJourneyDesign(database,enquiry);
+  if(design.curated&&design.itinerary){
+    const validation=validateCuratedJourney(design.itinerary);
+    if(validation.errors.length)throw new ProposalError("INCOMPLETE",validation.errors.join(" "));
+  }
   const destinationIds=design.state?.selectedDestinationIds??ids(enquiry.selected_destinations);const experienceIds=design.state?.selectedExperienceIds??ids(enquiry.selected_experiences);
   if(design.curated&&!["ready_for_allocation","allocation_in_progress","ready_for_proposal"].includes(design.curated.status))throw new ProposalError("INCOMPLETE","Mark the Curated Journey ready for allocation before preparing a proposal.");
   const {data:experienceLinks,error:linkError}=experienceIds.length?await database.from("experience_destinations").select("experience_id,destination_id").in("experience_id",experienceIds):{data:[],error:null};
