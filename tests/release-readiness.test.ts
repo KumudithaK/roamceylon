@@ -13,15 +13,16 @@ const manifest=(path:string)=>source(path).trim().split("\n").map(line=>{
   return {checksum:match[1],path:match[2]};
 });
 
-test("Phase 16 migration baseline remains frozen while CR6 and pending CR7 migrations stay ordered",()=>{
+test("Phase 16 migration baseline remains frozen while commercial-readiness migrations stay ordered",()=>{
   const repository=manifest("repository-migration-manifest.sha256");
   const stabilization=manifest("stabilization-migration-manifest.sha256");
   assert.equal(repository.length,84);
-  assert.equal(migrations.length,repository.length+3);
+  assert.equal(migrations.length,repository.length+4);
   assert.deepEqual(migrations.slice(repository.length),[
     "202609230001_cr6_cent_precision.sql",
     "202609270001_cr6_allocation_command_ambiguity.sql",
-    "202610010001_cr7_accepted_journey_integrity.sql"
+    "202610010001_cr7_accepted_journey_integrity.sql",
+    "202610090001_cr7_finance_constraint_boundary.sql"
   ]);
   assert.deepEqual(migrations.slice(0,repository.length),repository.map(entry=>basename(entry.path)));
   assert.equal(new Set(migrations.map(name=>name.slice(0,12))).size,migrations.length);

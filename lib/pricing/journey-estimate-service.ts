@@ -8,6 +8,7 @@ import {calculateJourneyEstimateRange,type EstimateComponentBound} from "./journ
 import type {JourneyEstimateRequest,PublicJourneyEstimate} from "./journey-estimate-types";
 import type {Database,Json} from "@/lib/database.types";
 import {allocatePlanningNights} from "./journey-estimate-nights";
+import {overnightJourneyDuration} from "@/lib/journey/journey-dates";
 
 type Plan=Database["public"]["Tables"]["pricing_plans"]["Row"];
 type Accommodation=Database["public"]["Tables"]["accommodations"]["Row"];
@@ -18,7 +19,6 @@ type EstimateBand=Database["public"]["Tables"]["journey_estimate_bands"]["Row"];
 const strings=(value:Json)=>Array.isArray(value)?value.filter((item):item is string=>typeof item==="string"):[];
 const normal=(value:unknown)=>String(value??"").trim().toLowerCase().replace(/[^a-z0-9]+/g," ");
 const includesAny=(value:string,tokens:string[])=>tokens.some(token=>value.includes(token));
-const duration=(start:string,end:string)=>{const from=new Date(`${start}T00:00:00Z`).getTime(),to=new Date(`${end}T00:00:00Z`).getTime();return start&&end&&Number.isFinite(from)&&Number.isFinite(to)&&to>from?Math.ceil((to-from)/86_400_000):0};
 const bounds=(category:string,values:number[]):EstimateComponentBound|null=>values.length?{category,minimum:Math.min(...values),maximum:Math.max(...values)}:null;
 const plansFor=(plans:Plan[],type:Plan["entity_type"],id:string,currency:string)=>plans.filter(plan=>plan.entity_type===type&&plan.entity_id===id&&plan.active&&plan.currency===currency);
 
@@ -68,7 +68,7 @@ export class JourneyEstimateService{
   async estimate(request:JourneyEstimateRequest):Promise<PublicJourneyEstimate>{
     const database=createAdminClient();
     if(!database)throw new PackagePricingError("CONFIGURATION","Server-side Supabase credentials are unavailable.");
-    const durationDays=duration(request.travelDates.start,request.travelDates.end),tripNights=Math.max(0,durationDays-1),adults=request.travellerCounts.adults,children=request.travellerCounts.children,infants=request.travellerCounts.infants,travellers=adults+children+infants;
+    const span=overnightJourneyDuration(request.travelDates.start,request.travelDates.end),durationDays=span?.days??0,tripNights=span?.nights??0,adults=request.travellerCounts.adults,children=request.travellerCounts.children,infants=request.travellerCounts.infants,travellers=adults+children+infants;
     const [configResult,bandsResult,destinationResult,experienceResult,experienceDestinationLinksResult,accommodationResult,vehicleResult,guideResult,vehicleLinksResult,guideDestinationLinksResult,guideExperienceLinksResult]=await Promise.all([
       database.from("tour_pricing_config").select("*").eq("id",true).eq("active",true).single(),
       database.from("journey_estimate_bands").select("*").eq("active",true).order("sort_order"),
