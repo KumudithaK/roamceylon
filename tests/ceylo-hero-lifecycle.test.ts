@@ -2,8 +2,14 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import test from "node:test";
 import ts from "typescript";
-import {isPartnerDemoEnabled,partnerDemoEmbedUrl} from "../lib/partner-demo.ts";
+import {isPartnerDemoEnabled,partnerDemoEmbedUrl,partnerDemoPosterUrl} from "../lib/partner-demo.ts";
 const source=readFileSync(new URL("../components/home/hero-demo-video.tsx",import.meta.url),"utf8");
+test("a missing published hero poster uses the existing landscape fallback, and never removes the image",()=>{
+  const landscape="https://images.pexels.com/photos/1/landscape.jpeg";
+  assert.equal(partnerDemoPosterUrl(null,landscape),landscape);assert.equal(partnerDemoPosterUrl(undefined,landscape),landscape);assert.equal(partnerDemoPosterUrl("  ",landscape),landscape);
+  assert.equal(partnerDemoPosterUrl("/configured-poster.jpg",landscape),"/configured-poster.jpg");assert.equal(partnerDemoPosterUrl(null,""),"/og.png");
+  const home=readFileSync(new URL("../app/page.tsx",import.meta.url),"utf8");assert.match(home,/posterUrl:partnerDemoPosterUrl\(configuredHero.posterUrl,fallbackPoster\)/);
+});
 async function effect(failure=false){
   const body=source.slice(source.indexOf("    if(!enabled||!host.current)return;"),source.indexOf("\n  },[enabled,videoId]"));
   const timers=new Map<number,()=>void>();let serial=0,removed=0,destroyed=0,muted=0,played=0;

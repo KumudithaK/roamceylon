@@ -11,6 +11,11 @@ type DemoEnvironment={
 
 export const partnerDemoVideoId="OkLsh-4NokU";
 
+/** Published hero records may legitimately have no poster configured. */
+export function partnerDemoPosterUrl(poster:string|null|undefined,fallback:string){
+  return poster?.trim()||fallback||"/og.png";
+}
+
 export function isPartnerDemoEnabled(env:DemoEnvironment){
   if(env.CEYLON_PARTNER_DEMO_HERO!=="1"||env.CEYLON_DEMO_SCOPE!=="commercial-readiness-staging")return false;
   if(env.VERCEL_ENV==="production")return false;
