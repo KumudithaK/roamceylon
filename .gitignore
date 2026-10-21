@@ -9,3 +9,4 @@ dist/
 reports/latest-import-report.json
 /tmp/
 /output/
+.vercel

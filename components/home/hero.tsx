@@ -5,8 +5,21 @@ import {HeroRouteDemo} from "./hero-route-demo";
 import {FadeIn} from "@/components/animate/fade-in";
 import {HeroMedia} from "./hero-media";
 import type {Destination,HeroMedia as HeroMediaType,Theme} from "@/lib/types";
+import {brand} from "@/lib/brand";
+import {journeyLaunchHref} from "@/lib/public-navigation";
+import {Button} from "@/components/ui/button";
 
 export function Hero({media,themes,destinations}:{media:HeroMediaType;themes:Theme[];destinations:Destination[]}){
+  if(media.partnerDemoVideoId)return <section className="partner-demo-hero inverse-surface" aria-labelledby="partner-demo-headline">
+    <HeroMedia media={media}/>
+    <div className="partner-demo-hero-overlay" aria-hidden="true"/>
+    <div className="shell partner-demo-hero-content">
+      <p className="partner-demo-hero-brand">{brand.wordmark}</p>
+      <h1 id="partner-demo-headline">{media.title}</h1>
+      <p className="partner-demo-hero-subtitle">{media.subtitle}</p>
+      <Button asChild variant="accent" size="lg" className="mt-9"><a href={journeyLaunchHref}>{brand.primaryCta}</a></Button>
+    </div>
+  </section>;
   return <section className="relative min-h-[calc(100svh-5rem)] overflow-hidden bg-slate text-ivory">
     <HeroMedia media={media}/>
     <div className="absolute inset-0 bg-gradient-to-r from-forest/75 via-transparent to-forest/20"/>

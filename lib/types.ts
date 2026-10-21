@@ -16,4 +16,4 @@ export type JourneyExperience=Experience&{destinationIds:string[];themeIds:strin
 export type JourneyStay=Stay&{destinationId:string;pricingPlans:JourneyPricingPlan[]};
 export type JourneyVehicle=Vehicle&{nationwide:boolean;destinationIds:string[];luggage_capacity:string|null;price_guide:string|null;per_km_rate_usd:number|null;verified:boolean;pricingPlans:JourneyPricingPlan[]};
 export type JourneyGuide=Guide&{nationwide:boolean;destinationIds:string[];themeIds:string[];experienceIds:string[];verified:boolean;relevance?:number;pricingPlans:JourneyPricingPlan[]};
-export type HeroMedia={title:string;subtitle:string;posterUrl:string|null;desktopVideoUrl:string|null;mobileVideoUrl:string|null;alt:string;overlayStrength:number;enabled:boolean;autoplay:boolean;loop:boolean;muted:boolean;developmentYoutubePreviewId?:string};
+export type HeroMedia={title:string;subtitle:string;posterUrl:string|null;desktopVideoUrl:string|null;mobileVideoUrl:string|null;alt:string;overlayStrength:number;enabled:boolean;autoplay:boolean;loop:boolean;muted:boolean;partnerDemoVideoId?:string};

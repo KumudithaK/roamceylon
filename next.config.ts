@@ -1,9 +1,11 @@
 import type {NextConfig} from "next";
+import {isPartnerDemoEnabled} from "./lib/partner-demo";
 
 const production=process.env.NODE_ENV==="production";
+const partnerDemo=isPartnerDemoEnabled(process.env);
 const contentSecurityPolicy=[
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${production?"":" 'unsafe-eval'"}`,
+  `script-src 'self' 'unsafe-inline'${production?"":" 'unsafe-eval'"}${partnerDemo?" https://www.youtube.com":""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
@@ -42,6 +44,7 @@ const nextConfig:NextConfig={
   },
   async headers(){return [
     {source:"/:path*",headers:securityHeaders},
+    ...(partnerDemo?[{source:"/",headers:[{key:"Permissions-Policy",value:"camera=(), microphone=(self), geolocation=()"},{key:"X-Robots-Tag",value:"noindex, nofollow, noarchive"}]}]:[]),
     {source:"/proposal/:path*",headers:[
       {key:"Cache-Control",value:"private, no-store, max-age=0"},
       {key:"X-Robots-Tag",value:"noindex, nofollow, noarchive"}
