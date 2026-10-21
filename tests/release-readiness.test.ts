@@ -17,12 +17,14 @@ test("Phase 16 migration baseline remains frozen while commercial-readiness migr
   const repository=manifest("repository-migration-manifest.sha256");
   const stabilization=manifest("stabilization-migration-manifest.sha256");
   assert.equal(repository.length,84);
-  assert.equal(migrations.length,repository.length+4);
+  // Isolated R14 rollout: approved security migration only; no account-date candidate.
+  assert.equal(migrations.length,repository.length+5);
   assert.deepEqual(migrations.slice(repository.length),[
     "202609230001_cr6_cent_precision.sql",
     "202609270001_cr6_allocation_command_ambiguity.sql",
     "202610010001_cr7_accepted_journey_integrity.sql",
-    "202610090001_cr7_finance_constraint_boundary.sql"
+    "202610090001_cr7_finance_constraint_boundary.sql",
+    "202610150002_cr7_allocation_read_boundary.sql"
   ]);
   assert.deepEqual(migrations.slice(0,repository.length),repository.map(entry=>basename(entry.path)));
   assert.equal(new Set(migrations.map(name=>name.slice(0,12))).size,migrations.length);

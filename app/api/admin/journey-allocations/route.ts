@@ -1,6 +1,7 @@
 import {NextResponse} from "next/server";
 import {z} from "zod";
 import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
+import {allocationForStaff,fulfilmentResultForStaff} from "@/lib/admin/allocation-projection";
 import {syncAllocationAccounting} from "@/lib/accounting/allocation-accounting";
 import {resolveJourneyDesign} from "@/lib/journey/curated-journey-server";
 import {completeJourneyLegs} from "@/lib/journey/travel-preferences";
@@ -49,19 +50,8 @@ export async function GET(request:Request){
   if(!z.uuid().safeParse(enquiryId).success)return NextResponse.json({error:"Choose a valid journey."},{status:400});
   const {data,error}=await actor.database.from("journey_supplier_allocations").select("*").eq("enquiry_id",enquiryId!).order("created_at");
   if(error)return NextResponse.json({error:error.message},{status:500});
-  const canSeeCosts=actor.permissions.includes("finance.costs.view")||actor.permissions.includes("suppliers.allocate");
-  const canSeePayments=actor.permissions.includes("finance.payments.manage")||actor.permissions.includes("operations.view");
-  const canSeeContacts=actor.permissions.includes("suppliers.allocate")||actor.permissions.includes("operations.view");
   const commercialCompleteIds=(data??[]).filter(row=>row.confirmation_status==="cancelled"||(row.supplier_cost!==null&&row.service_name&&row.quantity&&row.quantity_label)).map(row=>row.id);
-  const allocations=(data??[]).map(row=>canSeeCosts&&canSeePayments&&canSeeContacts?row:{...row,
-    supplier_cost:canSeeCosts?row.supplier_cost:null,
-    pricing_plan_snapshot:canSeeCosts?row.pricing_plan_snapshot:{},
-    supplier_contact:canSeeContacts?row.supplier_contact:null,
-    invoice_status:canSeePayments?row.invoice_status:"not_requested" as const,
-    payment_status:canSeePayments?row.payment_status:"pending" as const,
-    arrival_instructions:canSeeContacts?row.arrival_instructions:null,
-    special_notes:canSeeContacts?row.special_notes:null
-  });
+  const allocations=(data??[]).map(row=>allocationForStaff(row,actor.permissions));
   return NextResponse.json({allocations,commercialCompleteIds});
 }
 
@@ -165,7 +155,7 @@ export async function POST(request:Request){
   try{await syncAllocationAccounting(enquiryId,actor.user.id)}catch(error){return NextResponse.json({error:error instanceof Error?error.message:"Accounting could not be synchronized."},{status:409})}
   const {data:result,error:resultError}=await database.from("journey_supplier_allocations").select("*").eq("enquiry_id",enquiryId).order("created_at");
   if(resultError)return NextResponse.json({error:resultError.message},{status:500});
-  return NextResponse.json({allocations:result});
+  return NextResponse.json({allocations:(result??[]).map(row=>allocationForStaff(row,actor.permissions))});
 }
 
 const reviewSchema=z.discriminatedUnion("action",[
@@ -182,7 +172,7 @@ export async function PATCH(request:Request){
     if(command.error)return NextResponse.json({error:command.error.message},{status:/not found/i.test(command.error.message)?404:/authorised|permission/i.test(command.error.message)?403:409});
     const {data:updated,error}=await actor.database.from("journey_supplier_allocations").select("*").eq("id",parsed.data.allocationId).single();
     if(error)return NextResponse.json({error:error.message},{status:500});
-    return NextResponse.json({allocation:updated,result:command.data});
+    return NextResponse.json({allocation:updated?allocationForStaff(updated,actor.permissions):null,result:fulfilmentResultForStaff(command.data)});
   }
   const {data:allocation,error}=await actor.database.from("journey_supplier_allocations").select("*").eq("id",parsed.data.allocationId).maybeSingle();
   if(error||!allocation)return NextResponse.json({error:"Supplier allocation not found."},{status:404});
@@ -194,5 +184,5 @@ export async function PATCH(request:Request){
   if(transition.error)return NextResponse.json({error:transition.error.message},{status:/not found/i.test(transition.error.message)?404:409});
   try{await syncAllocationAccounting(allocation.enquiry_id,actor.user.id)}catch(error){return NextResponse.json({error:error instanceof Error?error.message:"Accounting could not be synchronized."},{status:409})}
   const {data:updated}=await actor.database.from("journey_supplier_allocations").select("*").eq("id",allocation.id).single();
-  return NextResponse.json({allocation:updated});
+  return NextResponse.json({allocation:updated?allocationForStaff(updated,actor.permissions):null});
 }
