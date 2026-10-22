@@ -1,4 +1,4 @@
-export type VoicePhase="idle"|"requesting"|"listening"|"finishing"|"speaking";
+export type VoicePhase="idle"|"requesting"|"listening"|"finishing"|"preparing"|"speaking";
 export type Recognition={
   lang:string;continuous:boolean;interimResults:boolean;
   onstart:(()=>void)|null;onend:(()=>void)|null;
@@ -8,7 +8,7 @@ export type Recognition={
 };
 export type VoiceDependencies={
   recognition?:()=>Recognition;
-  speak?:(text:string,onEnd:()=>void,onError:()=>void)=>void;
+  speak?:(text:string,onEnd:()=>void,onError:()=>void,onStart:()=>void)=>void;
   cancelSpeech:()=>void;
 };
 type Callbacks={phase:(value:VoicePhase)=>void;transcript:(value:string)=>void;error:(value:string)=>void};
@@ -63,9 +63,9 @@ export function createVoiceController(deps:VoiceDependencies,callbacks:Callbacks
       cancel();callbacks.error("");
       if(!deps.speak){callbacks.error("Spoken replies are unavailable here. The complete answer is shown in the chat.");return}
       const current=++generation,active=()=>!disposed&&generation===current;
-      callbacks.phase("speaking");
+      callbacks.phase("preparing");
       timer=setTimeout(()=>{if(active()){cancel();callbacks.error("Speech playback stopped. You can read the complete answer in the chat.")}},180_000);
-      try{deps.speak(text.slice(0,2400),()=>{if(active()){clear();callbacks.phase("idle")}},()=>{if(active()){cancel();callbacks.error("The browser could not speak this reply. The complete answer is shown in the chat.")}})}catch{cancel();callbacks.error("Speech playback is unavailable. Please read the reply.")}
+      try{deps.speak(text.slice(0,2400),()=>{if(active()){clear();generation++;callbacks.phase("idle")}},()=>{if(active()){cancel();callbacks.error("The browser could not speak this reply. The complete answer is shown in the chat.")}},()=>{if(active())callbacks.phase("speaking")})}catch{cancel();callbacks.error("Speech playback is unavailable. Please read the reply.")}
     },
     cancel,
     destroy(){disposed=true;cancel()}
@@ -78,12 +78,12 @@ export function browserVoiceDependencies():VoiceDependencies{
   const synthesis=window.speechSynthesis;
   return {
     ...(Constructor?{recognition:()=>new Constructor()}:{}),
-    ...(synthesis&&window.SpeechSynthesisUtterance?{speak:(text:string,onEnd:()=>void,onError:()=>void)=>{
+    ...(synthesis&&window.SpeechSynthesisUtterance?{speak:(text:string,onEnd:()=>void,onError:()=>void,onStart:()=>void)=>{
       const utterance=new SpeechSynthesisUtterance(text);
       utterance.lang="en-US";utterance.rate=.95;
       const english=synthesis.getVoices().filter(voice=>/^en(?:-|_)/i.test(voice.lang));
       utterance.voice=english.find(voice=>voice.default)??english[0]??null;
-      utterance.onend=onEnd;utterance.onerror=onError;synthesis.speak(utterance);
+      utterance.onstart=onStart;utterance.onend=onEnd;utterance.onerror=onError;synthesis.speak(utterance);
     }}:{}),
     cancelSpeech:()=>synthesis?.cancel()
   };

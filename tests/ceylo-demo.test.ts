@@ -59,10 +59,10 @@ test("follow-up clarification does not ask again for an already supplied month o
 });
 function voiceHarness(supported=true){
   const phases:VoicePhase[]=[],transcripts:string[]=[],errors:string[]=[],spoken:string[]=[];
-  let starts=0,stops=0,aborts=0,cancels=0,end:(()=>void)|undefined,fail:(()=>void)|undefined;
+  let starts=0,stops=0,aborts=0,cancels=0,end:(()=>void)|undefined,fail:(()=>void)|undefined,speechStart:(()=>void)|undefined;
   const recognition:Recognition={lang:"",continuous:true,interimResults:false,onstart:null,onend:null,onerror:null,onresult:null,start:()=>{starts++},stop:()=>{stops++},abort:()=>{aborts++}};
-  const controller=createVoiceController({...(supported?{recognition:()=>recognition,speak:(text:string,onEnd:()=>void,onError:()=>void)=>{spoken.push(text);end=onEnd;fail=onError}}:{}),cancelSpeech:()=>{cancels++}},{phase:p=>phases.push(p),transcript:t=>transcripts.push(t),error:e=>errors.push(e)});
-  return {controller,recognition,phases,transcripts,errors,spoken,counts:()=>({starts,stops,aborts,cancels}),end:()=>end?.(),fail:()=>fail?.()};
+  const controller=createVoiceController({...(supported?{recognition:()=>recognition,speak:(text:string,onEnd:()=>void,onError:()=>void,onStart:()=>void)=>{spoken.push(text);end=onEnd;fail=onError;speechStart=onStart}}:{}),cancelSpeech:()=>{cancels++}},{phase:p=>phases.push(p),transcript:t=>transcripts.push(t),error:e=>errors.push(e)});
+  return {controller,recognition,phases,transcripts,errors,spoken,counts:()=>({starts,stops,aborts,cancels}),beginSpeech:()=>speechStart?.(),end:()=>end?.(),fail:()=>fail?.()};
 }
 test("recognition is never automatic; English interim/final transcript remains separate from submission",()=>{
   const h=voiceHarness();assert.equal(h.counts().starts,0);assert.equal(h.spoken.length,0);
@@ -76,11 +76,15 @@ test("microphone denial and unsupported input recover to text, without raw provi
 });
 test("speech uses the visible answer, interrupts recognition and stops on cancel; stale callbacks ignored",()=>{
   const h=voiceHarness();h.controller.start();const stale=h.recognition.onresult!;
-  const answer=recommendCeylo("Ella",catalogue).text;h.controller.speak(answer);assert.deepEqual(h.spoken,[answer]);assert.equal(h.counts().aborts,1);assert.equal(h.phases.at(-1),"speaking");stale({results:[[{transcript:"late"}]]});assert.deepEqual(h.transcripts,[]);
-  h.controller.cancel();const length=h.phases.length;h.end();assert.equal(h.phases.length,length);h.controller.destroy();
+  const answer=recommendCeylo("Ella",catalogue).text;h.controller.speak(answer);assert.deepEqual(h.spoken,[answer]);assert.equal(h.counts().aborts,1);assert.equal(h.phases.at(-1),"preparing");h.beginSpeech();assert.equal(h.phases.at(-1),"speaking");stale({results:[[{transcript:"late"}]]});assert.deepEqual(h.transcripts,[]);
+  h.controller.cancel();const length=h.phases.length;h.beginSpeech();h.end();assert.equal(h.phases.length,length);h.controller.destroy();
 });
 test("new microphone activation cancels output and close/unmount prevents later updates",()=>{
   const h=voiceHarness();h.controller.speak("reply");const before=h.counts().cancels;h.controller.start();assert(h.counts().cancels>before);const late=h.recognition.onstart!;h.controller.destroy();const count=h.phases.length;late();h.fail();h.controller.start();assert.equal(h.phases.length,count);
+});
+test("completed speech cannot restart the character from a late provider callback",()=>{
+  const h=voiceHarness();h.controller.speak("visible answer");h.beginSpeech();h.end();assert.equal(h.phases.at(-1),"idle");
+  const count=h.phases.length;h.beginSpeech();h.fail();assert.equal(h.phases.length,count);assert.equal(h.errors.length,1);h.controller.destroy();
 });
 test("recognition start and finish watchdogs cancel cleanly without changing a newer session",context=>{
   context.mock.timers.enable({apis:["setTimeout"]});

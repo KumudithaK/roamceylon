@@ -23,4 +23,4 @@ export function createCeyloCatalogue(destinations:Row[],experiences:Row[],links:
 }
 
 export const emptyCeyloCatalogue=():CeyloCatalogue=>({destinations:[],experiences:[]});
-export const ceyloSuggestions=["Which beaches suit my family?","I'm visiting in December.","I love wildlife and nature.","What should I experience in Ella?","Recommend a romantic honeymoon.","I have seven days for Sri Lanka."] as const;
+export const ceyloSuggestions=["Best beaches in December?","Where can I see elephants?","What should I do in Ella?","Plan a romantic honeymoon","Family-friendly destinations"] as const;
