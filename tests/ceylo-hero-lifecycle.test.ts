@@ -2,13 +2,19 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import test from "node:test";
 import ts from "typescript";
-import {isPartnerDemoEnabled,partnerDemoEmbedUrl,partnerDemoPosterUrl} from "../lib/partner-demo.ts";
+import {isPartnerDemoEnabled,partnerDemoEmbedUrl,partnerDemoPosterUrl,partnerDemoVideoPosterUrl} from "../lib/partner-demo.ts";
 const source=readFileSync(new URL("../components/home/hero-demo-video.tsx",import.meta.url),"utf8");
-test("a missing published hero poster uses the existing landscape fallback, and never removes the image",()=>{
-  const landscape="https://images.pexels.com/photos/1/landscape.jpeg";
-  assert.equal(partnerDemoPosterUrl(null,landscape),landscape);assert.equal(partnerDemoPosterUrl(undefined,landscape),landscape);assert.equal(partnerDemoPosterUrl("  ",landscape),landscape);
-  assert.equal(partnerDemoPosterUrl("/configured-poster.jpg",landscape),"/configured-poster.jpg");assert.equal(partnerDemoPosterUrl(null,""),"/og.png");
-  const home=readFileSync(new URL("../app/page.tsx",import.meta.url),"utf8");assert.match(home,/posterUrl:partnerDemoPosterUrl\(configuredHero.posterUrl,fallbackPoster\)/);
+test("a missing published hero poster uses the selected film thumbnail, never the Ella card fallback",()=>{
+  for(const missing of [null,undefined,"", "  "])assert.equal(partnerDemoPosterUrl(missing),partnerDemoVideoPosterUrl);
+  assert.equal(partnerDemoPosterUrl(" /configured-poster.jpg "),"/configured-poster.jpg");
+  assert.equal(partnerDemoVideoPosterUrl,"https://i.ytimg.com/vi/OkLsh-4NokU/maxresdefault.jpg");
+  const home=readFileSync(new URL("../app/page.tsx",import.meta.url),"utf8");assert.match(home,/posterUrl:partnerDemoPosterUrl\(savedHero\?\.posterUrl\)/);assert.match(home,/const configuredHero=savedHero\?\?fallbackHero/);
+});
+test("CMS-backed destination cards and homepage are request-rendered after direct admin saves",()=>{
+  for(const path of ["app/page.tsx","app/destinations/page.tsx"]){
+    const page=readFileSync(new URL("../"+path,import.meta.url),"utf8");assert.match(page,/export const dynamic="force-dynamic"/);
+  }
+  const config=readFileSync(new URL("../next.config.ts",import.meta.url),"utf8");assert.match(config,/hostname:"i.ytimg.com",pathname:"\/vi\/OkLsh-4NokU\/maxresdefault.jpg",search:""/);
 });
 async function effect(failure=false){
   const body=source.slice(source.indexOf("    if(!enabled||!host.current)return;"),source.indexOf("\n  },[enabled,videoId]"));

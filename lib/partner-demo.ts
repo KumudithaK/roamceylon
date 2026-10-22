@@ -10,10 +10,11 @@ type DemoEnvironment={
 };
 
 export const partnerDemoVideoId="OkLsh-4NokU";
+export const partnerDemoVideoPosterUrl="https://i.ytimg.com/vi/OkLsh-4NokU/maxresdefault.jpg";
 
-/** Published hero records may legitimately have no poster configured. */
-export function partnerDemoPosterUrl(poster:string|null|undefined,fallback:string){
-  return poster?.trim()||fallback||"/og.png";
+/** Use the selected film's poster, never an unrelated destination-card image. */
+export function partnerDemoPosterUrl(poster:string|null|undefined){
+  return poster?.trim()||partnerDemoVideoPosterUrl;
 }
 
 export function isPartnerDemoEnabled(env:DemoEnvironment){

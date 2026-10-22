@@ -37,6 +37,7 @@ const nextConfig:NextConfig={
       {protocol:"https",hostname:"images.pexels.com"},
       {protocol:"https",hostname:"images.unsplash.com"},
       {protocol:"https",hostname:"upload.wikimedia.org"},
+      {protocol:"https",hostname:"i.ytimg.com",pathname:"/vi/OkLsh-4NokU/maxresdefault.jpg",search:""},
       {protocol:"https",hostname:"sitecore-cd.shangri-la.com"},
       {protocol:"https",hostname:"fstpfqlgypvktjwdeagu.supabase.co"},
       {protocol:"https",hostname:"hvcggnuptrcsxtrcjnre.supabase.co",pathname:"/storage/v1/object/public/**"}
