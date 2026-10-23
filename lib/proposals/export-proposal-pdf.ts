@@ -2,7 +2,7 @@ import type {PDFFont,PDFPage,RGB} from "pdf-lib";
 import {proposalSnapshot} from "./customer-proposal-types";
 import type {Database} from "@/lib/database.types";
 
-type Proposal=Database["public"]["Tables"]["journey_proposals"]["Row"];
+type Proposal=Pick<Database["public"]["Tables"]["journey_proposals"]["Row"],"proposal_reference"|"version">&Partial<Pick<Database["public"]["Tables"]["journey_proposals"]["Row"],"sent_snapshot"|"customer_snapshot">>;
 type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
 const clean=(value:string)=>value.normalize("NFKD").replace(/[^\x20-\x7E]/g," ").replace(/\s+/g," ").trim();
 

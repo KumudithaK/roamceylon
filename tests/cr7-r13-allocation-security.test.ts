@@ -21,11 +21,11 @@ for(const role of ["journey_designer","finance","operations","super_admin","part
     const source=fixture(),before=JSON.stringify(source),result=allocationForStaff(source,defaultRolePermissions[role]);
     const allocator=role==="super_admin"||role==="partner_manager",costs=allocator||role==="finance",contacts=allocator||role==="operations";
     assert.equal(JSON.stringify(source),before);assert.equal(result.id,"allocation");assert.equal(result.quantity,4);assert.equal(result.service_name,"CR7 LOCAL ONLY");
-    assert.equal(result.supplier_cost,costs?50.25:null);assert.equal(result.selling_price,role==="operations"?null:80.25);
-    for(const key of ["supplier_contact","arrival_instructions","special_notes","fulfilment_notes","cancellation_reason"] as const)assert.equal(result[key],contacts?source[key]:null);
+    assert.equal(result.supplier_cost,costs?50.25:undefined);assert.equal(Object.hasOwn(result,"supplier_cost"),costs);assert.equal(result.selling_price,role==="operations"?undefined:80.25);
+    for(const key of ["supplier_contact","arrival_instructions","special_notes","fulfilment_notes","cancellation_reason"] as const){assert.equal(result[key],contacts?source[key]:undefined);assert.equal(Object.hasOwn(result,key),contacts);}
     assert(!("future_secret" in result));
-    if(!allocator){assert.deepEqual(result.service_details,{rooms:2,nights:12,guideRole:"primary",fromLabel:"Airport",toLabel:"Colombo"});assert.doesNotMatch(JSON.stringify(result.pricing_plan_snapshot),/PRIVATE_/);}
-    if(!costs)assert.deepEqual(result.pricing_plan_snapshot,{});
+    if(!allocator){assert.deepEqual(result.service_details,{rooms:2,nights:12,guideRole:"primary",fromLabel:"Airport",toLabel:"Colombo"});assert.doesNotMatch(JSON.stringify(result.pricing_plan_snapshot??{}),/PRIVATE_/);}
+    if(!costs)assert.equal(Object.hasOwn(result,"pricing_plan_snapshot"),false);
     if(role==="finance")assert.deepEqual(result.pricing_plan_snapshot,{id:"rate",name:"Rate",unitPrice:12.5625,currency:"USD",chargingMethod:"per_person"});
   });
 }
@@ -71,7 +71,8 @@ const testId="00000000-0000-4000-8000-00000000c713";
 type TestRole=StaffRole|"traveller";
 function routeHarness(role:TestRole,options:{replay?:boolean;commandError?:string;financialActivity?:boolean;alreadyFulfilled?:boolean}={}){
   const calls:string[]=[],queries:string[]=[],allocation={...fixture(),id:testId,enquiry_id:testId,review_required:true,fulfilment_status:options.alreadyFulfilled?"fulfilled":"pending"};
-  const rows:Record<string,unknown[]>={profiles:[{role:role==="super_admin"?"admin":"editor"}],profile_staff_roles:role==="traveller"?[]:[{role_code:role}],staff_role_permissions:role==="traveller"?[]:defaultRolePermissions[role].map(permission_code=>({permission_code})),journey_supplier_allocations:[allocation],journey_settlements:options.financialActivity?[{amount_paid:1,waived_amount:0}]:[]};
+  const proposal={id:testId,enquiry_id:testId,total_supplier_cost:50.25,total_selling_price:80.25,gross_profit:30,profit_margin:37.38,commercial_snapshot:{summary:{internalCost:50.25}},allocation_snapshot:[{allocationId:testId,supplierCost:50.25,supplierContact:"PRIVATE_CONTACT",serviceDetails:allocation.service_details,pricingPlanSnapshot:allocation.pricing_plan_snapshot}]};
+  const rows:Record<string,unknown[]>={profiles:[{role:role==="super_admin"?"admin":"editor"}],profile_staff_roles:role==="traveller"?[]:[{role_code:role}],staff_role_permissions:role==="traveller"?[]:defaultRolePermissions[role].map(permission_code=>({permission_code})),journey_supplier_allocations:[allocation],journey_proposals:[proposal],journey_settlements:options.financialActivity?[{amount_paid:1,waived_amount:0}]:[]};
   const db={auth:{getUser:async(token:string)=>token==="staff-session"||token==="traveller-session"?{data:{user:{id:testId}},error:null}:{data:{user:null},error:{message:"Invalid token"}}},from:(table:string)=>{
     queries.push(table);const values=rows[table]??[];
     const chain={select:()=>chain,eq:()=>chain,in:()=>chain,order:()=>chain,maybeSingle:async()=>({data:values[0]??null,error:null}),single:async()=>({data:values[0]??null,error:null}),then:(resolve:(value:unknown)=>unknown)=>Promise.resolve({data:values,error:null}).then(resolve)};
@@ -82,11 +83,29 @@ function routeHarness(role:TestRole,options:{replay?:boolean;commandError?:strin
     if(options.commandError&&name!=="record_staff_authorization_denial")return {data:null,error:{message:options.commandError}};
     return {data:{enquiryId:testId,allocationId:testId,status:"fulfilled",idempotent:Boolean(options.replay),supplier_cost:50.25,privateNotes:"PRIVATE_COMMAND_RESULT"},error:null};
   }};
-  const load=actualModules({"@/lib/supabase/admin":{createAdminClient:()=>db},"@/lib/accounting/allocation-accounting":{syncAllocationAccounting:async()=>{calls.push("syncAllocationAccounting")}}});
-  return {route:load("app/api/admin/journey-allocations/route.ts") as {GET:(r:Request)=>Promise<Response>;PATCH:(r:Request)=>Promise<Response>},calls,queries};
+  const load=actualModules({"@/lib/supabase/admin":{createAdminClient:()=>db},"@/lib/proposals/journey-proposal-service":{},"@/lib/accounting/allocation-accounting":{syncAllocationAccounting:async()=>{calls.push("syncAllocationAccounting")}}});
+  return {route:load("app/api/admin/journey-allocations/route.ts") as {GET:(r:Request)=>Promise<Response>;PATCH:(r:Request)=>Promise<Response>},proposalRoute:()=>load("app/api/admin/journey-proposals/route.ts") as {GET:(r:Request)=>Promise<Response>},calls,queries};
 }
 const apiRequest=(body?:Record<string,unknown>,token="staff-session")=>new Request(`https://staging.invalid/api/admin/journey-allocations?enquiryId=${testId}`,{method:body?"PATCH":"GET",headers:{"content-type":"application/json",...(token?{authorization:`Bearer ${token}`}:{})},...(body?{body:JSON.stringify(body)}:{})});
 const fulfilPayload={enquiryId:testId,allocationId:testId,action:"fulfil",notes:"",idempotencyKey:"r13-local-only-command"};
+for(const role of ["journey_designer","operations","finance","super_admin","partner_manager","traveller"] as TestRole[]){
+  test(`in-process proposal GET with mocked DB: ${role} populated projection or 403`,async()=>{
+    const h=routeHarness(role),response=await h.proposalRoute().GET(new Request(`https://staging.invalid/api/admin/journey-proposals?enquiryId=${testId}`,{headers:{authorization:"Bearer staff-session"}}));
+    const allowed=role==="journey_designer"||role==="finance"||role==="super_admin";
+    assert.equal(response.status,allowed?200:403);
+    if(!allowed){assert(!h.queries.includes("journey_proposals"));return}
+    const body=await response.json(),proposal=body.proposals[0],line=proposal.allocation_snapshot[0];
+    if(role!=="super_admin"){assert.equal(Object.hasOwn(line,"supplierContact"),false);assert.doesNotMatch(JSON.stringify(line),/PRIVATE_/)}
+    if(role==="journey_designer"){assert.equal(Object.hasOwn(proposal,"total_supplier_cost"),false);assert.equal(Object.hasOwn(proposal,"commercial_snapshot"),false);assert.equal(Object.hasOwn(line,"supplierCost"),false);assert.equal(Object.hasOwn(line,"pricingPlanSnapshot"),false)}
+    else assert.equal(proposal.total_supplier_cost,50.25);
+  });
+}
+for(const token of ["","invalid-token","traveller-public-proposal-token"]){
+  test(`in-process proposal GET: non-session ${JSON.stringify(token)} returns 401 before data read`,async()=>{
+    const h=routeHarness("super_admin"),response=await h.proposalRoute().GET(new Request(`https://staging.invalid/api/admin/journey-proposals?enquiryId=${testId}`,{headers:token?{authorization:`Bearer ${token}`}:{}}));
+    assert.equal(response.status,401);assert(!h.queries.includes("journey_proposals"));assert.deepEqual(h.calls,[]);
+  });
+}
 for(const role of ["journey_designer","operations","finance","super_admin","partner_manager","traveller"] as TestRole[]){
   test(`actual GET: ${role} authorized projection or denial`,async()=>{
     const h=routeHarness(role),response=await h.route.GET(apiRequest(undefined,role==="traveller"?"traveller-session":"staff-session"));
@@ -102,7 +121,7 @@ for(const role of ["journey_designer","operations","finance","super_admin","part
     assert.equal(response.status,allowed?200:403);assert.equal(h.calls.includes("fulfil_supplier_allocation_command"),allowed);
     assert(!h.calls.includes("syncAllocationAccounting"));assert(!h.calls.includes("record_accounting_transaction_command"));
     const body=await response.json();assert.doesNotMatch(JSON.stringify(body),/PRIVATE_COMMAND_RESULT|future_secret/);
-    if(allowed){assert.equal(body.allocation.supplier_cost,role==="super_admin"?50.25:null);assert.equal(body.allocation.selling_price,role==="super_admin"?80.25:null);assert.equal(body.allocation.supplier_contact,"PRIVATE_CONTACT");assert.deepEqual(body.result,{enquiryId:testId,allocationId:testId,status:"fulfilled",idempotent:false});}
+    if(allowed){assert.equal(body.allocation.supplier_cost,role==="super_admin"?50.25:undefined);assert.equal(body.allocation.selling_price,role==="super_admin"?80.25:undefined);assert.equal(Object.hasOwn(body.allocation,"supplier_cost"),role==="super_admin");assert.equal(body.allocation.supplier_contact,"PRIVATE_CONTACT");assert.deepEqual(body.result,{enquiryId:testId,allocationId:testId,status:"fulfilled",idempotent:false});}
   });
 }
 for(const token of ["","invalid-token","traveller-public-proposal-token"]){
@@ -112,7 +131,7 @@ for(const token of ["","invalid-token","traveller-public-proposal-token"]){
 }
 test("actual fulfilment replay preserves idempotent envelope and identical redaction",async()=>{
   const h=routeHarness("operations",{replay:true}),response=await h.route.PATCH(apiRequest(fulfilPayload)),body=await response.json();
-  assert.equal(response.status,200);assert.equal(body.result.idempotent,true);assert.equal(body.allocation.supplier_cost,null);assert.deepEqual(body.allocation.pricing_plan_snapshot,{});assert.doesNotMatch(JSON.stringify(body.result),/PRIVATE_|supplier_cost/);
+  assert.equal(response.status,200);assert.equal(body.result.idempotent,true);assert.equal(Object.hasOwn(body.allocation,"supplier_cost"),false);assert.equal(Object.hasOwn(body.allocation,"pricing_plan_snapshot"),false);assert.doesNotMatch(JSON.stringify(body.result),/PRIVATE_|supplier_cost/);
 });
 test("actual already-fulfilled rejection remains 409 and exposes no row",async()=>{
   const h=routeHarness("operations",{alreadyFulfilled:true}),response=await h.route.PATCH(apiRequest(fulfilPayload)),body=await response.json();

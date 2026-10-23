@@ -24,21 +24,28 @@ export function AccountingOverview(){
   const [enquiries,setEnquiries]=useState<Enquiry[]>([]);
   const [loading,setLoading]=useState(true);
   const [message,setMessage]=useState("");
-  const load=async()=>{
-    const database=createClient();
-    const {data:{session}}=await database.auth.getSession();
-    if(!session){router.replace("/admin/login");return}
-    const [accountResult,settlementResult]=await Promise.all([
-      database.from("finance_journey_accounts").select("*").order("posted_at",{ascending:false}),
-      database.from("journey_settlements").select("*").order("due_date",{ascending:true})
-    ]);
-    const enquiryIds=(accountResult.data??[]).map(account=>account.enquiry_id);
-    const enquiryResult=enquiryIds.length?await database.from("traveller_finance_reference").select("id,status,journey_reference").in("id",enquiryIds):{data:[],error:null};
-    const error=accountResult.error||settlementResult.error||enquiryResult.error;
-    if(error){setMessage(error.message.includes("journey_accounts")?"Apply the latest Supabase migration to activate Accounting.":error.message);setLoading(false);return}
-    setAccounts(accountResult.data??[]);setSettlements(settlementResult.data??[]);setEnquiries(enquiryResult.data??[]);setLoading(false);
-  };
-  useEffect(()=>{void load()},[router]);
+  useEffect(()=>{
+    let active=true;
+    const load=async()=>{
+      const database=createClient();
+      const {data:{session}}=await database.auth.getSession();
+      if(!active)return;
+      if(!session){router.replace("/admin/login");return}
+      const [accountResult,settlementResult]=await Promise.all([
+        database.from("finance_journey_accounts").select("*").order("posted_at",{ascending:false}),
+        database.from("journey_settlements").select("*").order("due_date",{ascending:true})
+      ]);
+      if(!active)return;
+      const enquiryIds=(accountResult.data??[]).map(account=>account.enquiry_id);
+      const enquiryResult=enquiryIds.length?await database.from("traveller_finance_reference").select("id,status,journey_reference").in("id",enquiryIds):{data:[],error:null};
+      if(!active)return;
+      const error=accountResult.error||settlementResult.error||enquiryResult.error;
+      if(error){setMessage(error.message.includes("journey_accounts")?"Apply the latest Supabase migration to activate Accounting.":error.message);setLoading(false);return}
+      setAccounts(accountResult.data??[]);setSettlements(settlementResult.data??[]);setEnquiries(enquiryResult.data??[]);setLoading(false);
+    };
+    void load();
+    return()=>{active=false};
+  },[router]);
   const activeAccounts=accounts.filter(account=>account.active);
   const activeIds=new Set(activeAccounts.map(account=>account.id));
   const activeSettlements=settlements.filter(settlement=>activeIds.has(settlement.account_id));

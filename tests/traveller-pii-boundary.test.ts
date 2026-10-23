@@ -49,7 +49,9 @@ test("Finance proposal DTO excludes copied traveller identity and contact payloa
   for(const field of ["customer_snapshot","sent_snapshot","curated_journey_snapshot","accepted_name","accepted_email","acceptance_metadata","public_token","introduction","terms"]){
     assert.equal(field in safe,false);
   }
-  assert.deepEqual(safe.allocation_snapshot,[{serviceDetails:{},arrivalInstructions:null,specialNotes:null,supplierCost:10,pricingPlanSnapshot:{rate:"supplier"},supplierContact:"supplier marker",invoiceStatus:"requested",paymentStatus:"pending"}]);
+  assert.deepEqual(safe.allocation_snapshot,[{serviceDetails:{},supplierCost:10,pricingPlanSnapshot:{},invoiceStatus:"requested",paymentStatus:"pending"}]);
+  const line=(safe.allocation_snapshot as Record<string,unknown>[])[0];
+  for(const key of ["supplierContact","arrivalInstructions","specialNotes"])assert.equal(Object.hasOwn(line,key),false);
 });
 
 test("Finance change-request and account DTOs exclude contact and free-text traveller data",()=>{
