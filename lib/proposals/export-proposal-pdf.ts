@@ -1,5 +1,6 @@
 import type {PDFFont,PDFPage,RGB} from "pdf-lib";
 import {proposalSnapshot} from "./customer-proposal-types";
+import {customerProposalContent} from "./customer-proposal-content";
 import type {Database} from "@/lib/database.types";
 
 type Proposal=Pick<Database["public"]["Tables"]["journey_proposals"]["Row"],"proposal_reference"|"version">&Partial<Pick<Database["public"]["Tables"]["journey_proposals"]["Row"],"sent_snapshot"|"customer_snapshot">>;
@@ -7,8 +8,9 @@ type Enquiry=Database["public"]["Tables"]["enquiries"]["Row"];
 const clean=(value:string)=>value.normalize("NFKD").replace(/[^\x20-\x7E]/g," ").replace(/\s+/g," ").trim();
 
 export async function exportProposalPdf(proposal:Proposal,enquiry:Enquiry){
-  const snapshot=proposalSnapshot(proposal.sent_snapshot??proposal.customer_snapshot);
-  if(!snapshot)throw new Error("Generate a Phase 10 customer proposal before downloading the premium PDF.");
+  const source=proposalSnapshot(proposal.sent_snapshot??proposal.customer_snapshot);
+  if(!source)throw new Error("Generate a customer proposal before downloading the premium PDF.");
+  const snapshot=customerProposalContent(source);
   const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(snapshot.contact.whatsappUrl)}`;
   const [{PDFDocument,StandardFonts,rgb},logoBytes,qrBytes]=await Promise.all([import("pdf-lib"),snapshot.brand.logo?fetch(snapshot.brand.logo).then(response=>{if(!response.ok)throw new Error(`${snapshot.brand.name} logo could not be loaded.`);return response.arrayBuffer()}):Promise.resolve(null),fetch(qrUrl).then(response=>response.ok?response.arrayBuffer():null).catch(()=>null)]);
   const pdf=await PDFDocument.create();pdf.setTitle(`${proposal.proposal_reference} - ${snapshot.brand.name} Journey Proposal`);pdf.setAuthor(snapshot.brand.name);pdf.setSubject(`Version ${proposal.version} prepared for ${enquiry.name}`);

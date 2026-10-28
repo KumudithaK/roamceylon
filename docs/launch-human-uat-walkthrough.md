@@ -1,0 +1,58 @@
+# One controlled Human UAT
+
+Prepared 28 October 2026. **Manual specification only: no data entry, identities, activation or cleanup is authorized by these documents.** Use `launch-human-uat-dataset.json` in this release folder. The approved local journey-pricing extension does not itself authorize pricing/data writes or publication.
+
+## One coordinated approval before entry
+
+Approve the exact release SHA, protected Preview publication, accepted-date migration 001, this 28-row/15-table manual case, named role access, one 3→4 account increment and a reviewed exact-ID cleanup procedure. After the separately approved migration/publication, independently expect 90 migration records, max 202610150002, with 001 and 002 once each; current historical state remains 89 until application. Do not compare migration changes to an unchanged 89-record schema fingerprint.
+
+Reconcile original enquiries 2, suppliers 10/6/10, pricing plans 0, all 13 global Business Pricing NULLs, Auth 1/1, Storage 4/5, account sequence 3, last-known Auth counter 57 and authority/denial audits 13/7. Preserve protected business fingerprints, R14 grants/RLS, CMS, Ceylo and the hero. Confirm native installed definitions/FKs match the approved release. Historical counts are not a fresh preflight.
+
+Use named Designer, Finance and Operations humans. Auth 1/1 does not already supply those three sessions: any temporary identities/profiles/assignments need an explicit exact identity manifest and cleanup approval. The existing human Super Admin owner may perform the authorized commercial/allocation/proposal-pricing actions in their own normal session; never impersonate, reassign or automate that original identity. No Vercel bypass or credential export.
+
+Resolve a unique run tag and D0 once. Keep exact generated IDs, command keys and the owned traveller token in a restricted ownership ledger, not chat/HAR/exported browser logs. Stop on unexpected input requirements or writes before expanding scope.
+
+## Fixed inputs and native operations
+
+The case is a three-day/two-night itinerary containing **one simulated day-service**, with lodging/transport and other days self-arranged and expressly excluded. Before public submission, set one adult, the existing Ahungalla/experience pair, one participant, destination nights0, guide`no_guide`, specialist`none`, no endpoint types/transport. Keep stay preference at native`recommend`; do not invent a self-arranged enum. Initial requested dates are D0+7 through D0+9. Review open-night warnings honestly. Composer route placeholders make the single destination valid without new service rows.
+
+| Actor | Perform exactly once unless stated | Evidence / stop condition |
+| --- | --- | --- |
+| Human owner | Open the approved protected staging Preview using normal Vercel authentication. | Verify release/environment; stop on protection/access failure, do not restart deferred diagnostics. |
+| Approved entry operator | Submit one labelled public UAT enquiry with every final non-date choice above. | Capture exact enquiry ID. Preserve all prior records. This is fixture setup, not a repeat certification of public submission. |
+| Designer | Initialize Studio once; change only start/end to D0/D0+2 before any allocation exists; click **Proceed to Supplier Allocation once as the sole save**. Do not click Save journey first. | Preserve original request. Native changes must be initialization1 plus pickup/date, dropoff/date and travelDates3. Additional meaningful delta/save invalidates the fixed cap. |
+| Existing authorized human owner/allocation operator | Save one confirmed custom experience with costUSD240.00, selling price blank/native-auto, quantity1, no pricing-plan ID, synthetic provider/contact, arrival instructions and private notes. Choose Available/held before this one save. | Capture allocation/history/save-receipt IDs. No pending-save-then-confirm, new supplier/rate or later allocation edit; Designer gains no cost/contact authority. |
+| Existing human Super Admin owner | Generate one proposal with owned journey-local fixed fee25.00, percentage5.00, target margin20.00; seven existing operating/admin/contingency overrides0. Enter UAT-only introduction/terms and explicit lodging/transport exclusions. Deposit100.25. | No global pricing writes. Expected fee37.00, internal240.00, total346.25, gross profit106.25, achievedmargin30.69%. Target20% is not achievedmargin. Stop on different arithmetic. |
+| Authorized proposer / Designer within current permissions | Internally approve and send that one version. | No extra version, start-review transition, change request or direct status insertion. Capture native IDs. |
+| Traveller persona / human reviewer | Without a staff application session, open the owned link, review HTML and Print/Save-as-PDF; separately use staff Download proposal PDF. | Exact synthetic identity, labelledUSD346.25, designed dates and coherent day-service scope. The Ceylon Edition/approved contacts only; no unverified email or accommodation promise. Internal costs, private contacts/notes and nested finance/receipt fields must be absent. PDF extraction may normalize whitespace only. Record legitimate owned view-counter updates. |
+| Traveller persona | Accept the exact sent version once with reserved email and terms acknowledgement. | Accepted amounts/dates immutable. Export and acceptance must pass before Finance. |
+| Finance | Record one simulated100.25 receipt through normal activation. Choose native payment method **Other**; put **UAT SIMULATED - NO REAL PAYMENT** in Notes and the run tag in Reference. | No real gateway/bank/payment/payout. Account datesD0/D0+2, original requestD0+7/D0+9; total346.25, internal/liability240.00, balance246.00, supplier-paid0.00. Sequence3→4 once. A failed activation may consume nextval: HOLD, never reset or retry activation. |
+| Designer / Operations within current permissions | Native confirm journey, prepare Operations and start travel once each; D0 must satisfy native date eligibility. | Arrival instructions were entered before acceptance. No status manipulation, extra saves or financial edits. |
+| Operations | Choose Cancel once and Escape once on fulfilment prompt, then intentionally fulfil the single service once. | Cancel/Escape create no request/receipt/finance change. Successful populated response200 contains only role-allowlisted delivery fields; unauthorized fields must be absent, not null/UI-hidden. Capture exact history/operational-receipt IDs. |
+| Approved reviewer | If an already approved authenticated replay facility exists: same-key replay, then distinct-key duplicate conflict. | Same-key adds no rows/finance changes; distinct-key409 before mutation. If facility unavailable, mark UNEXECUTED, not PASS; do not add a framework or use a consumed runner. |
+
+Do not complete the journey in this minimum case. The prior17-service completion evidence stands; optional completion would add two unapproved rows. Do not repeat the R18E/16-case matrix or standalone account-init test.
+
+## Row/update envelope and HOLD rules
+
+The28October read-only check confirmed one applicable protected welcome T-shirt default (`f4d0a933-55a6-46ef-bf6e-6283bc32e03f`). Normal proposal generation inserts one owned `journey_benefits` row before the proposal; no other cap changes. This explicitly corrects the previous proposed27/14 budget for final approval. Preserve the global definition. Do not assign, toggle, size or fulfil the simulated benefit manually; capture its exact ID and delete only that assignment during cleanup. It creates no supplier/Finance liability.
+
+Maximum28 owned business rows across15 tables: enquiry 1, Curated Journey 1, curated changes 4, allocation 1, allocation history 3, allocation save receipt 1, proposal1, native journey benefit1, acceptance1, enquiry lifecycle 7, account 1, settlement 1, customer-receipt transaction 1, accounting lifecycle 1, operational receipts 3. See exact table names in the JSON.
+
+The three allocation histories must be native insert, Finance-triggered settlement sync update and fulfilment update—never manufactured. The seven lifecycle histories are prepareproposal, sent, acceptance, deposit, confirmjourney, prepareoperations and starttravel. Operational receipts are prepare/start/fulfil. All positive operating overrides are zero, so only the240.00 supplier liability is expected; service-fee revenue does not create an Operations payable.
+
+If a valid original estimate invokes the existing range guard at the first proposal generation, supply the dataset's honest internal UAT-only `rangeOverrideReasonIfRequired` through the normal control. Do not alter estimates, disable validation or create a second proposal version. An unavailable estimate is not a fabricated successful estimate.
+
+The28-row ceiling is conditional on the fixed save/input sequence. Owned proposal view counters/timestamps and native lifecycle/account/allocation updates are permitted; no unrelated row is. Extra version/save/service, ambiguous partial response, changed baseline, privilege/confidentiality failure or unexpected receipt/history is HOLD. Stop new writes; preserve evidence and reconcile. No automatic retry, guard weakening or fixture expansion.
+
+## Exact closeout
+
+1. Freeze new UAT writes and reconcile every generated exact ID against the28-row ceiling. Fresh incoming-FK/logical-reference verification must show exactly one native owned default benefit and no waivers, refunds or change requests. Do not clean by name/prefix or broad root query.
+2. Use only the separately reviewed atomic exact-ID cleanup: operational receipts; allocation receipts; accounting transactions/history; settlements; account; acceptance; proposal; owned journey benefit; allocation history; allocation; enquiry lifecycle; curated changes; curated journey; enquiry. Assert ownership/counts and protected-state integrity before commit; rollback on mismatch. Review any existing transaction-local maintenance hooks explicitly; never disable guards/RLS/triggers or use CASCADE.
+3. Remove only separately approved temporary assignments/profiles/identities after business references are gone. Preserve the original identity and all legitimate authority/security audit history. Three temporary assignment/removal pairs normally add six authority events13→19, but reconcile actual native effects. Preserve existing seven denials plus legitimate additions.
+4. No global pricing restoration is required or permitted: all13 NULLs remain untouched; temporary owned pricing is removed with the proposal. Never reset account/Auth sequences. Manual sign-ins and legitimate refreshes can exceed the old scripted57→60 assumption; approve named session bounds and explain every observed advance.
+5. Independently verify no owned business rows/orphan assignments, original two enquiries and historical accounts unchanged, suppliers10/6/10, plans0, original pricing, Storage4/5, protected fingerprints, R14 grants/RLS and guards. Confirm90 migrations/max002 with001/002 once, Auth1/1 if temporary users were approved/removed, and at-most-once account3→4 effect. Retain original/new legitimate audits. On cleanup failure, stop and propose exact residual-ID recovery; do not improvise repairs or reuse historical cleanup-only runners.
+
+The human acceptance record should identify release/deployment, actual exports/acceptance/activation/fulfilment/replay evidence or explicit gaps, exact cleanup and reconciled counters/audits. This is not real supplier, merchant, insurance/legal or commercial verification.
+
+Commercial Launch remains NOT AUTHORIZED.

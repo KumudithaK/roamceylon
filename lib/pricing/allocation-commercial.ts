@@ -1,4 +1,5 @@
 import type {Json} from "@/lib/database.types";
+import {isCentPrecise} from "./money-precision.ts";
 
 export type AllocationCommercialConfig={
   driverSalaryPerDay:number;fuelPricePerLitre:number;vehicleKmPerLitre:number;tollsPerJourney:number;parkingPerDay:number;
@@ -11,6 +12,7 @@ export type AllocationCommercialResult={totalSupplierCost:number;manualSellingFl
 export type AllocationCommercialOverrides={
   driverOperations?:number|null;fuel?:number|null;tolls?:number|null;parking?:number|null;guideAccommodation?:number|null;
   administration?:number|null;contingency?:number|null;
+  serviceFeeFixed?:number|null;serviceFeePercent?:number|null;targetProfitMarginPercent?:number|null;
 };
 export type IncompleteAllocationCommercialConfig={
   [K in keyof AllocationCommercialConfig]:number|null;
@@ -20,7 +22,26 @@ const money=(value:number)=>Math.round((value+1e-9)*100)/100;
 const record=(value:Json):Record<string,Json|undefined>=>value&&typeof value==="object"&&!Array.isArray(value)?value:{};
 const flag=(value:Json,key:string)=>record(value)[key]===true;
 
+export const journeyCommercialConfigKeys=["serviceFeeFixed","serviceFeePercent","targetProfitMarginPercent"] as const;
+
+export function resolveAllocationCommercialConfig(config:AllocationCommercialConfig,overrides?:AllocationCommercialOverrides):AllocationCommercialConfig;
+export function resolveAllocationCommercialConfig(config:IncompleteAllocationCommercialConfig,overrides?:AllocationCommercialOverrides):IncompleteAllocationCommercialConfig;
+export function resolveAllocationCommercialConfig(config:IncompleteAllocationCommercialConfig,overrides:AllocationCommercialOverrides={}):IncompleteAllocationCommercialConfig{
+  // A proposal owns these effective values; never mutate the shared Business Pricing row.
+  const effective={...config};
+  for(const key of journeyCommercialConfigKeys){
+    const value=overrides[key];
+    if(value===null||value===undefined)continue;
+    if(typeof value!=="number"||!isCentPrecise(value)||value<0||key==="serviceFeePercent"&&value>100||key==="targetProfitMarginPercent"&&value>=100){
+      throw new RangeError(`Invalid journey-specific commercial override: ${key}.`);
+    }
+    effective[key]=value;
+  }
+  return effective;
+}
+
 export function missingAllocationCommercialConfig(lines:AllocationCommercialLine[],config:IncompleteAllocationCommercialConfig,overrides:AllocationCommercialOverrides={}):string[]{
+  const effectiveConfig=resolveAllocationCommercialConfig(config,overrides);
   const active=lines.filter(line=>line.confirmationStatus!=="cancelled");
   const vehicles=active.filter(line=>line.type==="vehicle");
   const guides=active.filter(line=>line.type==="guide");
@@ -43,13 +64,14 @@ export function missingAllocationCommercialConfig(lines:AllocationCommercialLine
   ];
   return required.filter(([key,needed])=>{
     if(!needed)return false;
-    const value=config[key];
+    const value=effectiveConfig[key];
     return typeof value!=="number"||!Number.isFinite(value)||value<0||
       key==="vehicleKmPerLitre"&&value===0||key==="targetProfitMarginPercent"&&value>=100;
   }).map(([key])=>key);
 }
 
 export function calculateAllocationCommercials(lines:AllocationCommercialLine[],config:AllocationCommercialConfig,context:{days:number;nights:number;distanceKm:number},overrides:AllocationCommercialOverrides={}):AllocationCommercialResult{
+  config=resolveAllocationCommercialConfig(config,overrides);
   const active=lines.filter(line=>line.confirmationStatus!=="cancelled");
   const totalSupplierCost=money(active.reduce((sum,line)=>sum+(line.supplierCost??0),0));
   const manuallyPriced=active.filter(line=>line.sellingPrice!==null);

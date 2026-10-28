@@ -1,0 +1,175 @@
+{
+  "preparedOn": "2026-10-28",
+  "status": "FINAL_PLAN_PREPARED_AWAITING_EXECUTION_APPROVAL",
+  "worktree": "/Users/kumudithakk/Documents/Codex/2026-07-25/use-the-uploaded-roam-ceylon-html/roamceylon-launch-completion",
+  "baseCommit": "85374f782b789a069d6a581302cb6791f104d1da",
+  "newCommitCreated": false,
+  "sourceSetSha256": "8c32bb1334924848e8423a084ac1fdc1fc0a48366abe0f5f51ffed033fd8abd6",
+  "sourceHashesMatch": true,
+  "sourceHashMismatches": [],
+  "unexpectedTrackedChanges": [],
+  "uatRowTotal": 28,
+  "uatTables": 15,
+  "documentSha256": {
+    "docs/launch-approved-file-list.txt": "2ed43b03d6a7d91f9d9b87218419b19ad982d66b4be8cad1cfc7c8afdbcbc013",
+    "docs/launch-coordinated-authorization-manifest.md": "a57826000302cdeeb77c116198bdb34d2ea6892758efd5b7049da7eb0494f95e",
+    "docs/launch-final-execution-manifest.md": "646037c78d4b86f121bfbbcc212c476ba0cca2a02410c79876099745e32ec0a1",
+    "docs/launch-human-uat-dataset.json": "0d0197e621b5ac84e46ba43e153d441218f8c0f4ef5db9c005711493b64e0f6a",
+    "docs/launch-human-uat-ownership-ledger.template.json": "daa29d79815698482e37ec8e3040c1662c92648b955188a9d4567e99db82dfc0",
+    "docs/launch-human-uat-walkthrough.md": "44d8e1cd6a4c1a967c67026c0877f608c846633432a74f0b06fcfe4469d01ae3",
+    "docs/launch-reviewed-source-manifest.json": "0e1191033214867fd98c8b929ee56dfd2a55fa606caeb1f858cf6b997f1ed8e0",
+    "docs/launch-reviewed-source.diff": "cd9e8f717589a97ebc3bf8c4a864caff869dc511b1ad93333ece2e010f364326",
+    "docs/launch-uat-default-benefits-read-only.sql": "b80cb0549ab8e39b148ac419b9ed7644a97a5adf3c4aa44316b57ebbf0f51031",
+    "docs/launch-uat-ownership-review.md": "1fc227a4af870474c8a72321a61c29f090476a2b2b04bdc7b0eb51ae376b8c30",
+    "docs/launch-zod-security-patch-report.md": "2a15a587ed3ce16412ed4de6bd79fa17acab83237be2622f2c102ad3771be33f"
+  },
+  "validation": {
+    "node": "24.22.1",
+    "frozenInstall": "PASS",
+    "next": "16.4.1",
+    "sharp": "0.35.5",
+    "fullSuite": {
+      "pass": 566,
+      "fail": 0,
+      "skipped": 0,
+      "architectureValidator": "PASS"
+    },
+    "focusedSuite": {
+      "files": 12,
+      "pass": 157,
+      "fail": 0,
+      "skipped": 0
+    },
+    "typescript": "PASS",
+    "build": {
+      "result": "PASS",
+      "engine": "Next.js16.4.1/Turbopack",
+      "staticPages": 46,
+      "supabaseConfigured": false
+    },
+    "repositoryLint": {
+      "errors": 0,
+      "warnings": 5
+    },
+    "changedFileLint": {
+      "files": 16,
+      "errors": 0,
+      "warnings": 2
+    },
+    "diffCheck": "PASS",
+    "reviewPatchReverseCheck": "PASS",
+    "securityAudit": {
+      "exit": 0,
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0,
+      "package": "zod",
+      "before": "4.4.3",
+      "installed": "4.6.6",
+      "patched": "4.6.6",
+      "advisoryResolved": "GHSA-mrhx-c7xc-m3w5",
+      "dependencyPatchApplied": true
+    },
+    "dependencyTree": {
+      "exit": 0,
+      "invalidPeerReported": false,
+      "optionalFallbackExtraneousCount": 6
+    },
+    "historicSourcePins": {
+      "matched": 34,
+      "expected": 34
+    },
+    "historicalRunnerSha256": "a679a58fa3adf5df84ac1f7db5889a8f4579f9c461a4d296de559e57673eff05",
+    "baseR14GuardsProjectionsAuthAndAllocationHandlerBytes": "UNCHANGED",
+    "zod": "4.6.6"
+  },
+  "mutationBoundary": {
+    "currentStagingSnapshotQueried": false,
+    "stagingWrites": 0,
+    "productionAccessed": false,
+    "identitiesCreated": 0,
+    "fixturesCreated": 0,
+    "pricingWrites": 0,
+    "accountSequenceConsumed": false,
+    "migrationsApplied": 0,
+    "deployment": false,
+    "aliasChanged": false,
+    "consumedRunnersInvoked": false,
+    "browserDiagnosticsDevelopedOrExecuted": false,
+    "commercialLaunchAuthorized": false
+  },
+  "lastIndependentStagingEvidence": {
+    "source": "human-authenticated read-only stdin result from normal Mac Terminal",
+    "recordedAt": "2026-10-28T10:07:19.744213+00:00",
+    "backend": 960296,
+    "dependencyBackend": 960302,
+    "status": "CONTINUATION_READ_ONLY_PREFLIGHT_PASS",
+    "drift": [],
+    "migrations": 89,
+    "latest": "202610150002",
+    "accountDateMigrationRecords": 0,
+    "auth": [
+      1,
+      1
+    ],
+    "storage": [
+      4,
+      5
+    ],
+    "accountSequence": 3,
+    "authRefreshCounter": 57,
+    "authorityAudits": 13,
+    "denialAudits": 7,
+    "protectedPublicTablesMatched": 53,
+    "originalEnquiries": 2,
+    "suppliers": [
+      10,
+      6,
+      10
+    ],
+    "pricingPlans": 0,
+    "pricingNulls": 13,
+    "originalAuthorityRowsMatched": 13,
+    "originalDenialRowsMatched": 7,
+    "allProtectedAuthStorageAndBusinessRowsMatched": true,
+    "rlsGrantsAndGuardsUnchanged": true,
+    "installedSecurityAssertionsPassed": true,
+    "noTemporaryIdentitiesOrOrphanAssignments": true,
+    "residualFixtureRows": 0,
+    "hooksInactive": true,
+    "openReviewedTransactions": 0,
+    "catalogMd5": "6b18d205fd31792befe04455ee5e84e7",
+    "allocationAclMd5": "9b6a13ebf0ce8b16401e5a3823d3cb1f",
+    "initializerMd5": "e572f2c7a65a8e0da039c2c4eb4ceb77",
+    "canonicalCheckpointSha256": "7f9b0b9765697c31d3e52f8012bb39a0427a7bc9ebb6b445801b73d5ce7e9afc",
+    "mutations": 0
+  },
+  "sourceSetDigestMatches": true,
+  "localSecurityPatch": {
+    "humanApproved": true,
+    "files": [
+      "package.json",
+      "package-lock.json",
+      "tests/dependency-security-compatibility.test.ts"
+    ],
+    "zodBefore": "4.4.3",
+    "zodAfter": "4.6.6",
+    "exactPin": true,
+    "lockLeafChanges": 4,
+    "otherDependencyEntriesChanged": 0,
+    "oneAddedTestOnly": true,
+    "allPriorApplicationAndMigrationHashesPreserved": true,
+    "priorSourceSetSha256": "5dccc2c648f2a16dd399e5229420200aec67cdeb1c569bbf55a9468c7649095e"
+  },
+  "finalPreparation": {
+    "runtimeSourceChanged": false,
+    "completedTestsRepeated": false,
+    "lintWarningsReviewed": 5,
+    "releaseBlockingLintWarnings": 0,
+    "proposedUatScopeCorrection": "27/14 to28/15 for one verified native default-benefit assignment; requires final approval",
+    "evidence": "docs/launch-final-preparation-evidence.json"
+  }
+}

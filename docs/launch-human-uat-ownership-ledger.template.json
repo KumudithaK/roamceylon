@@ -1,0 +1,52 @@
+{
+  "artifactKind": "EMPTY_PRIVATE_OWNERSHIP_LEDGER_TEMPLATE_NOT_EXECUTABLE",
+  "status": "NO_EXECUTION_APPROVAL_NO_TARGET_IDS",
+  "project": "hvcggnuptrcsxtrcjnre",
+  "runTag": null,
+  "D0": null,
+  "releaseCommit": null,
+  "previewDeployment": null,
+  "supabaseBaselineProof": null,
+  "rows": {
+    "enquiries": [],
+    "curated_journeys": [],
+    "curated_journey_changes": [],
+    "journey_supplier_allocations": [],
+    "journey_supplier_allocation_history": [],
+    "supplier_allocation_command_receipts": [],
+    "journey_proposals": [],
+    "journey_proposal_acceptances": [],
+    "enquiry_lifecycle_history": [],
+    "journey_accounts": [],
+    "journey_settlements": [],
+    "accounting_transactions": [],
+    "accounting_lifecycle_history": [],
+    "journey_operational_command_receipts": [],
+    "journey_benefits": []
+  },
+  "temporaryIdentities": [],
+  "roleAssignmentIds": [],
+  "retainedAuthorityAuditIds": [],
+  "retainedSecurityAuditIds": [],
+  "accountSequence": {
+    "before": null,
+    "after": null,
+    "maximumAdvances": 1,
+    "neverReset": true
+  },
+  "authRefreshCounter": {
+    "before": null,
+    "after": null,
+    "explanation": null,
+    "neverReset": true
+  },
+  "checks": {
+    "capsReconciled": false,
+    "exactOwnershipVerified": false,
+    "incomingReferencesReviewed": false,
+    "cleanupSqlReviewed": false,
+    "cleanupApproved": false,
+    "postCleanupIndependentlyVerified": false
+  },
+  "handling": "Populate only a restricted local copy under separately approved UAT. Exact IDs/command keys and ownership evidence only. No credentials, proposal tokens, cookies, JWTs, authorization headers or sensitive contacts. Do not commit filled ledgers. Audit IDs are retention evidence, never deletion targets."
+}

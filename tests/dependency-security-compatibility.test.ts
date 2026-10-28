@@ -6,6 +6,7 @@ import sharp from "sharp";
 import {PDFDocument,PDFName,PDFRawStream} from "pdf-lib";
 import ts from "typescript";
 import {proposalSnapshot,type ProposalSnapshot} from "../lib/proposals/customer-proposal-types.ts";
+import {customerProposalContent} from "../lib/proposals/customer-proposal-content.ts";
 
 const read=(path:string)=>readFileSync(new URL("../"+path,import.meta.url),"utf8");
 const manifest=JSON.parse(read("package.json"));
@@ -28,6 +29,16 @@ test("framework security versions are pinned consistently without overrides or a
   const next=JSON.parse(read("node_modules/next/package.json")),image=JSON.parse(read("node_modules/sharp/package.json"));
   assert.equal(next.engines.node,">=20.9.0");assert.equal(image.engines.node,">=20.9.0");
   assert(atLeast(process.versions.node,"20.9.0"));
+});
+
+test("patched Zod is pinned consistently and no resolved copy is below the reviewed security floor",()=>{
+  assert.equal(manifest.dependencies.zod,"4.6.6");
+  assert.equal(lock.packages[""].dependencies?.zod,manifest.dependencies.zod);
+  assert.equal(lock.packages["node_modules/zod"].version,"4.6.6");
+  const copies=Object.entries(lock.packages).filter(([path])=>/(?:^|\/)node_modules\/zod$/.test(path));
+  assert(copies.length>0);
+  for(const [path,value] of copies)assert(atLeast(value.version!,"4.6.6"),path);
+  assert.equal(JSON.parse(read("node_modules/zod/package.json")).version,lock.packages["node_modules/zod"].version);
 });
 
 test("every resolved Sharp copy and native image dependency meets the reviewed patched floor",()=>{
@@ -66,7 +77,7 @@ for(const format of ["png","jpeg","webp","avif"] as const){
   });
 }
 
-test("actual proposal PDF exporter preserves PNG logo/QR generation under the patched framework",async()=>{
+test("actual proposal PDF exporter preserves QR generation and approved brand presentation under the patched framework",async()=>{
   const snapshot:ProposalSnapshot={schemaVersion:1,generatedAt:"2030-01-01T00:00:00Z",proposalReference:"LOCAL-SECURITY",version:1,
     brand:{name:"The Ceylon Edition",line:"IN-PROCESS COMPATIBILITY TEST",logo:"/brand/the-ceylon-edition-emblem.png"},
     traveller:{name:"In-process Test",email:"not-sent@example.test",adults:1,children:0,infants:0,total:1,requirements:[]},
@@ -78,7 +89,7 @@ test("actual proposal PDF exporter preserves PNG logo/QR generation under the pa
   };
   const png=readFileSync(new URL("../public/brand/the-ceylon-edition-emblem.png",import.meta.url));
   const external=createRequire(import.meta.url),exports={} as {exportProposalPdf:(p:unknown,e:unknown)=>Promise<void>};
-  const require=(name:string)=>name==="./customer-proposal-types"?{proposalSnapshot}:external(name);
+  const require=(name:string)=>name==="./customer-proposal-types"?{proposalSnapshot}:name==="./customer-proposal-content"?{customerProposalContent}:external(name);
   const captured:{blob?:Blob;name?:string;clicks:number;revoked:boolean;fetches:string[]}={clicks:0,revoked:false,fetches:[]};
   const anchor={href:"",download:"",click:()=>{captured.clicks++;captured.name=anchor.download}};
   const output=ts.transpileModule(read("lib/proposals/export-proposal-pdf.ts"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
@@ -89,9 +100,10 @@ test("actual proposal PDF exporter preserves PNG logo/QR generation under the pa
     (callback:()=>void)=>{callback();return 0});
   await exports.exportProposalPdf({proposal_reference:"LOCAL-SECURITY",version:1,customer_snapshot:snapshot},{name:"In-process Test"});
   assert(captured.blob);assert.equal(captured.clicks,1);assert.equal(captured.revoked,true);
-  assert.equal(captured.name,"local-security-v1-journey-proposal.pdf");assert.equal(captured.fetches.length,2);
+  assert.equal(captured.name,"local-security-v1-journey-proposal.pdf");assert.equal(captured.fetches.length,1);
+  assert.match(captured.fetches[0],/^https:\/\/api\.qrserver\.com\//);
   const pdf=await PDFDocument.load(await captured.blob.arrayBuffer());
   assert(pdf.getPageCount()>0);assert.equal(pdf.getTitle(),"LOCAL-SECURITY - The Ceylon Edition Journey Proposal");
   const images=pdf.context.enumerateIndirectObjects().filter(([,object])=>object instanceof PDFRawStream&&object.dict.get(PDFName.of("Subtype"))?.toString()==="/Image");
-  assert(images.length>=2,"Both PNG inputs must be embedded");
+  assert(images.length>=1,"The QR PNG must be embedded; the legacy logo is omitted by the approved content policy");
 });

@@ -1,0 +1,61 @@
+{
+  "runtime": [
+    "lib/proposals/traveller-proposal-service.ts",
+    "features/admin/journey-lifecycle-workspace.tsx",
+    "lib/proposals/customer-proposal-content.ts",
+    "lib/proposals/customer-proposal.ts",
+    "lib/proposals/customer-proposal-dto.ts",
+    "components/proposal/proposal-document.tsx",
+    "lib/proposals/export-proposal-pdf.ts",
+    "lib/pricing/allocation-commercial.ts",
+    "lib/accounting/allocation-accounting.ts",
+    "app/api/admin/journey-proposals/route.ts"
+  ],
+  "tests": [
+    "tests/cr7-r12-targeted-remediation.test.ts",
+    "tests/traveller-proposal-token.test.ts",
+    "tests/journey-commercial-overrides.test.ts",
+    "tests/proposal-accommodation-copy.test.ts",
+    "tests/dependency-security-compatibility.test.ts",
+    "tests/release-readiness.test.ts"
+  ],
+  "migrations": [
+    "supabase/migrations/202610150001_cr7_account_accepted_dates.sql"
+  ],
+  "dependencies": [
+    "package.json",
+    "package-lock.json"
+  ],
+  "hashes": {
+    "app/api/admin/journey-proposals/route.ts": "93070ff247ec6663d6742300b45cda0d8f437a88c85aece59e3c67fa5e515134",
+    "components/proposal/proposal-document.tsx": "68229abd89d11f03e6846e71dbded37124d4dfae64adef15c31d5dfc47c99357",
+    "features/admin/journey-lifecycle-workspace.tsx": "c1c88b7133b9c0c098824532b831bcdf140d1346b7b45f427a97a0656d3e8e0f",
+    "lib/accounting/allocation-accounting.ts": "ca7586eae20734bfd6951542b99b9db7060c572d0e3bc78fe0f4ee0d053e9ff9",
+    "lib/pricing/allocation-commercial.ts": "f8b1317c5df26292a1c4fe54ef3124dd98ada3fcdd1c53416d27c641bb4e8804",
+    "lib/proposals/customer-proposal-content.ts": "df501358e8e227f2d77b520581c99fb09cea7b4466db2a6a19120d6dea566299",
+    "lib/proposals/customer-proposal-dto.ts": "bc9b83190d5b929fbfa5941e084fb3bdea1d3fcf0e38f171d98802c2cdb450b9",
+    "lib/proposals/customer-proposal.ts": "c1217dbb1fe9d9f55af64a8471ea3f1a4ce15bec972154ae9afe3e39f2139edf",
+    "lib/proposals/export-proposal-pdf.ts": "9f44b8c525e38e944190c762a2434cd937f881939d9a248035642c29929b605d",
+    "lib/proposals/traveller-proposal-service.ts": "ce72b1f2455667408a62fd9a04823663221ee2431651969d8d643cefa3016064",
+    "package-lock.json": "c76c32548364a71dfee5ca1838b29185e1d7278b55a64b4c69ecd75bc59d14de",
+    "package.json": "7f022db8771b5a5e35a02c51597ca68445a4910f9272bcf6ce1873a280959b19",
+    "supabase/migrations/202610150001_cr7_account_accepted_dates.sql": "7e117e9b5da8116de54de91a48f1de6fff1bee06505d15e8648985f7022062a3",
+    "tests/cr7-r12-targeted-remediation.test.ts": "a2344412c62028a2add009ef7a038da636c781f018c70366079ad3bf3e509fab",
+    "tests/dependency-security-compatibility.test.ts": "9d2196043569887b27c1f8316defd59497413892bd12b7c0a01e7f704a4bd0a8",
+    "tests/journey-commercial-overrides.test.ts": "4eb20ed500cfc8b2cdf92428b73ce377f671c34eb8e3b6c8f55ece2922439c83",
+    "tests/proposal-accommodation-copy.test.ts": "466ef2ecb914967c502e656925946cdbf5ff4255cd7cf37a840e2e638f3cfe8e",
+    "tests/release-readiness.test.ts": "1e4af7de64295dc3f59bd5a55f1917287b90cb36a29b191064b7cf056ee0ff33",
+    "tests/traveller-proposal-token.test.ts": "419c1a8bee5330574050c7b68179c974de288d43ad32d8804323afccb198c29f"
+  },
+  "sourceSetSha256": "8c32bb1334924848e8423a084ac1fdc1fc0a48366abe0f5f51ffed033fd8abd6",
+  "baseCommit": "85374f782b789a069d6a581302cb6791f104d1da",
+  "status": "LOCAL_RELEASE_READY_FOR_CONTROLLED_STAGING_APPROVAL",
+  "committed": false,
+  "approvedDependencyPatch": {
+    "package": "zod",
+    "version": "4.6.6",
+    "priorResolvedVersion": "4.4.3",
+    "previousSourceSetSha256": "5dccc2c648f2a16dd399e5229420200aec67cdeb1c569bbf55a9468c7649095e",
+    "manifestAndLockOnlyOtherThanOneSecurityRegression": true
+  }
+}

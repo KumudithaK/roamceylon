@@ -3,7 +3,7 @@ import {createAdminClient} from "@/lib/supabase/admin";
 import {getRouteEstimate} from "@/lib/journey/route";
 import {endpointRouteLocation} from "@/lib/journey/journey-endpoints";
 import {parseJourneyHandoff} from "@/lib/journey/quotation-handoff";
-import {calculateAllocationCommercials,missingAllocationCommercialConfig,type AllocationCommercialConfig,type AllocationCommercialOverrides,type IncompleteAllocationCommercialConfig} from "@/lib/pricing/allocation-commercial";
+import {calculateAllocationCommercials,missingAllocationCommercialConfig,resolveAllocationCommercialConfig,type AllocationCommercialConfig,type AllocationCommercialOverrides,type IncompleteAllocationCommercialConfig} from "@/lib/pricing/allocation-commercial";
 import {resolveJourneyDesign} from "@/lib/journey/curated-journey-server";
 import type {Database,Json} from "@/lib/database.types";
 
@@ -118,9 +118,10 @@ export async function allocationCommercialSnapshot(enquiryId:string,overrides:Al
     routeDistanceBufferPercent:Number(config.route_distance_buffer_percent??0)
   };
   const commercialLines=allocations.map(row=>({type:row.allocation_type,supplierCost:row.supplier_cost===null?null:Number(row.supplier_cost),sellingPrice:row.selling_price===null?null:Number(row.selling_price),pricingPlanSnapshot:row.pricing_plan_snapshot,serviceDetails:row.service_details,confirmationStatus:row.confirmation_status}));
-  const missingConfig=missingAllocationCommercialConfig(commercialLines,nullablePricingConfig,overrides);
+  const effectivePricingConfig=resolveAllocationCommercialConfig(nullablePricingConfig,overrides);
+  const missingConfig=missingAllocationCommercialConfig(commercialLines,effectivePricingConfig,overrides);
   if(missingConfig.length)throw new Error(`Complete Business Pricing settings before preparing a proposal: ${missingConfig.join(", ")}.`);
-  const pricingConfig=Object.fromEntries(Object.entries(nullablePricingConfig).map(([key,value])=>[key,value??0])) as AllocationCommercialConfig;
+  const pricingConfig=Object.fromEntries(Object.entries(effectivePricingConfig).map(([key,value])=>[key,value??0])) as AllocationCommercialConfig;
   const summary=calculateAllocationCommercials(commercialLines,pricingConfig,{days,nights:Math.max(0,days-1),distanceKm:route.estimatedDistance},overrides);
   return {allocations,snapshot,summary,commercialContext:{days,nights:Math.max(0,days-1),distanceKm:route.estimatedDistance,config:pricingConfig,overrides}};
 }
@@ -148,9 +149,9 @@ export async function syncAllocationAccounting(enquiryId:string,userId?:string){
   // Phase 8 freezes an activated account to the accepted proposal. Allocation
   // edits may prepare a later proposal version, but must never rewrite history.
   if(account&&isAcceptedProposalAccount(account))return {account,synced:false};
-  const commercial=await allocationCommercialSnapshot(enquiryId);
   if(account&&!isAllocationAccount(account))return {account,synced:false};
   if(!account||!account.active)return {account,synced:false};
+  const commercial=await allocationCommercialSnapshot(enquiryId);
   if(commercial.summary.incompleteLines)throw new Error("Complete supplier cost and selling price for every active allocation before Accounting can be updated.");
   const active=commercial.snapshot.filter(line=>line.confirmationStatus!=="cancelled");
   const approvedCommercial=approvedProposal?.commercial_snapshot&&typeof approvedProposal.commercial_snapshot==="object"&&!Array.isArray(approvedProposal.commercial_snapshot)?approvedProposal.commercial_snapshot as Record<string,Json|undefined>:null;

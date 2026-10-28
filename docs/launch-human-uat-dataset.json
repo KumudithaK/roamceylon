@@ -1,0 +1,313 @@
+{
+  "artifactKind": "HUMAN_UAT_MANUAL_INPUT_SPEC_NOT_A_SEED_SCRIPT",
+  "status": "PREPARED_FOR_COORDINATED_APPROVAL_NOT_FOR_ENTRY",
+  "preparedOn": "2026-10-28",
+  "target": {
+    "supabaseProject": "hvcggnuptrcsxtrcjnre",
+    "environment": "protected staging only",
+    "productionForbidden": true
+  },
+  "authorization": {
+    "localJourneyPricingExtensionApproved": true,
+    "currentDataEntry": false,
+    "currentAuthCreation": false,
+    "currentAccountActivation": false,
+    "currentCleanup": false,
+    "globalPricingWrites": false,
+    "requiredBeforeEntry": [
+      "Approve and independently verify one protected staging release and accepted-date migration001",
+      "Reconcile the fresh post-release database baseline, exact installed native definitions and incoming FKs",
+      "Approve this one manual28-row/15-table fixture including one native default-benefit assignment, named human role access, one account increment and exact-ID cleanup procedure",
+      "Resolve run tag, D0, exact human actors and any temporary-identity manifest before the first write"
+    ]
+  },
+  "expectedPostReleaseBaseline": {
+    "migrations": 90,
+    "latestVersion": "202610150002",
+    "accountDateMigrationVersion": "202610150001",
+    "accountDateMigrationOccurrences": 1,
+    "securityMigrationOccurrences": 1,
+    "originalEnquiries": 2,
+    "suppliers": [
+      10,
+      6,
+      10
+    ],
+    "pricingPlans": 0,
+    "businessPricingNulls": 13,
+    "authUsers": 1,
+    "superAdmins": 1,
+    "storage": [
+      4,
+      5
+    ],
+    "accountSequenceLastHistoricallyVerified": 3,
+    "authRefreshCounterLastHistoricallyVerified": 57,
+    "authorityEventsLastHistoricallyVerified": 13,
+    "denialEventsToRetain": 7,
+    "note": "These are pre-UAT expectations, not a newly queried snapshot. Reconcile approved migration/initializer changes separately from protected business fingerprints."
+  },
+  "ownership": {
+    "runTag": null,
+    "enquiryId": null,
+    "curatedJourneyId": null,
+    "allocationId": null,
+    "proposalId": null,
+    "acceptanceId": null,
+    "accountId": null,
+    "rule": "Capture every exact returned primary key, native history/receipt ID and command key in a restricted ownership ledger immediately. Never delete by label/prefix, expose tokens in reports, or modify existing customer records."
+  },
+  "traveller": {
+    "name": "HUMAN UAT ONLY - Test Traveller - <APPROVED_RUN_TAG>",
+    "email": "human-uat@example.test",
+    "adults": 1,
+    "children": 0,
+    "infants": 0,
+    "notes": "STAGING UAT ONLY. One simulated day-service; lodging and transport are self-arranged and excluded. No booking, real service, supplier commitment or payment request."
+  },
+  "catalogue": {
+    "destinationId": "057e9d8a-483d-4628-803f-e4b6c9ff96b3",
+    "destinationName": "Ahungalla",
+    "experienceId": "a8add685-dd52-4a23-b5c3-121b54806d13",
+    "experienceName": "Coastal hydrotherapy and relaxation spa packages",
+    "rule": "Existing published read-only pair reverified28October. Confirm selectable before entry; do not create or edit catalogue/supplier/rate records."
+  },
+  "dates": {
+    "D0": null,
+    "resolution": "Approve one operating date matching native server-date/start-travel eligibility; do not backdate or manipulate lifecycle status.",
+    "originalRequest": {
+      "startDayOffset": 7,
+      "endDayOffset": 9
+    },
+    "acceptedDesign": {
+      "startDayOffset": 0,
+      "endDayOffset": 2
+    },
+    "days": 3,
+    "nights": 2
+  },
+  "builderBeforeSingleSubmission": {
+    "selectedDestinationCount": 1,
+    "selectedExperienceCount": 1,
+    "experienceParticipants": {
+      "adults": 1,
+      "children": 0,
+      "infants": 0
+    },
+    "destinationNights": 0,
+    "stayPreference": "recommend",
+    "journeyGuidePreference": "no_guide",
+    "specialistGuidePreference": "none",
+    "pickupType": null,
+    "dropoffType": null,
+    "transportLegs": 0,
+    "notes": "Set every non-date choice before public submission. No self_arranged stay enum exists; express lodging exclusion in notes/terms. Keep open-night warnings visible."
+  },
+  "curatedJourney": {
+    "initializations": 1,
+    "saves": 1,
+    "edit": "Only replace travel dates with D0 through D0+2 using the two ordinary date inputs, before any allocation exists. Click Proceed to Supplier Allocation ONCE as the sole save; do not click Save journey first.",
+    "expectedChanges": [
+      "initialised",
+      "pickup_changed",
+      "dropoff_changed",
+      "travelDates_changed"
+    ],
+    "changeRows": 4,
+    "stopRule": "Any additional design delta, save, allocation review update or extra required service invalidates the fixed budget; stop before the extra write."
+  },
+  "allocation": {
+    "type": "experience",
+    "serviceName": "HUMAN UAT ONLY - simulated service",
+    "providerName": "HUMAN UAT ONLY - no real supplier commitment",
+    "quantity": 1,
+    "quantityLabel": "participant",
+    "currency": "USD",
+    "supplierCost": 240,
+    "sellingPrice": null,
+    "sellingMode": "native automatic proposal pricing",
+    "supplierContact": "UAT PRIVATE DELIVERY CONTACT - DO NOT CONTACT",
+    "arrivalInstructions": "UAT delivery instructions - synthetic only",
+    "specialNotes": "UAT PRIVATE OPERATIONS NOTE - not customer-facing",
+    "pricingPlanId": null,
+    "customJourneyRate": true,
+    "confirmationStatus": "confirmed",
+    "saves": 1,
+    "rule": "Existing authorized human owner/allocation operator enters all fields and Available/held before the one save. No separate confirmation or later allocation edit. Do not grant Designer cost/contact privileges."
+  },
+  "pricing": {
+    "scope": "owned proposal only; no global Business Pricing writes or restoration",
+    "original13GlobalNullsMustRemain": true,
+    "commercialInputAuthority": "Existing human Super Admin owner with both settings.manage and journey.proposal.create authority, using their own normal session; never impersonate or reassign the original identity.",
+    "apiContainer": "commercialOverrides",
+    "proposalLocalInputs": {
+      "serviceFeeFixed": 25,
+      "serviceFeePercent": 5,
+      "targetProfitMarginPercent": 20
+    },
+    "existingJourneyOverrides": {
+      "driverOperations": 0,
+      "fuel": 0,
+      "tolls": 0,
+      "parking": 0,
+      "guideAccommodation": 0,
+      "administration": 0,
+      "contingency": 0
+    },
+    "expectedEngineResult": {
+      "currency": "USD",
+      "serviceFee": 37,
+      "internalCost": 240,
+      "customerTotal": 346.25,
+      "grossProfit": 106.25,
+      "achievedGrossMarginPercent": 30.69
+    },
+    "warning": "Fictional UAT values, not approved commercial prices. The20% configured target is not the achieved30.69% gross margin. Stop on different arithmetic; do not overwrite globals or manufacture a ready proposal."
+  },
+  "proposal": {
+    "versions": 1,
+    "introduction": "HUMAN UAT ONLY. Simulated day-service proposal; not a booking or commercial offer.",
+    "terms": "HUMAN UAT ONLY. No real services, supplier commitments or payments. Lodging and transport are self-arranged and excluded.",
+    "additionalExclusions": [
+      "All accommodation and lodging",
+      "All transport and airport transfers",
+      "Services on self-arranged days not expressly included"
+    ],
+    "expectedBrand": "The Ceylon Edition",
+    "businessEmail": null,
+    "expectedCustomerTotal": 346.25,
+    "depositAmount": 100.25,
+    "balanceAmount": 246,
+    "rangeOverrideReasonIfRequired": "HUMAN UAT ONLY: isolated fictional day-service pricing; no real commercial offer.",
+    "rangeGuardRule": "If the native estimate-range guard requests a reason, use the approved internal UAT reason on this first generation. Do not change the estimate, disable the guard or regenerate another version. If further requirements differ, HOLD.",
+    "exportPaths": [
+      "owned traveller HTML and Print/Save as PDF",
+      "staff Download proposal PDF"
+    ],
+    "confidentiality": "Costs, margins/target, private supplier contacts/notes, internal snapshots and command receipts must be absent, including nested properties. Exact browser identity and labelled USD346.25 must remain; PDF extraction may normalize whitespace only.",
+    "viewUpdates": "Normal owned proposal view counters/timestamps may update; no extra proposal version or change request is authorized.",
+    "acceptance": "Accept the one sent version once using the reserved email and terms acknowledgement. Preserve original request and immutable accepted design."
+  },
+  "finance": {
+    "activationAttempts": 1,
+    "condition": "Live customer exports and exact-version acceptance must pass first.",
+    "deposit": 100.25,
+    "balance": 246,
+    "supplierLiability": 240,
+    "supplierPaid": 0,
+    "paymentMethodLabel": "Other",
+    "paymentNotes": "UAT SIMULATED - NO REAL PAYMENT",
+    "reference": "HUMAN-UAT-<APPROVED_RUN_TAG>",
+    "accountSequence": {
+      "requiredBefore": 3,
+      "maximumAfter": 4,
+      "neverReset": true
+    },
+    "failureRule": "A failed activation can still consume nextval. If sequence becomes4 without success, HOLD; no second activation or sequence reset.",
+    "realPaymentsRefundsPayoutsWaivers": 0
+  },
+  "operations": {
+    "confirmJourney": 1,
+    "prepareOperations": 1,
+    "startTravel": 1,
+    "cancelPromptChecks": [
+      "Cancel",
+      "Escape"
+    ],
+    "successfulFulfilments": 1,
+    "sameKeyReplay": "Only through approved authenticated replay facility; zero extra writes",
+    "differentKeyDuplicate": "Only through approved facility; expect409 and zero extra business writes",
+    "completeJourney": 0,
+    "rule": "No manual status changes, extra save, supplier payout or optional completion. If replay facility is unavailable, record UNEXECUTED."
+  },
+  "maximumBusinessRows": {
+    "enquiries": 1,
+    "curated_journeys": 1,
+    "curated_journey_changes": 4,
+    "journey_supplier_allocations": 1,
+    "journey_supplier_allocation_history": 3,
+    "supplier_allocation_command_receipts": 1,
+    "journey_proposals": 1,
+    "journey_proposal_acceptances": 1,
+    "enquiry_lifecycle_history": 7,
+    "journey_accounts": 1,
+    "journey_settlements": 1,
+    "accounting_transactions": 1,
+    "accounting_lifecycle_history": 1,
+    "journey_operational_command_receipts": 3,
+    "journey_benefits": 1
+  },
+  "rowBudget": {
+    "businessRows": 28,
+    "tables": 15,
+    "conditions": "All inputs and operation counts above. Counts are ceilings, not permission to manufacture histories/receipts. History is produced only by native workflows.",
+    "excluded": [
+      "Auth/profile/role provisioning, requiring separate exact identity approval",
+      "retained legitimate authority/security audits"
+    ],
+    "stopRule": "Unexpected row/update, ambiguous partial response, additional version/save/service or proposed cap breach: stop, retain evidence and reconcile; no automatic retry.",
+    "scopeCorrectionForFinalApproval": "Fresh read-only proof confirmed one native journey_benefits insert omitted from the previous proposed27/14 budget. Proposed final scope is28/15; all other caps unchanged. No execution approval inferred."
+  },
+  "humanAccess": {
+    "designer": "Approved named least-privilege Designer designs/reviews/sends within existing permissions",
+    "commercialOwner": "Existing human Super Admin owner performs authorized allocation/proposal pricing actions in their own normal session",
+    "finance": "Approved named least-privilege Finance activates once",
+    "operations": "Approved named least-privilege Operations prepares/starts/fulfils",
+    "availability": "Last verified Auth1/1 does not include three distinct role sessions. Any temporary Designer/Finance/Operations creation and assignment requires explicit identity-manifest approval before entry; do not assume it happened.",
+    "authEffects": "Record original Auth refresh baseline57 and legitimate human sign-in/refresh activity; manual sessions are not constrained by the old scripted57-to60 assumption. Never reset counters.",
+    "authorityEffects": "Three temporary role assignment/removal pairs would ordinarily add six events13-to19; reconcile exact native effects and retain all original/new events."
+  },
+  "cleanup": {
+    "currentExecutionAuthorized": false,
+    "method": "Separately reviewed atomic exact-ID leaf-first cleanup, ownership/count/reference assertions and protected-state checks; no CASCADE, prefix deletes, guard disabling or historical cleanup-only runner.",
+    "provisionalOrder": [
+      "journey_operational_command_receipts",
+      "supplier_allocation_command_receipts",
+      "accounting_transactions",
+      "accounting_lifecycle_history",
+      "journey_settlements",
+      "journey_accounts",
+      "journey_proposal_acceptances",
+      "journey_proposals",
+      "journey_benefits",
+      "journey_supplier_allocation_history",
+      "journey_supplier_allocations",
+      "enquiry_lifecycle_history",
+      "curated_journey_changes",
+      "curated_journeys",
+      "enquiries"
+    ],
+    "required": "Before cleanup, enumerate exact generated IDs and verify installed incoming FKs/logical references; only the exact one native default-benefit assignment is allowed; refunds, waivers and change requests must remain absent; preserve the global benefit definition. Approve any existing transaction-local maintenance hooks explicitly. Roll back business cleanup on any assertion failure; stop on residuals rather than improvising repair.",
+    "identityRemoval": "Remove only separately approved temporary assignments/profiles/identities after restricted business references are gone; retain original Super Admin and legitimate append-only audits.",
+    "pricingRestoration": "NONE: no global pricing changes are allowed; owned proposal-local values disappear with exact owned records.",
+    "reconcile": [
+      "zero owned business rows and temporary orphan roles",
+      "original two enquiries and historical accounts unchanged",
+      "suppliers10/6/10 and pricing plans0",
+      "all13 global pricing NULLs and every other setting unchanged",
+      "Auth1/1 if temporary users were approved and removed",
+      "Storage4/5 and protected fingerprints unchanged",
+      "migrations90/max002,001and002 once",
+      "R14 grants/RLS and integrity guards unchanged",
+      "account sequence effect at most3-to4 with no reset",
+      "all original and legitimate new authority/security audits retained"
+    ]
+  },
+  "doNotRun": [
+    "consumed continuation or cleanup-only",
+    "deferred browser/bootstrap diagnostics",
+    "R18E identity matrix",
+    "old16-case HTTP matrix",
+    "native rollback account-init test",
+    "full17-service E2E"
+  ],
+  "commercialLaunchAuthorized": false,
+  "nativeDefaultBenefit": {
+    "definitionId": "f4d0a933-55a6-46ef-bf6e-6283bc32e03f",
+    "code": "roam_ceylon_welcome_tshirt",
+    "applicableDefaultCountVerified": 1,
+    "verifiedAt": "2026-10-28T10:14:23.189137+00:00",
+    "expectedOwnedAssignmentRows": 1,
+    "rule": "Native proposal generation only; preserve the global definition. Simulated UAT promise only. No manual assignment, size/toggle or benefit-fulfilment update. Capture and clean the exact owned assignment ID."
+  }
+}

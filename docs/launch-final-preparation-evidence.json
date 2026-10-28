@@ -1,0 +1,240 @@
+{
+  "preparedOn": "2026-10-28",
+  "timezone": "Asia/Colombo",
+  "status": "EXACT_COORDINATED_PLAN_PREPARED_FINAL_HUMAN_EXECUTION_APPROVAL_REQUIRED",
+  "candidate": {
+    "baseCommit": "85374f782b789a069d6a581302cb6791f104d1da",
+    "sourceSetSha256": "8c32bb1334924848e8423a084ac1fdc1fc0a48366abe0f5f51ffed033fd8abd6",
+    "sourceFiles": 19,
+    "sourceHashesMatched": 19,
+    "reviewPatchSha256": "cd9e8f717589a97ebc3bf8c4a864caff869dc511b1ad93333ece2e010f364326",
+    "runtimeSourceChangedDuringFinalPreparation": false,
+    "newCommitCreated": false,
+    "allowlistFiles": 32,
+    "documentationFiles": 13
+  },
+  "freshDatabaseBaseline": {
+    "source": "human-authenticated read-only stdin result from normal Mac Terminal",
+    "recordedAt": "2026-10-28T10:07:19.744213+00:00",
+    "backend": 960296,
+    "dependencyBackend": 960302,
+    "status": "CONTINUATION_READ_ONLY_PREFLIGHT_PASS",
+    "drift": [],
+    "migrations": 89,
+    "latest": "202610150002",
+    "accountDateMigrationRecords": 0,
+    "auth": [
+      1,
+      1
+    ],
+    "storage": [
+      4,
+      5
+    ],
+    "accountSequence": 3,
+    "authRefreshCounter": 57,
+    "authorityAudits": 13,
+    "denialAudits": 7,
+    "protectedPublicTablesMatched": 53,
+    "originalEnquiries": 2,
+    "suppliers": [
+      10,
+      6,
+      10
+    ],
+    "pricingPlans": 0,
+    "pricingNulls": 13,
+    "originalAuthorityRowsMatched": 13,
+    "originalDenialRowsMatched": 7,
+    "allProtectedAuthStorageAndBusinessRowsMatched": true,
+    "rlsGrantsAndGuardsUnchanged": true,
+    "installedSecurityAssertionsPassed": true,
+    "noTemporaryIdentitiesOrOrphanAssignments": true,
+    "residualFixtureRows": 0,
+    "hooksInactive": true,
+    "openReviewedTransactions": 0,
+    "catalogMd5": "6b18d205fd31792befe04455ee5e84e7",
+    "allocationAclMd5": "9b6a13ebf0ce8b16401e5a3823d3cb1f",
+    "initializerMd5": "e572f2c7a65a8e0da039c2c4eb4ceb77",
+    "canonicalCheckpointSha256": "7f9b0b9765697c31d3e52f8012bb39a0427a7bc9ebb6b445801b73d5ce7e9afc",
+    "mutations": 0
+  },
+  "freshPreview": {
+    "recordedAt": "2026-10-28T10:05:07.587Z",
+    "status": "CONTINUATION_READ_ONLY_PREVIEW_PASS",
+    "deployment": "dpl_7j88PqnXGr8JiteTStP9Q38VgZB8",
+    "sha": "85374f782b789a069d6a581302cb6791f104d1da",
+    "alias": "roam-ceylon-git-commercial-readiness-staging-roam-ceylon.vercel.app",
+    "state": "READY",
+    "protected": true,
+    "bypassEntries": 0,
+    "stagingSupabaseVerified": true,
+    "mutations": 0,
+    "productionAccessed": false
+  },
+  "remoteStagingGit": {
+    "ref": "refs/heads/commercial-readiness/staging",
+    "sha": "85374f782b789a069d6a581302cb6791f104d1da",
+    "matchesBase": true,
+    "method": "read-only git ls-remote"
+  },
+  "migrationOrdering": {
+    "installedCli": "2.109.1",
+    "localHelpVerifiedFlags": [
+      "--linked",
+      "--include-all",
+      "--dry-run"
+    ],
+    "candidate": "202610150001_cr7_account_accepted_dates.sql",
+    "candidateSha256": "7e117e9b5da8116de54de91a48f1de6fff1bee06505d15e8648985f7022062a3",
+    "installedLaterVersion": "202610150002",
+    "expectedFutureDryRunOnly": [
+      "202610150001"
+    ],
+    "expectedPostApplication": {
+      "count": 90,
+      "maxVersion": "202610150002",
+      "candidateOccurrences": 1,
+      "securityMigrationOccurrences": 1
+    },
+    "remoteDryRunPerformed": false,
+    "migrationApplied": false
+  },
+  "uatScopeCorrection": {
+    "previousProposal": {
+      "businessRows": 27,
+      "tables": 14
+    },
+    "finalProposal": {
+      "businessRows": 28,
+      "tables": 15
+    },
+    "humanExecutionApprovalGranted": false,
+    "source": "human-executed read-only SQL result",
+    "recordedAt": "2026-10-28T10:14:23.189137+00:00",
+    "backend": 960997,
+    "definitionRows": 1,
+    "existingJourneyBenefitRows": 0,
+    "applicableDefaultCount": 1,
+    "definitionId": "f4d0a933-55a6-46ef-bf6e-6283bc32e03f",
+    "code": "roam_ceylon_welcome_tshirt",
+    "scope": "traveller",
+    "globalDefinitionMayChange": false,
+    "allowedEffect": "one native owned journey_benefits insert during proposal generation and its exact-ID cleanup; no manual benefit actions",
+    "allOtherBusinessCapsUnchanged": true,
+    "financialTotalsUnchanged": true,
+    "ledgerTablesMatch": true
+  },
+  "lintReview": {
+    "warnings": 5,
+    "errors": 0,
+    "releaseBlocking": 0,
+    "dispositions": [
+      {
+        "file": "components/proposal/proposal-document.tsx",
+        "lines": [
+          16,
+          60
+        ],
+        "classification": "P3 image optimization only"
+      },
+      {
+        "file": "features/experiences/experience-public-detail.tsx",
+        "lines": [
+          55,
+          59
+        ],
+        "classification": "P3 fixed same-origin navigation performance; source unchanged"
+      },
+      {
+        "file": "tests/browser/proposal-focus/next.config.mjs",
+        "lines": [
+          6
+        ],
+        "classification": "P3 test config export naming; source unchanged"
+      }
+    ],
+    "noSuppressionOrRuntimeEdit": true
+  },
+  "retainedValidation": {
+    "fullTests": 566,
+    "focusedTests": 157,
+    "auditVulnerabilities": 0,
+    "typescript": "PASS",
+    "build": "PASS",
+    "repositoryLintErrors": 0,
+    "repositoryLintWarnings": 5,
+    "changedFileLintErrors": 0,
+    "changedFileLintWarnings": 2,
+    "diffCheck": "PASS",
+    "reviewPatchReverseCheck": "PASS",
+    "testsRepeatedDuringFinalPreparation": false,
+    "next": "16.4.1",
+    "sharp": "0.35.5",
+    "zod": "4.6.6",
+    "historicalPinsMatched": 34
+  },
+  "currentEffects": {
+    "databaseWrites": 0,
+    "identitiesCreated": 0,
+    "fixturesCreated": 0,
+    "pricingWrites": 0,
+    "accountSequenceConsumed": false,
+    "deployments": 0,
+    "aliasChanges": 0,
+    "productionAccessed": false,
+    "liveOrCleanupRunnerInvoked": false,
+    "browserDiagnosticDevelopmentOrExecution": false,
+    "completedE2ERepeated": false,
+    "commercialLaunchAuthorized": false
+  },
+  "finalApprovalMustInclude": [
+    "exact candidate digest and32-file allowlist",
+    "one migration001 after single-file dry-run",
+    "staging commit/push, protected Preview and existing alias verification/assignment plus bounded recovery",
+    "corrected28/15 manual fixture including native benefit",
+    "at most3 least-privilege temporary identities/profiles/assignments and normal human sessions",
+    "one conditional account3-to4 advance",
+    "exact-ID cleanup, preserved audits and independent financial/security reconciliation"
+  ],
+  "beforeUatEntryResolve": [
+    "named human operators and normal trusted identity provisioning",
+    "one run tag and D0/payment date",
+    "restricted ledger and exact parameterized cleanup review",
+    "supported authenticated in-memory/browser replay method"
+  ],
+  "fileHashesExcludingThisEvidence": {
+    "app/api/admin/journey-proposals/route.ts": "93070ff247ec6663d6742300b45cda0d8f437a88c85aece59e3c67fa5e515134",
+    "components/proposal/proposal-document.tsx": "68229abd89d11f03e6846e71dbded37124d4dfae64adef15c31d5dfc47c99357",
+    "docs/launch-approved-file-list.txt": "2ed43b03d6a7d91f9d9b87218419b19ad982d66b4be8cad1cfc7c8afdbcbc013",
+    "docs/launch-coordinated-authorization-manifest.md": "a57826000302cdeeb77c116198bdb34d2ea6892758efd5b7049da7eb0494f95e",
+    "docs/launch-final-execution-manifest.md": "646037c78d4b86f121bfbbcc212c476ba0cca2a02410c79876099745e32ec0a1",
+    "docs/launch-human-uat-dataset.json": "0d0197e621b5ac84e46ba43e153d441218f8c0f4ef5db9c005711493b64e0f6a",
+    "docs/launch-human-uat-ownership-ledger.template.json": "daa29d79815698482e37ec8e3040c1662c92648b955188a9d4567e99db82dfc0",
+    "docs/launch-human-uat-walkthrough.md": "44d8e1cd6a4c1a967c67026c0877f608c846633432a74f0b06fcfe4469d01ae3",
+    "docs/launch-local-validation-evidence.json": "a58aac50e888b31b4359ffaedc3f7b7f101366091600f5438d54400d8a7e7c4b",
+    "docs/launch-reviewed-source-manifest.json": "0e1191033214867fd98c8b929ee56dfd2a55fa606caeb1f858cf6b997f1ed8e0",
+    "docs/launch-reviewed-source.diff": "cd9e8f717589a97ebc3bf8c4a864caff869dc511b1ad93333ece2e010f364326",
+    "docs/launch-uat-default-benefits-read-only.sql": "b80cb0549ab8e39b148ac419b9ed7644a97a5adf3c4aa44316b57ebbf0f51031",
+    "docs/launch-uat-ownership-review.md": "1fc227a4af870474c8a72321a61c29f090476a2b2b04bdc7b0eb51ae376b8c30",
+    "docs/launch-zod-security-patch-report.md": "2a15a587ed3ce16412ed4de6bd79fa17acab83237be2622f2c102ad3771be33f",
+    "features/admin/journey-lifecycle-workspace.tsx": "c1c88b7133b9c0c098824532b831bcdf140d1346b7b45f427a97a0656d3e8e0f",
+    "lib/accounting/allocation-accounting.ts": "ca7586eae20734bfd6951542b99b9db7060c572d0e3bc78fe0f4ee0d053e9ff9",
+    "lib/pricing/allocation-commercial.ts": "f8b1317c5df26292a1c4fe54ef3124dd98ada3fcdd1c53416d27c641bb4e8804",
+    "lib/proposals/customer-proposal-content.ts": "df501358e8e227f2d77b520581c99fb09cea7b4466db2a6a19120d6dea566299",
+    "lib/proposals/customer-proposal-dto.ts": "bc9b83190d5b929fbfa5941e084fb3bdea1d3fcf0e38f171d98802c2cdb450b9",
+    "lib/proposals/customer-proposal.ts": "c1217dbb1fe9d9f55af64a8471ea3f1a4ce15bec972154ae9afe3e39f2139edf",
+    "lib/proposals/export-proposal-pdf.ts": "9f44b8c525e38e944190c762a2434cd937f881939d9a248035642c29929b605d",
+    "lib/proposals/traveller-proposal-service.ts": "ce72b1f2455667408a62fd9a04823663221ee2431651969d8d643cefa3016064",
+    "package-lock.json": "c76c32548364a71dfee5ca1838b29185e1d7278b55a64b4c69ecd75bc59d14de",
+    "package.json": "7f022db8771b5a5e35a02c51597ca68445a4910f9272bcf6ce1873a280959b19",
+    "supabase/migrations/202610150001_cr7_account_accepted_dates.sql": "7e117e9b5da8116de54de91a48f1de6fff1bee06505d15e8648985f7022062a3",
+    "tests/cr7-r12-targeted-remediation.test.ts": "a2344412c62028a2add009ef7a038da636c781f018c70366079ad3bf3e509fab",
+    "tests/dependency-security-compatibility.test.ts": "9d2196043569887b27c1f8316defd59497413892bd12b7c0a01e7f704a4bd0a8",
+    "tests/journey-commercial-overrides.test.ts": "4eb20ed500cfc8b2cdf92428b73ce377f671c34eb8e3b6c8f55ece2922439c83",
+    "tests/proposal-accommodation-copy.test.ts": "466ef2ecb914967c502e656925946cdbf5ff4255cd7cf37a840e2e638f3cfe8e",
+    "tests/release-readiness.test.ts": "1e4af7de64295dc3f59bd5a55f1917287b90cb36a29b191064b7cf056ee0ff33",
+    "tests/traveller-proposal-token.test.ts": "419c1a8bee5330574050c7b68179c974de288d43ad32d8804323afccb198c29f"
+  },
+  "evidenceSelfHashExcluded": true
+}

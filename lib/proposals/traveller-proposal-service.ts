@@ -1,5 +1,6 @@
 import "server-only";
 import {createHash} from "node:crypto";
+import {z} from "zod";
 import {createAdminClient} from "@/lib/supabase/admin";
 import {customerSafeProposalDto} from "./customer-proposal-dto";
 import type {Database,Json} from "@/lib/database.types";
@@ -12,6 +13,7 @@ const safeMetadata=(userAgent:string|undefined)=>({userAgent:userAgent?.slice(0,
 export class TravellerProposalError extends Error{constructor(public code:"NOT_FOUND"|"INVALID"|"CONFLICT"|"DATABASE",message:string){super(message);this.name="TravellerProposalError"}}
 
 export async function loadTravellerProposal(token:string,{markViewed=true}:{markViewed?:boolean}={}){
+  if(!z.uuid().safeParse(token).success)throw new TravellerProposalError("NOT_FOUND","This proposal is unavailable.");
   const database=createAdminClient();if(!database)throw new TravellerProposalError("DATABASE","Proposal service is unavailable.");
   const {data,error}=await database.from("journey_proposals").select("*").eq("public_token",token).maybeSingle();
   if(error)throw new TravellerProposalError("DATABASE",error.message);if(!data||data.access_revoked_at||!visibleStatuses.includes(data.status))throw new TravellerProposalError("NOT_FOUND","This proposal is unavailable.");

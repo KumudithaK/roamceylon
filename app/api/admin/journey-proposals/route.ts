@@ -1,11 +1,14 @@
 import {NextResponse} from "next/server";
 import {z} from "zod";
-import {authenticatedStaff} from "@/lib/admin/authenticated-staff";
+import {authenticatedStaff,type StaffRequirement} from "@/lib/admin/authenticated-staff";
 import {proposalChangeForStaff,proposalForStaff} from "@/lib/admin/traveller-pii";
 import {generateJourneyProposal,ProposalError,revokeJourneyProposalAccess,transitionJourneyProposal} from "@/lib/proposals/journey-proposal-service";
 import {isCentPrecise} from "@/lib/pricing/money-precision";
+import {journeyCommercialConfigKeys} from "@/lib/pricing/allocation-commercial";
 
 const moneyInput=z.number().min(0).refine(isCentPrecise,"Enter a cent-precise monetary amount.");
+const percentageInput=z.number().min(0).max(100).refine(isCentPrecise,"Enter a percentage with at most two decimal places.");
+const targetMarginInput=z.number().min(0).lt(100).refine(isCentPrecise,"Enter a percentage with at most two decimal places.");
 
 const generateSchema=z.object({
   action:z.literal("generate"),enquiryId:z.uuid(),
@@ -15,7 +18,8 @@ const generateSchema=z.object({
   optionalItems:z.array(z.object({name:z.string().trim().min(2).max(200),description:z.string().trim().min(2).max(500),price:moneyInput.optional(),currency:z.string().length(3).optional()})).max(20).optional(),
   commercialOverrides:z.object({
     driverOperations:moneyInput.nullable().optional(),fuel:moneyInput.nullable().optional(),tolls:moneyInput.nullable().optional(),
-    parking:moneyInput.nullable().optional(),guideAccommodation:moneyInput.nullable().optional(),administration:moneyInput.nullable().optional(),contingency:moneyInput.nullable().optional()
+    parking:moneyInput.nullable().optional(),guideAccommodation:moneyInput.nullable().optional(),administration:moneyInput.nullable().optional(),contingency:moneyInput.nullable().optional(),
+    serviceFeeFixed:moneyInput.nullable().optional(),serviceFeePercent:percentageInput.nullable().optional(),targetProfitMarginPercent:targetMarginInput.nullable().optional()
   }).optional()
 });
 const transitionSchema=z.object({action:z.enum(["internal_approve","sent"]),proposalId:z.uuid()});
@@ -40,7 +44,8 @@ export async function POST(request:Request){
   const transition=transitionSchema.safeParse(body);
   const revoke=revokeSchema.safeParse(body);
   if(!generate.success&&!transition.success&&!revoke.success)return NextResponse.json({error:"Invalid proposal action."},{status:400});
-  const required=generate.success||transition.success&&transition.data.action==="internal_approve"
+  const suppliedConfigOverride=generate.success&&journeyCommercialConfigKeys.some(key=>Object.hasOwn(generate.data.commercialOverrides??{},key));
+  const required:StaffRequirement=suppliedConfigOverride?["journey.proposal.create","settings.manage"]:generate.success||transition.success&&transition.data.action==="internal_approve"
     ?"journey.proposal.create"
     :transition.success&&transition.data.action==="sent"?"journey.proposal.send":"journey.proposal.manage";
   const actor=await authenticatedStaff(request,required);

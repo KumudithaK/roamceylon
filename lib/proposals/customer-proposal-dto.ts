@@ -2,6 +2,7 @@ import "server-only";
 import {z} from "zod";
 import type {Json} from "@/lib/database.types";
 import type {ProposalSnapshot} from "./customer-proposal-types";
+import {customerProposalContent} from "./customer-proposal-content";
 
 const optionalText=z.string().optional();
 const routeStop=z.object({key:z.string(),name:z.string(),kind:z.enum(["pickup","destination","dropoff"]),nights:z.number().optional(),latitude:z.number().nullable().optional(),longitude:z.number().nullable().optional()});
@@ -28,7 +29,7 @@ const customerProposalSchema=z.object({
 
 export function customerSafeProposalDto(value:Json|null|undefined):ProposalSnapshot|null{
   const parsed=customerProposalSchema.safeParse(value);
-  return parsed.success?parsed.data as ProposalSnapshot:null;
+  return parsed.success?customerProposalContent(parsed.data as ProposalSnapshot):null;
 }
 
 export const customerProposalAllowedKeys=Object.freeze(Object.keys(customerProposalSchema.shape));
