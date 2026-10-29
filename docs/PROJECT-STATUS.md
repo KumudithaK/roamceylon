@@ -1,0 +1,48 @@
+# The Ceylon Edition — Launch project status
+
+**Coordination snapshot: 29 October 2026 (Asia/Colombo).** This document separates completed release evidence from pending acceptance and business decisions. It authorizes no staging access or execution. The applicable agent instructions are in [`../AGENTS.md`](../AGENTS.md).
+
+## Current staging release
+
+- **Staging release PASS:** `a353e2705eca4132109e80b7ca77d5c9e3a148b2`, published to the protected Preview and existing staging alias. The release report records the exact deployment, source verification, migration application and post-publication integrity checks. Human UAT and Commercial Launch did **not** pass with that release. See the [release report](../../roamceylon-staging-release-a353e2705eca-20261028.md) and its [structured evidence](../../roamceylon-staging-release-a353e2705eca-20261028.json).
+- The reviewed 19-file application/test/dependency/SQL source set has SHA-256 `8c32bb1334924848e8423a084ac1fdc1fc0a48366abe0f5f51ffed033fd8abd6`; see the [source manifest](launch-reviewed-source-manifest.json). The release report records 32 approved committed files and matching reviewed blobs. This coordination document and `AGENTS.md` are separate, uncommitted documentation.
+- The account accepted-dates migration `202610150001` was applied once. The verified release state is 90 migration records, maximum version `202610150002`, with 001 and 002 each recorded once. Do not reuse pre-release 89-record assumptions as current evidence.
+
+## Completed technical milestones
+
+| Milestone | Completed evidence and limit |
+| --- | --- |
+| Protected application publication | Exact release commit and protected Preview/alias verified; Authentication and staging binding remained in place. This is staging publication, not Production or launch authorization. [Release report](../../roamceylon-staging-release-a353e2705eca-20261028.md). |
+| Journey and customer proposal fixes | Reviewed release includes malformed-token handling, Cancel/Escape guard, approved customer-facing proposal content, journey-local commercial inputs, and accepted-date initialization. Existing customer-safe projection and R14 allocation protections were retained. [Source manifest](launch-reviewed-source-manifest.json), [release report](../../roamceylon-staging-release-a353e2705eca-20261028.md). |
+| Local validation | The frozen release candidate passed 566 automated tests, 157 focused checks, TypeScript, build and dependency audit. These are local results; the release report explicitly says live export, exact-version acceptance, Finance activation and populated fulfilment were not newly proved. [Local validation](launch-local-validation-evidence.json), [release report](../../roamceylon-staging-release-a353e2705eca-20261028.md). |
+| Partner presentation | Ceylo, cinematic hero and CMS imagery are included in the release. The earlier partner-demo evidence documents their bounded guided-catalogue behavior and browser checks; it does not establish a completed customer-to-settlement journey. [Partner demo R15](partner-demo-r15.md), [release report](../../roamceylon-staging-release-a353e2705eca-20261028.md). |
+| UAT preparation | The manual 28-row/15-table synthetic case, restricted ownership ledger template, role/session bounds and exact-ID cleanup plan are documented. Preparation and offline/native checks do not mean the Human UAT ran. [Human UAT plan](../../roamceylon-human-uat-preparation/HUMAN-UAT-PLAN.md), [walkthrough](launch-human-uat-walkthrough.md). |
+
+## Current Human UAT blocker
+
+**Human UAT entry is HOLD.** The most recent approved read-only reconciliation classified a `realtime.default_acl` mismatch: fingerprint reconstruction supports added explicit SELECT and INSERT grant options for `postgres` in `supabase_admin`'s `realtime` table defaults. Ordinary privileges and the other reconstructed ACL entries matched in that comparison. The actor, cause, time, authorization and net effective authority are still unproven. The trusted baseline and canonical guard remain unchanged; the guard has not passed. No further staging query or UAT step is authorized by the classification. See the [default-ACL result](../../roamceylon-human-uat-preparation/DEFAULT-ACL-RECONCILIATION-RESULT-20261029.md) and [fresh-entry verification](../../roamceylon-human-uat-preparation/FRESH-UAT-ENTRY-VERIFICATION-20261029.md).
+
+Owner/provider provenance review of the exact grant-option change is the next decision. Do not revoke flags, alter default privileges, replace the baseline, normalize the mismatch away, or retry the entry gate without a separately approved reconciliation and access scope.
+
+## Pending Human UAT and Elevate demonstration
+
+- **Human UAT is unexecuted.** After the blocker is resolved and a fresh separately approved entry gate passes, the proposed single owned case covers enquiry, design, allocation, proposal generation and both customer/staff export paths, exact-version acceptance, one simulated deposit/account activation, role-based confirmation and Operations fulfilment, and settlement review. The plan requires exact-ID cleanup and independent reconciliation. [Human UAT plan](../../roamceylon-human-uat-preparation/HUMAN-UAT-PLAN.md), [authorization request](../../roamceylon-human-uat-preparation/FINAL-UAT-AUTHORIZATION-REQUEST.md), [walkthrough](launch-human-uat-walkthrough.md).
+- **Elevate's full customer-to-settlement demonstration is a goal, not a completed milestone.** Build its acceptance checklist around the same customer journey and evidence, including visible profitability and a clearly specified profit-sharing outcome. The existing R15 guided-catalogue demo is narrower. Do not call a proposal, simulated receipt or supplier liability a real payment or payout.
+- The synthetic UAT arithmetic is documented as supplier/internal cost **USD 240.00**, service fee **USD 37.00**, customer total **USD 346.25**, gross profit **USD 106.25**, achieved gross margin **30.69%**, simulated deposit **USD 100.25**, balance **USD 246.00**, supplier liability **USD 240.00** and supplier paid **USD 0.00**. The **20% target margin is not the achieved margin**. These are fictional case expectations, not approved commercial prices or a live UAT result. [Walkthrough](launch-human-uat-walkthrough.md), [finance readiness](cr6-finance-readiness.md).
+
+## Journey profitability and profit sharing
+
+- Existing journey proposal/accounting code and local tests calculate supplier cost, selling price, gross profit and achieved margin, and distinguish receipts, outstanding balance, supplier payable and supplier paid. The UAT must verify those values from the accepted snapshot through account and settlement without exposing internal costs or margins in customer output. [Finance readiness](cr6-finance-readiness.md), [walkthrough](launch-human-uat-walkthrough.md).
+- **Profit sharing remains an outstanding requirement.** The reviewed launch/UAT evidence specifies no approved beneficiary split, calculation base, percentage, eligibility, timing, treatment of refunds/tax/fees, payout authority or audit/reconciliation rule, and supplies no completed profit-sharing demonstration. Partner commission settings or supplier liability must not be presented as an approved journey profit-sharing model. Record the business rule and evidence criteria for human review before any financial-rule change or demo PASS claim. [Finance policy decision register](cr6-business-finance-policy-decisions.md).
+- Real supplier rates, payment/merchant arrangements, tax/legal terms, payout controls and commercial launch decisions remain separate business approvals. Synthetic UAT cannot establish them. [Finance readiness](cr6-finance-readiness.md), [release report](../../roamceylon-staging-release-a353e2705eca-20261028.md).
+
+## Next safe engineering actions
+
+1. Preserve this branch and the other worktrees. Compare local evidence, source manifests, implementation and tests offline; document any discrepancy without changing protected records or release source.
+2. Prepare a bounded owner/provider review packet for the classified default-ACL change, using the existing sanitized evidence. Propose an exact next read-only or corrective scope only after provenance and authorization are resolved.
+3. Draft Elevate's end-to-end acceptance checklist and identify which existing UAT steps supply evidence, which are still unexecuted, and what additional profit-sharing policy and demonstration evidence are required. Keep financial-rule proposals review-only until approved.
+4. Keep the Human UAT ownership ledger, caps, stop conditions and cleanup/reconciliation procedure aligned with the current 90-record release and the latest approved evidence. Do not execute them as preparation.
+
+## Outstanding human approval gates
+
+Explicit, bounded human approval is required for **any staging access, including reads**; staging writes and Human UAT; creation, assignment, use or removal of temporary identities; migration application or history changes; cleanup; deployment or alias/protection changes; Production access; and any pricing, profitability, settlement, payout or profit-sharing rule change. The default-ACL provenance and guard disposition must be resolved before UAT entry. Human operators, sessions, dates, synthetic case, exact cleanup and acceptance criteria require approval under the [Human UAT authorization request](../../roamceylon-human-uat-preparation/FINAL-UAT-AUTHORIZATION-REQUEST.md). Business owners must separately approve real commercial rates, payment and profit-sharing policy, and Commercial Launch. [`AGENTS.md`](../AGENTS.md) contains the standing protection rules.
