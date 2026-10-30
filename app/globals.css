@@ -80,9 +80,40 @@ textarea.form-control{resize:vertical}
   @page { size: A4 portrait; margin: 10mm; }
   html,body { background:#fff !important; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
   .proposal-print { background:#fff !important; }
-  .proposal-cover { min-height:277mm !important; break-after:page; }
-  .proposal-section,.proposal-card,.proposal-footer { break-inside:avoid; }
-  .proposal-heading { break-after:avoid; }
+  /* Keep proposal exports free of fixed application chrome. */
+  body:has(.proposal-print) > a[href="#content"] { display:none !important; }
+  .proposal-cover { height:276mm; min-height:0 !important; break-inside:avoid-page; break-after:page; }
+  .proposal-cover > div:last-child { height:100%; min-height:0 !important; padding:12mm; }
+  .proposal-content { max-width:none; padding:8mm 0 !important; }
+  .proposal-content > .grid { display:block; }
+  .proposal-section,.proposal-card,.proposal-footer { break-inside:avoid-page; page-break-inside:avoid; }
+  .proposal-section,.proposal-card { overflow:visible; }
+  .proposal-section { margin-top:6mm !important; padding:6mm; }
+  .proposal-card { margin-bottom:5mm; }
+  .proposal-heading { margin-top:8mm !important; margin-bottom:4mm !important; break-inside:avoid-page; break-after:avoid-page; page-break-after:avoid; }
+  .proposal-heading > * { break-inside:avoid-page; }
+  .proposal-heading h2 { margin-top:2mm; font-size:23pt; line-height:1.15; }
+  .proposal-schedule-note { break-after:avoid-page; }
+  .proposal-day { display:block; }
+  .proposal-day > div { padding:4mm; }
+  .proposal-day > div:first-child { display:flex; align-items:baseline; gap:4mm; }
+  .proposal-day > div:first-child > * { margin-top:0; }
+  .proposal-day-facts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:3mm; margin-top:3mm; }
+  .proposal-day h3 { font-size:20pt; line-height:1.15; }
+  .proposal-content > .proposal-route { display:grid; grid-template-columns:65mm minmax(0,1fr); padding:0; }
+  .proposal-map { min-height:0; padding:4mm; }
+  .proposal-map svg { height:105mm; }
+  .proposal-route > div:last-child { padding:6mm; }
+  .proposal-route .pb-7 { padding-bottom:4mm; }
+  .proposal-transfer { display:grid; grid-template-columns:1fr 1fr 2fr; padding:4mm; break-inside:avoid-page; }
+  .proposal-transfer > svg { display:none; }
+  .proposal-transfer > div:last-child > strong { font-size:10pt; line-height:1.35; }
+  .proposal-content > .proposal-inclusions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); padding:0; }
+  .proposal-inclusions > div { padding:5mm; }
+  .proposal-inclusions li { font-size:9pt; line-height:1.45; }
+  .proposal-card > .h-52,.proposal-card > .h-56 { height:38mm; }
+  .proposal-print .line-clamp-4 { display:block; overflow:visible; -webkit-line-clamp:unset; }
+
   .proposal-actions { display:none !important; }
   .proposal-print footer { break-inside:avoid; }
   a { color:inherit; text-decoration:none; }
