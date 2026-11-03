@@ -1,5 +1,7 @@
 "use client";
 
+import {useTranslation} from "@/components/i18n/locale-provider";
+
 import {useEffect,useRef,useState,useSyncExternalStore} from "react";
 import {Pause,Play} from "lucide-react";
 import {partnerDemoEmbedUrl} from "@/lib/partner-demo";
@@ -47,6 +49,7 @@ const serverMotionAllowed=()=>false;
 /** Decorative media only. The original poster stays beneath it at all times. */
 export function HeroDemoVideo({videoId}:{videoId:string}){
   const host=useRef<HTMLDivElement>(null);
+  const {t}=useTranslation();
   const allowMotion=useSyncExternalStore(subscribeMotion,motionAllowed,serverMotionAllowed);
   const [paused,setPaused]=useState(false);
   const [failed,setFailed]=useState(false);
@@ -96,9 +99,9 @@ export function HeroDemoVideo({videoId}:{videoId:string}){
   return <>
     <div ref={host} className="hero-demo-video-frame" data-hero-video-state={state} data-playing={enabled&&playing} aria-hidden="true"/>
     {allowMotion&&!failed&&(hasPlayed||paused)&&<div className="hero-demo-controls">
-      <button type="button" className="hero-demo-control" onClick={()=>{setPlaying(false);setPaused(value=>!value)}} aria-label={paused?"Play background video":"Pause background video"}>
+      <button type="button" className="hero-demo-control" onClick={()=>{setPlaying(false);setPaused(value=>!value)}} aria-label={t(paused?"Play background video":"Pause background video")}>
         {paused?<Play className="size-4" aria-hidden="true"/>:<Pause className="size-4" aria-hidden="true"/>}
-        <span>{paused?"Play video":"Pause video"}</span>
+        <span>{t(paused?"Play video":"Pause video")}</span>
       </button>
     </div>}
   </>;

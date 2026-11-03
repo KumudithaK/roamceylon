@@ -1,5 +1,8 @@
 "use client";
 
+import {useTranslation} from "@/components/i18n/locale-provider";
+import {LanguageSelector} from "@/components/i18n/language-selector";
+
 import {zodResolver} from "@hookform/resolvers/zod";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {ArrowRight,CheckCircle2,MapPin,ShieldCheck,Sparkles,UsersRound,X} from "lucide-react";
@@ -26,10 +29,10 @@ const schema=z.object({
 type FormData=z.infer<typeof schema>;
 
 const defaultNotes="Please prepare my personalised Sri Lankan journey proposal.";
-const dateLabel=(value:string)=>{
+const dateLabel=(value:string,locale="en")=>{
   if(!value)return "Dates not selected";
   const date=new Date(`${value}T00:00:00`);
-  return Number.isNaN(date.valueOf())?value:date.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+  return Number.isNaN(date.valueOf())?value:date.toLocaleDateString(locale==="en"?"en-GB":locale,{day:"numeric",month:"short",year:"numeric"});
 };
 const money=(value:number|null)=>value===null?"—":value.toLocaleString("en-US",{maximumFractionDigits:0});
 
@@ -41,6 +44,7 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote,data}:{
   quote:PublicJourneyEstimate|PublicPackageQuote|null;
   data:JourneyBootstrap;
 }){
+  const {t,locale}=useTranslation();
   const [sent,setSent]=useState(false);
   const [reference,setReference]=useState("");
   const [submitError,setSubmitError]=useState("");
@@ -71,7 +75,7 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote,data}:{
 
   const themes=state.selectedThemeIds.flatMap(id=>{
     const theme=data.themes.find(item=>item.id===id);
-    return theme?[editionDisplayName(theme)]:[];
+    return theme?[t(editionDisplayName(theme))]:[];
   });
   const destinations=state.selectedDestinationIds.flatMap(id=>{
     const destination=data.destinations.find(item=>item.id===id);
@@ -80,8 +84,8 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote,data}:{
   const travellers=state.travellerCounts.adults+state.travellerCounts.children+state.travellerCounts.infants;
   const estimate=isJourneyEstimate(quote)?quote:null;
   const planningRange=estimate?.status==="estimated_range"
-    ?`${estimate.currency} ${money(estimate.perPersonMin)}–${money(estimate.perPersonMax)} per person`
-    :"Taking shape — to be reviewed with your request";
+    ?t("{range} per person",{range:`${estimate.currency} ${money(estimate.perPersonMin)}–${money(estimate.perPersonMax)}`})
+    :t("Taking shape — to be reviewed with your request");
 
   const submit=async(values:FormData)=>{
     setSubmitError("");
@@ -151,7 +155,7 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote,data}:{
         onEscapeKeyDown={event=>{if(isSubmitting)event.preventDefault()}}
         onPointerDownOutside={event=>{if(isSubmitting)event.preventDefault()}}
       >
-        <DialogPrimitive.Close disabled={isSubmitting} aria-label="Close journey proposal request" className="absolute right-4 top-4 z-20 grid size-11 place-items-center rounded-full border border-current/15 bg-ivory/90 text-forest transition hover:bg-sand focus-ring disabled:opacity-50 md:right-6 md:top-6">
+        <DialogPrimitive.Close disabled={isSubmitting} aria-label={t("Close journey proposal request")} className="absolute right-4 top-4 z-20 grid size-11 place-items-center rounded-full border border-current/15 bg-ivory/90 text-forest transition hover:bg-sand focus-ring disabled:opacity-50 md:right-6 md:top-6">
           <X aria-hidden="true" className="size-5"/>
         </DialogPrimitive.Close>
 
@@ -159,64 +163,65 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote,data}:{
           <div className="editorial-noise flex min-h-72 flex-col justify-between bg-gold p-8 text-forest md:p-12">
             <div><p className="text-[.68rem] font-bold uppercase tracking-[.24em]">{brand.wordmark}</p><div className="mt-8 h-px w-16 bg-forest/45"/></div>
             <Sparkles aria-hidden="true" className="size-16 stroke-1"/>
-            <p className="max-w-xs text-sm leading-7">A private journey begins with the choices that matter to you.</p>
+            <p className="max-w-xs text-sm leading-7">{t("A private journey begins with the choices that matter to you.")}</p>
           </div>
           <div className="flex items-center p-8 md:p-12 lg:p-16">
             <div className="max-w-2xl">
               <CheckCircle2 aria-hidden="true" className="size-12 stroke-1.5 text-gold"/>
-              <p className="eyebrow mt-7">Journey request received</p>
-              <DialogPrimitive.Title asChild><h2 ref={successRef} tabIndex={-1} className="mt-4 font-serif text-4xl leading-[1.05] outline-none md:text-6xl">Your journey is now with The Ceylon Edition.</h2></DialogPrimitive.Title>
-              <DialogPrimitive.Description className="mt-6 max-w-xl text-base leading-8 text-stone">We have received the places, experiences and preferences you shared. They will form the brief for the next stage of your journey proposal.</DialogPrimitive.Description>
-              {reference?<div className="mt-8 border-y border-gold/35 py-5"><p className="text-[.65rem] font-bold uppercase tracking-[.2em] text-gold">Journey reference</p><p className="mt-2 font-serif text-3xl" aria-label={`Journey reference ${reference}`}>{reference}</p><p className="mt-2 text-sm text-stone">Keep this reference with your journey correspondence.</p></div>:null}
-              <p className="mt-6 text-sm leading-6 text-stone">This confirms receipt of your request only. No booking, payment or availability has been confirmed.</p>
-              <div className="mt-8 flex flex-wrap gap-3"><Button onClick={onClose} variant="accent">Plan another journey</Button><Button asChild variant="outline"><Link href="/">Return to The Ceylon Edition</Link></Button></div>
+              <p className="eyebrow mt-7">{t("Journey request received")}</p>
+              <DialogPrimitive.Title asChild><h2 ref={successRef} tabIndex={-1} className="mt-4 font-serif text-4xl leading-[1.05] outline-none md:text-6xl">{t("Your journey is now with The Ceylon Edition.")}</h2></DialogPrimitive.Title>
+              <DialogPrimitive.Description className="mt-6 max-w-xl text-base leading-8 text-stone">{t("We have received the places, experiences and preferences you shared. They will form the brief for the next stage of your journey proposal.")}</DialogPrimitive.Description>
+              {reference?<div className="mt-8 border-y border-gold/35 py-5"><p className="text-[.65rem] font-bold uppercase tracking-[.2em] text-gold">{t("Journey reference")}</p><p className="mt-2 font-serif text-3xl" aria-label={t("Journey reference {reference}",{reference})}>{reference}</p><p className="mt-2 text-sm text-stone">{t("Keep this reference with your journey correspondence.")}</p></div>:null}
+              <p className="mt-6 text-sm leading-6 text-stone">{t("This confirms receipt of your request only. No booking, payment or availability has been confirmed.")}</p>
+              <div className="mt-8 flex flex-wrap gap-3"><Button onClick={onClose} variant="accent">{t("Plan another journey")}</Button><Button asChild variant="outline"><Link href="/">{t("Return to The Ceylon Edition")}</Link></Button></div>
             </div>
           </div>
         </div>:
         <div className="grid lg:grid-cols-[minmax(18rem,.72fr)_minmax(0,1.28fr)]">
           <aside className="editorial-noise bg-forest p-7 text-ivory md:p-10 lg:min-h-[44rem] lg:p-12">
             <p className="text-[.68rem] font-bold uppercase tracking-[.24em] text-gold-light">{brand.wordmark}</p>
-            <div className="mt-10 max-w-md"><p className="eyebrow text-gold-light">Your private journey</p><h2 className="mt-4 font-serif text-4xl leading-[1.04] md:text-5xl">The story so far.</h2><p className="mt-5 text-sm leading-7 text-ivory/68">A concise portrait of the journey you are sharing with us.</p></div>
+            <div className="mt-10 max-w-md"><p className="eyebrow text-gold-light">{t("Your private journey")}</p><h2 className="mt-4 font-serif text-4xl leading-[1.04] md:text-5xl">{t("The story so far.")}</h2><p className="mt-5 text-sm leading-7 text-ivory/68">{t("A concise portrait of the journey you are sharing with us.")}</p></div>
             <dl className="mt-9 grid gap-0 border-y border-ivory/15">
-              <ContextLine label="Editions" value={themes.join(" · ")||"Open to guidance"}/>
-              <ContextLine label="Route" value={destinations.join(" → ")||"To be shaped"} icon={<MapPin aria-hidden="true" className="size-4"/>}/>
-              <ContextLine label="Dates" value={`${dateLabel(state.travelDates.start)} — ${dateLabel(state.travelDates.end)}`}/>
-              <ContextLine label="Travellers" value={`${travellers} traveller${travellers===1?"":"s"}`} icon={<UsersRound aria-hidden="true" className="size-4"/>}/>
-              <ContextLine label="Selected moments" value={`${state.selectedExperienceIds.length} experience${state.selectedExperienceIds.length===1?"":"s"}`}/>
-              <ContextLine label="Planning range" value={planningRange}/>
+              <ContextLine label={t("Editions")} value={themes.join(" · ")||t("Open to guidance")}/>
+              <ContextLine label={t("Route")} value={destinations.join(" → ")||t("To be shaped")} icon={<MapPin aria-hidden="true" className="size-4"/>}/>
+              <ContextLine label={t("Dates")} value={`${t(dateLabel(state.travelDates.start,locale))} — ${t(dateLabel(state.travelDates.end,locale))}`}/>
+              <ContextLine label={t("Travellers")} value={t(travellers===1?"{count} traveller":"{count} travellers",{count:travellers})} icon={<UsersRound aria-hidden="true" className="size-4"/>}/>
+              <ContextLine label={t("Selected moments")} value={t(state.selectedExperienceIds.length===1?"{count} experience":"{count} experiences",{count:state.selectedExperienceIds.length})}/>
+              <ContextLine label={t("Planning range")} value={planningRange}/>
             </dl>
-            <p className="mt-7 flex gap-3 text-xs leading-6 text-ivory/58"><ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-gold-light"/>Your journey stays available if this request cannot be sent.</p>
+            <p className="mt-7 flex gap-3 text-xs leading-6 text-ivory/58"><ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-gold-light"/>{t("Your journey stays available if this request cannot be sent.")}</p>
           </aside>
 
           <form noValidate aria-busy={isSubmitting} onSubmit={handleSubmit(submit)} className="p-7 md:p-10 lg:p-12 lg:pt-16">
+            <div className="mb-6"><LanguageSelector disabled={isSubmitting}/></div>
             <input aria-hidden="true" tabIndex={-1} autoComplete="off" name="website-confirmation" className="hidden" value={honeypot} onChange={event=>setHoneypot(event.target.value)}/>
-            <p className="eyebrow">Share your journey</p>
-            <DialogPrimitive.Title className="mt-3 max-w-2xl font-serif text-4xl leading-[1.06] md:text-5xl">One final introduction.</DialogPrimitive.Title>
-            <DialogPrimitive.Description className="mt-4 max-w-xl text-sm leading-7 text-stone">Tell us how to reach you. Your dates and journey choices are already included, so you do not need to enter them again.</DialogPrimitive.Description>
+            <p className="eyebrow">{t("Share your journey")}</p>
+            <DialogPrimitive.Title className="mt-3 max-w-2xl font-serif text-4xl leading-[1.06] md:text-5xl">{t("One final introduction.")}</DialogPrimitive.Title>
+            <DialogPrimitive.Description className="mt-4 max-w-xl text-sm leading-7 text-stone">{t("Tell us how to reach you. Your dates and journey choices are already included, so you do not need to enter them again.")}</DialogPrimitive.Description>
 
             <div className="mt-8 grid gap-x-5 gap-y-6 md:grid-cols-2">
-              <FormField label="Full name" required error={errors.name?.message}>
+              <FormField label={t("Full name")} required error={errors.name?.message?t(errors.name.message):undefined}>
                 {association=><Input {...register("name")} {...association} type="text" autoComplete="name" aria-required="true"/>}
               </FormField>
-              <FormField label="Email address" required error={errors.email?.message}>
+              <FormField label={t("Email address")} required error={errors.email?.message?t(errors.email.message):undefined}>
                 {association=><Input {...register("email")} {...association} type="email" autoComplete="email" inputMode="email" aria-required="true"/>}
               </FormField>
-              <FormField label="Phone / WhatsApp" help="Optional" error={errors.phone?.message}>
+              <FormField label={t("Phone / WhatsApp")} help={t("Optional")} error={errors.phone?.message?t(errors.phone.message):undefined}>
                 {association=><Input {...register("phone")} {...association} type="tel" autoComplete="tel" inputMode="tel"/>}
               </FormField>
-              <FormField label="Country" help="Optional" error={errors.country?.message}>
+              <FormField label={t("Country")} help={t("Optional")} error={errors.country?.message?t(errors.country.message):undefined}>
                 {association=><Input {...register("country")} {...association} type="text" autoComplete="country-name"/>}
               </FormField>
-              <FormField className="md:col-span-2" label="Anything you would like us to consider?" help="Optional — dietary needs, room preferences, accessibility considerations or a special occasion." error={errors.notes?.message}>
+              <FormField className="md:col-span-2" label={t("Anything you would like us to consider?")} help={t("Optional — dietary needs, room preferences, accessibility considerations or a special occasion.")} error={errors.notes?.message?t(errors.notes.message):undefined}>
                 {association=><Textarea {...register("notes")} {...association} rows={4}/>}
               </FormField>
             </div>
 
-            {submitError?<p ref={submitErrorRef} tabIndex={-1} role="alert" className="mt-6 border-l-2 border-error bg-red-50 px-4 py-3 text-sm leading-6 text-error outline-none">{submitError}</p>:null}
+            {submitError?<p ref={submitErrorRef} tabIndex={-1} role="alert" className="mt-6 border-l-2 border-error bg-red-50 px-4 py-3 text-sm leading-6 text-error outline-none">{t(submitError)}</p>:null}
 
             <div className="mt-8 border-t border-stone/20 pt-6">
-              <Button disabled={isSubmitting||!submissionKey} aria-busy={isSubmitting} type="submit" variant="accent" size="lg" className="w-full sm:w-auto">{isSubmitting?"Sharing your journey…":<>Request your journey proposal<ArrowRight aria-hidden="true"/></>}</Button>
-              <p className="mt-4 max-w-xl text-xs leading-6 text-stone">Submitting creates a journey enquiry for review. No payment is taken when you share this request. It does not confirm a booking or availability.</p>
+              <Button disabled={isSubmitting||!submissionKey} aria-busy={isSubmitting} type="submit" variant="accent" size="lg" className="w-full sm:w-auto">{isSubmitting?t("Sharing your journey…"):<>{t("Request your journey proposal")}<ArrowRight aria-hidden="true"/></>}</Button>
+              <p className="mt-4 max-w-xl text-xs leading-6 text-stone">{t("Submitting creates a journey enquiry for review. No payment is taken when you share this request. It does not confirm a booking or availability.")}</p>
             </div>
           </form>
         </div>}

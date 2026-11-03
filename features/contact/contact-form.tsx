@@ -1,5 +1,7 @@
 "use client";
 
+import {Text} from "@/components/i18n/text";
+
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useState} from "react";
 import {useForm} from "react-hook-form";
@@ -34,7 +36,7 @@ export function ContactForm({quotation=false}:{quotation?:boolean}){
     clearJourneyHandoff();
     setSent(true);
   };
-  if(sent)return <div role="status" className="border-y border-forest/20 py-10"><p className="eyebrow mb-3">Received</p><h2 className="heading">{quotation?"Your quotation is being prepared.":"Your journey starts here."}</h2><p className="mt-4 text-base leading-7 text-muted">A journey designer from The Ceylon Edition will review your selections and be in touch shortly.</p></div>;
+  if(sent)return <div role="status" className="border-y border-forest/20 py-10"><p className="eyebrow mb-3"><Text>{"Received"}</Text></p><h2 className="heading"><Text>{quotation?"Your quotation is being prepared.":"Your journey starts here."}</Text></h2><p className="mt-4 text-base leading-7 text-muted"><Text>{"A journey designer from The Ceylon Edition will review your selections and be in touch shortly."}</Text></p></div>;
   return <form onSubmit={handleSubmit(submit)} className="grid gap-6 border-t border-forest/25 pt-8 md:grid-cols-2 lg:pt-10">
     <input aria-hidden="true" tabIndex={-1} autoComplete="off" name="website-confirmation" className="hidden" value={honeypot} onChange={event=>setHoneypot(event.target.value)}/>
     {([
@@ -48,7 +50,7 @@ export function ContactForm({quotation=false}:{quotation?:boolean}){
     <FormField className="md:col-span-2" label={quotation?"Anything we should consider before confirming your quotation?":"Tell us what you are imagining"} required error={errors.notes?"Please share at least ten characters of detail.":undefined}>
       {association=><Textarea {...register("notes")} {...association} rows={6} aria-required="true" placeholder={quotation?"Dietary needs, room preferences, mobility considerations or special occasions…":"Places, pace, occasion, travel dates or anything else that matters…"}/>}
     </FormField>
-    {submitError?<Feedback className="md:col-span-2">{submitError}</Feedback>:null}
-    <Button disabled={isSubmitting} aria-busy={isSubmitting} type="submit" className="md:col-span-2">{isSubmitting?"Sending…":quotation?"Request Final Quotation":"Speak with a journey designer"}</Button>
+    {submitError?<Feedback className="md:col-span-2"><Text>{submitError}</Text></Feedback>:null}
+    <Button disabled={isSubmitting} aria-busy={isSubmitting} type="submit" className="md:col-span-2"><Text>{isSubmitting?"Sending…":quotation?"Request Final Quotation":"Speak with a journey designer"}</Text></Button>
   </form>;
 }

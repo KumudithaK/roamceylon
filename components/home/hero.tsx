@@ -1,3 +1,5 @@
+
+import {Text} from "@/components/i18n/text";
 import Link from "next/link";
 import {ArrowDown} from "lucide-react";
 import {JourneySearch} from "./journey-search";
@@ -15,9 +17,9 @@ export function Hero({media,themes,destinations}:{media:HeroMediaType;themes:The
     <div className="partner-demo-hero-overlay" aria-hidden="true"/>
     <div className="shell partner-demo-hero-content">
       <p className="partner-demo-hero-brand">{brand.wordmark}</p>
-      <h1 id="partner-demo-headline">{media.title}</h1>
-      <p className="partner-demo-hero-subtitle">{media.subtitle}</p>
-      <Button asChild variant="accent" size="lg" className="mt-9"><a href={journeyLaunchHref}>{brand.primaryCta}</a></Button>
+      <h1 id="partner-demo-headline"><Text>{media.title}</Text></h1>
+      <p className="partner-demo-hero-subtitle"><Text>{media.subtitle}</Text></p>
+      <Button asChild variant="accent" size="lg" className="mt-9"><a href={journeyLaunchHref}><Text>{brand.primaryCta}</Text></a></Button>
     </div>
   </section>;
   return <section className="relative min-h-[calc(100svh-5rem)] overflow-hidden bg-slate text-ivory">
@@ -25,11 +27,11 @@ export function Hero({media,themes,destinations}:{media:HeroMediaType;themes:The
     <div className="absolute inset-0 bg-gradient-to-r from-forest/75 via-transparent to-forest/20"/>
     <div className="shell relative flex min-h-[calc(100svh-5rem)] flex-col justify-end pb-8 pt-24 md:pb-12">
       <div className="grid items-end gap-10 lg:grid-cols-[1fr_auto]">
-        <FadeIn className="max-w-4xl"><div className="mb-6 flex items-center gap-4"><span className="h-px w-14 bg-gold-light"/><p className="eyebrow text-gold-light">Private journeys · Sri Lanka</p></div><h1 className="font-serif text-[clamp(3.4rem,7.4vw,7.5rem)] leading-[.88] tracking-[-.045em]">{media.title}</h1><p className="mt-7 max-w-xl text-base leading-8 text-ivory/78 md:text-lg">{media.subtitle}</p></FadeIn>
+        <FadeIn className="max-w-4xl"><div className="mb-6 flex items-center gap-4"><span className="h-px w-14 bg-gold-light"/><p className="eyebrow text-gold-light"><Text>{"Private journeys · Sri Lanka"}</Text></p></div><h1 className="font-serif text-[clamp(3.4rem,7.4vw,7.5rem)] leading-[.88] tracking-[-.045em]"><Text>{media.title}</Text></h1><p className="mt-7 max-w-xl text-base leading-8 text-ivory/78 md:text-lg"><Text>{media.subtitle}</Text></p></FadeIn>
         <div className="hidden lg:block"><HeroRouteDemo destinations={destinations}/></div>
       </div>
       <div className="mt-10 border-t border-ivory/20 pt-7"><JourneySearch themes={themes}/></div>
-      <Link href="#discover" className="mt-7 inline-flex w-fit items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-ivory/70 hover:text-ivory">Explore the island <ArrowDown className="size-4"/></Link>
+      <Link href="#discover" className="mt-7 inline-flex w-fit items-center gap-2 text-xs font-bold uppercase tracking-[.16em] text-ivory/70 hover:text-ivory"><Text>{"Explore the island "}</Text><ArrowDown className="size-4"/></Link>
     </div>
   </section>;
 }

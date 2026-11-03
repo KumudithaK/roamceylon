@@ -4,6 +4,10 @@ import "./globals.css";
 import {SiteHeader} from "@/components/site/site-header";
 import {SiteFooter} from "@/components/site/site-footer";
 import {brand} from "@/lib/brand";
+import {cookies} from "next/headers";
+import {localeCookie,resolveLocale} from "@/lib/i18n/locale";
+import {LocaleProvider} from "@/components/i18n/locale-provider";
+import {Text} from "@/components/i18n/text";
 
 const manrope=Manrope({subsets:["latin"],variable:"--font-manrope",display:"swap"});
 const playfair=Playfair_Display({subsets:["latin"],variable:"--font-playfair",display:"swap"});
@@ -17,6 +21,7 @@ export const metadata:Metadata={
   twitter:{card:"summary_large_image",title:brand.name,description:brand.tagline,images:["/og.png"]}
 };
 
-export default function RootLayout({children}:{children:React.ReactNode}){
-  return <html lang="en"><body className={`${manrope.variable} ${playfair.variable}`}><a href="#content" className="fixed -top-20 left-4 z-[100] rounded bg-ivory px-4 py-2 focus:top-4">Skip to content</a><SiteHeader/><div id="content" tabIndex={-1}>{children}</div><SiteFooter/></body></html>;
+export default async function RootLayout({children}:{children:React.ReactNode}){
+  const locale=resolveLocale((await cookies()).get(localeCookie)?.value);
+  return <html lang={locale}><body className={`${manrope.variable} ${playfair.variable}`}><LocaleProvider initialLocale={locale}><a href="#content" className="fixed -top-20 left-4 z-[100] rounded bg-ivory px-4 py-2 focus:top-4"><Text>Skip to content</Text></a><SiteHeader/><div id="content" tabIndex={-1}>{children}</div><SiteFooter/></LocaleProvider></body></html>;
 }
