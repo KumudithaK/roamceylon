@@ -5,6 +5,7 @@ import {Facebook,ArrowUpRight} from "lucide-react";
 import {usePathname} from "next/navigation";
 import {BrandWordmark} from "@/components/brand/brand-wordmark";
 import {BrandLogo} from "@/components/brand/brand-logo";
+import {ElevateEndorsement} from "@/components/brand/elevate-endorsement";
 import {WhatsAppIcon} from "@/components/icons/whatsapp-icon";
 import {brand} from "@/lib/brand";
 import {approvedPublicContact,hidePublicShell,journeyLaunchHref,publicNavigation} from "@/lib/public-navigation";
@@ -23,6 +24,7 @@ export function SiteFooter(){
         <BrandWordmark/>
         <p className="mt-6 max-w-sm text-base leading-7 text-muted">{t("Private journeys across Sri Lanka, planned with local knowledge and shaped around you.")}</p>
         <Link href={journeyLaunchHref} className="text-link mt-6 inline-flex min-h-11 items-center gap-3 text-base font-semibold">{t(brand.primaryCta)}<ArrowUpRight className="size-4" aria-hidden="true"/></Link>
+        <ElevateEndorsement className="mt-8 border-t border-forest/20 pt-6"/>
       </div>
       <nav aria-label={t("Footer")}>
         <h2 className="mb-4 text-xs font-semibold uppercase tracking-[.16em]">{t("Explore")}</h2>

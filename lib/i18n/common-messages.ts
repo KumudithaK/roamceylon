@@ -1,6 +1,7 @@
 import type {Translations} from "./locale";
 
 export const commonMessages:Translations={
+  "By Elevate Travels":{de:"Von Elevate Travels",fr:"Par Elevate Travels"},
   "Website language: {language}":{de:"Sprache der Website: {language}",fr:"Langue du site : {language}"},
   "Choose your website language.":{de:"Wählen Sie die Sprache der Website.",fr:"Choisissez la langue du site."},
   "Some content remains in English.":{de:"Einige Inhalte bleiben auf Englisch verfügbar.",fr:"Certains contenus restent disponibles en anglais."},
