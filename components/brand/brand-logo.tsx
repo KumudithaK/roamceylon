@@ -3,9 +3,9 @@ import {Text} from "@/components/i18n/text";
 import {brand} from "@/lib/brand";
 import {cn} from "@/lib/utils";
 
-type BrandLogoProps={variant?:"full"|"compact"|"emblem";inverse?:boolean;decorative?:boolean;className?:string};
+type BrandLogoProps={variant?:"full"|"compact"|"emblem";inverse?:boolean;decorative?:boolean;showTagline?:boolean;className?:string};
 
-export function BrandLogo({variant="compact",inverse=false,decorative=false,className}:BrandLogoProps){
+export function BrandLogo({variant="compact",inverse=false,decorative=false,showTagline=true,className}:BrandLogoProps){
   if(variant==="compact"){
     return <Image
       src="/brand/elava8-travels-horizontal.webp"
@@ -21,6 +21,6 @@ export function BrandLogo({variant="compact",inverse=false,decorative=false,clas
   }
   return <figure className={cn("m-0",className)}>
     <Image src="/brand/elava8-travels-lockup.webp" alt={decorative?"":brand.name} width={480} height={390} sizes="256px" className={cn("h-auto w-64 max-w-full object-contain",inverse?"rounded-xl bg-ivory p-5":undefined)}/>
-    <figcaption className={cn("mt-4 text-sm leading-6",inverse?"text-ivory/85":"text-muted")}><Text>{brand.tagline}</Text></figcaption>
+    {showTagline?<figcaption className={cn("mt-4 text-sm leading-6",inverse?"text-ivory/85":"text-muted")}><Text>{brand.tagline}</Text></figcaption>:null}
   </figure>;
 }

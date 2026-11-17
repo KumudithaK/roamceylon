@@ -18,7 +18,7 @@ export function SiteFooter(){
   return <footer className="border-t border-gold/50 bg-sand text-forest shadow-[inset_0_1px_0_rgba(255,252,246,0.55)]">
     <div className="shell grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-[1.3fr_.7fr_1fr] lg:gap-14 lg:py-16">
       <div>
-        <BrandLogo variant="full" decorative className="max-w-56"/>
+        <BrandLogo variant="full" decorative showTagline={false} className="max-w-56"/>
         <p className="mt-6 max-w-sm text-base leading-7 text-muted">{t("Private journeys across Sri Lanka, planned with local knowledge and shaped around you.")}</p>
         <Link href={journeyLaunchHref} className="text-link mt-6 inline-flex min-h-11 items-center gap-3 text-base font-semibold">{t(brand.primaryCta)}<ArrowUpRight className="size-4" aria-hidden="true"/></Link>
       </div>
@@ -38,7 +38,7 @@ export function SiteFooter(){
     </div>
     <div className="shell pb-5"><LanguageAvailabilityNotice/></div>
     <div className="shell flex flex-col gap-4 border-t border-forest/25 py-6 text-sm leading-6 text-muted sm:flex-row sm:items-center sm:justify-between">
-      <p>© {new Date().getFullYear()} {brand.name}. <span className="block sm:inline">{t(brand.tagline)}</span></p>
+      <p>© {new Date().getFullYear()} {brand.name}.</p>
       <nav aria-label={t("Legal")}><ul className="flex flex-wrap gap-x-5 gap-y-2"><li><Link href="/privacy" className="text-link inline-flex min-h-11 items-center">{t("Privacy")}</Link></li><li><Link href="/terms" className="text-link inline-flex min-h-11 items-center">{t("Terms")}</Link></li></ul></nav>
     </div>
   </footer>;
