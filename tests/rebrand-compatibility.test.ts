@@ -1,19 +1,19 @@
 import assert from "node:assert/strict";
 import {existsSync,readFileSync} from "node:fs";
 import test from "node:test";
-import {brand,editionDisplayName,editionDisplayNames,legacyBrandCompatibility} from "../lib/brand.ts";
+import {brand,editionDisplayName,editionDisplayNames,legacyBrandCompatibility,publicBrandText} from "../lib/brand.ts";
 
 const root=new URL("../",import.meta.url);
 const source=(path:string)=>readFileSync(new URL(path,root),"utf8");
 
 test("central presentation configuration defines the approved public brand",()=>{
   assert.deepEqual(brand,{
-    name:"The Ceylon Edition",
-    wordmark:"THE CEYLON EDITION",
+    name:"ELAVA8 TRAVELS",
+    wordmark:"ELAVA8 TRAVELS",
     tagline:"Bespoke journeys through Sri Lanka.",
     canonicalUrl:"https://theceylonedition.com",
     primaryCta:"Plan Your Journey",
-    journalName:"The Ceylon Journal"
+    journalName:"ELAVA8 Journal"
   });
 });
 
@@ -77,7 +77,7 @@ test("new journey and proposal documents use presentation branding without rewri
   const proposalComposer=source("lib/proposals/customer-proposal.ts");
   const proposalDocument=source("components/proposal/proposal-document.tsx");
   const proposalPdf=source("lib/proposals/export-proposal-pdf.ts");
-  assert.match(journeyPdf,/the-ceylon-edition-personal-journey\.pdf/);
+  assert.match(journeyPdf,/elava8-travels-personal-journey\.pdf/);
   assert.match(journeyPdf,/drawListSection\("Editions",details\.themes\)/);
   assert.match(proposalComposer,/brand:\{name:brand\.name,line:brand\.tagline,logo:""\}/);
   assert.match(proposalDocument,/snapshot\.brand\.logo\?/);
@@ -87,7 +87,7 @@ test("new journey and proposal documents use presentation branding without rewri
 
 test("application-owned external identification uses the new brand and canonical domain",()=>{
   const weather=source("lib/weather/met-norway.ts");
-  assert.match(weather,/TheCeylonEdition\/2\.0/);
+  assert.match(weather,/ELAVA8Travels\/2\.0/);
   assert.match(weather,/https:\/\/theceylonedition\.com/);
   assert.doesNotMatch(weather,/@theceylonedition\.com/);
 });
@@ -119,4 +119,13 @@ test("active About fallback uses the approved public contact number",()=>{
   const aboutPage=source("app/about/page.tsx");
   assert.match(aboutPage,/telephone:"\+94 78 799 7897"/);
   assert.doesNotMatch(aboutPage,/\+94 71 307 7989/);
+});
+
+test("legacy public brand copy changes without altering unrelated supplier names or links",()=>{
+  assert.equal(publicBrandText("The Ceylon Edition Recommended"),"ELAVA8 TRAVELS Recommended");
+  assert.equal(publicBrandText("The Ceylon Journal"),"ELAVA8 Journal");
+  assert.equal(publicBrandText("Roam Ceylon Atelier"),"ELAVA8 TRAVELS");
+  assert.equal(publicBrandText("Elevate Travels"),"ELAVA8 TRAVELS");
+  assert.equal(publicBrandText("Ceylon Tea Trails"),"Ceylon Tea Trails");
+  assert.equal(publicBrandText("https://theceylonedition.com"),"https://theceylonedition.com");
 });

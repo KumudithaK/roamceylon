@@ -45,7 +45,7 @@ export async function exportJourneyPdf(details:JourneyPdfDetails){
   const url=URL.createObjectURL(blob);
   const link=document.createElement("a");
   link.href=url;
-  link.download="the-ceylon-edition-personal-journey.pdf";
+  link.download="elava8-travels-personal-journey.pdf";
   link.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }

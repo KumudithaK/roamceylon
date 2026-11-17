@@ -1,10 +1,10 @@
 export const brand={
-  name:"The Ceylon Edition",
-  wordmark:"THE CEYLON EDITION",
+  name:"ELAVA8 TRAVELS",
+  wordmark:"ELAVA8 TRAVELS",
   tagline:"Bespoke journeys through Sri Lanka.",
   canonicalUrl:"https://theceylonedition.com",
   primaryCta:"Plan Your Journey",
-  journalName:"The Ceylon Journal"
+  journalName:"ELAVA8 Journal"
 } as const;
 
 export const editionDisplayNames={
@@ -39,5 +39,10 @@ export const legacyBrandCompatibility={
  * without rewriting historical records or internal compatibility identifiers.
  */
 export function publicBrandText(value:string){
-  return value.replace(/\bRoam Ceylon Atelier\b/gi,brand.name).replace(/\bRoam Ceylon\b/gi,brand.name);
+  return value
+    .replace(/\bThe Ceylon Journal\b/gi,brand.journalName)
+    .replace(/\b(?:The )?Ceylon Edition\b/gi,brand.name)
+    .replace(/\bElevate Travels\b/gi,brand.name)
+    .replace(/\bRoam Ceylon Atelier\b/gi,brand.name)
+    .replace(/\bRoam Ceylon\b/gi,brand.name);
 }

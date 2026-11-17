@@ -36,7 +36,7 @@ export function ContactForm({quotation=false}:{quotation?:boolean}){
     clearJourneyHandoff();
     setSent(true);
   };
-  if(sent)return <div role="status" className="border-y border-forest/20 py-10"><p className="eyebrow mb-3"><Text>{"Received"}</Text></p><h2 className="heading"><Text>{quotation?"Your quotation is being prepared.":"Your journey starts here."}</Text></h2><p className="mt-4 text-base leading-7 text-muted"><Text>{"A journey designer from The Ceylon Edition will review your selections and be in touch shortly."}</Text></p></div>;
+  if(sent)return <div role="status" className="border-y border-forest/20 py-10"><p className="eyebrow mb-3"><Text>{"Received"}</Text></p><h2 className="heading"><Text>{quotation?"Your quotation is being prepared.":"Your journey starts here."}</Text></h2><p className="mt-4 text-base leading-7 text-muted"><Text>{"A journey designer from ELAVA8 TRAVELS will review your selections and be in touch shortly."}</Text></p></div>;
   return <form onSubmit={handleSubmit(submit)} className="grid gap-6 border-t border-forest/25 pt-8 md:grid-cols-2 lg:pt-10">
     <input aria-hidden="true" tabIndex={-1} autoComplete="off" name="website-confirmation" className="hidden" value={honeypot} onChange={event=>setHoneypot(event.target.value)}/>
     {([

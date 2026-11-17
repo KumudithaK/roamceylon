@@ -35,7 +35,7 @@ export function EditorialHome({themes,destinations,experiences}:{themes:Theme[];
   return <>
     <section id="discover" className="section overflow-hidden bg-ivory">
       <div className="shell grid gap-12 lg:grid-cols-[.7fr_1.3fr] lg:gap-24">
-        <FadeIn><p className="editorial-index">01</p><p className="eyebrow mt-8"><Text>{"The Ceylon Edition point of view"}</Text></p></FadeIn>
+        <FadeIn><p className="editorial-index">01</p><p className="eyebrow mt-8"><Text>{"ELAVA8 TRAVELS point of view"}</Text></p></FadeIn>
         <FadeIn delay={.08}><h2 className="font-serif text-[clamp(2.7rem,5vw,5rem)] leading-[1.02] tracking-[-.035em]"><Text>{"The island is not an itinerary. It is a story waiting to become yours."}</Text></h2><p className="prose-luxury mt-8 max-w-2xl"><Text>{"We begin with what draws you in, then connect places, people and experiences into a private journey with its own natural rhythm."}</Text></p><Link href="/about" className="editorial-link mt-9 text-forest"><Text>{"Our approach"}</Text></Link></FadeIn>
       </div>
     </section>

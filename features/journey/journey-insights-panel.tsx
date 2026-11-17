@@ -17,11 +17,11 @@ type JourneyMessageTranslator=(source:string,values?:Record<string,string|number
 // Translate authored insight templates; interpolated catalogue names stay verbatim.
 const insightTemplates=[
   "{detail} does not yet have a selected experience. You can continue as it is, or explore what feels meaningful there.",
-  "Your stay style in {detail} is open for The Ceylon Edition to recommend. You may also choose a preference if you already have one.",
+  "Your stay style in {detail} is open for ELAVA8 TRAVELS to recommend. You may also choose a preference if you already have one.",
   "Most of your planned nights are in {detail}. You may prefer this slower focus, or you can share the time more evenly across your route.",
   "Your selected experiences currently share a {detail} focus. If variety matters to you, Sri Lanka also offers contrasting cultural, natural and scenic moments.",
   "{detail} may be affected by seasonal conditions during your travel period. Your journey designer will verify the current operating conditions.",
-  "{detail} may require additional accessibility planning. The Ceylon Edition will review access arrangements with you before confirming the journey.",
+  "{detail} may require additional accessibility planning. ELAVA8 TRAVELS will review access arrangements with you before confirming the journey.",
   "{detail} may need a little extra family planning. Your journey designer will confirm age guidance, timing and practical arrangements."
 ];
 export function translateJourneyInsightMessage(message:string,t:JourneyMessageTranslator){

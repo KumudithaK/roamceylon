@@ -13,7 +13,8 @@ test("homepage is a cinematic editorial sequence backed by published content",()
   const home=source("components/home/editorial-home.tsx");
   assert.match(page,/ExperienceRepository/);
   assert.match(page,/<EditorialHome themes=\{themes\} destinations=\{destinations\} experiences=\{experiences\}/);
-  for(const phrase of ["The Editions","Places worth knowing","Experiences worth travelling for","Why {brand.name}","Your island. Your pace."])assert.ok(home.includes(phrase));
+  for(const phrase of ["The Editions","Places worth knowing","Experiences worth travelling for","Why {name}","Your island. Your pace."])assert.ok(home.includes(phrase));
+  assert.match(home,/values=\{\{name:brand\.name\}\}/);
   assert.match(home,/themes\.map/);
   assert.match(home,/destinations\.slice/);
   assert.match(home,/curateHomepageExperiences\(experiences\)/);
@@ -60,7 +61,7 @@ test("catalogue and detail surfaces use image-led editorial composition",()=>{
   assert.match(edition,/Edition highlights/);
   assert.match(experienceCatalogue,/Experiences for your journey/);
   assert.match(experienceEditorial,/roam ceylon recommended/);
-  assert.match(experienceEditorial,/The Ceylon Edition Recommended/);
+  assert.match(experienceEditorial,/ELAVA8 TRAVELS Recommended/);
 });
 
 test("contact and Journal stay truthful while receiving editorial presentation",()=>{

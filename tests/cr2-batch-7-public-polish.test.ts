@@ -43,14 +43,14 @@ test("public route-owned main landmarks do not reuse the skip-target id",()=>{
 });
 
 test("active brand and approved Edition mappings remain exact",()=>{
-  assert.equal(brand.name,"The Ceylon Edition");
+  assert.equal(brand.name,"ELAVA8 TRAVELS");
   assert.equal(brand.tagline,"Bespoke journeys through Sri Lanka.");
   assert.deepEqual(editionDisplayNames,{heritage:"Heritage Edition",wildlife:"Wild Edition",tropical:"Coastal Edition",adventure:"Adventure Edition",wellness:"Wellness Edition",nature:"Nature Edition",culture:"Cultural Edition",sporting:"Sporting Edition"});
 });
 
 test("managed public copy is presentation-normalized without touching compatibility identifiers",()=>{
-  assert.equal(publicBrandText("Roam Ceylon confirms the details."),"The Ceylon Edition confirms the details.");
-  assert.equal(publicBrandText("Roam Ceylon Atelier welcomes you."),"The Ceylon Edition welcomes you.");
+  assert.equal(publicBrandText("Roam Ceylon confirms the details."),"ELAVA8 TRAVELS confirms the details.");
+  assert.equal(publicBrandText("Roam Ceylon Atelier welcomes you."),"ELAVA8 TRAVELS welcomes you.");
   assert.equal(legacyBrandCompatibility.journeyStorageKey,"roam-ceylon-journey-v3");
   assert.match(source("features/experiences/experience-public-detail.tsx"),/publicBrandText/);
 });
@@ -99,7 +99,7 @@ test("public vocabulary aliases resolve to canonical active routes",()=>{
 
 test("not-found is branded, navigable and retains the primary journey action",()=>{
   const notFound=source("app/not-found.tsx");
-  assert.match(notFound,/The Ceylon Edition · 404/);
+  assert.match(notFound,/ELAVA8 TRAVELS · 404/);
   assert.match(notFound,/journeyLaunchHref/);
   assert.match(notFound,/href="\/"/);
   assert.doesNotMatch(notFound,/Roam Ceylon|Private Limited|Pvt Ltd/i);

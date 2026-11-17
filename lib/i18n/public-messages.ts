@@ -28,9 +28,9 @@ export const publicMessages:Record<string,{de:string;fr:string}>={
     "de": "Eine persönliche Prüfung",
     "fr": "Une étude par notre équipe"
   },
-  "A journey designer from The Ceylon Edition will review your selections and be in touch shortly.": {
-    "de": "Ein Reisegestalter von The Ceylon Edition prüft Ihre Auswahl und meldet sich in Kürze bei Ihnen.",
-    "fr": "Un créateur de voyages de The Ceylon Edition étudiera vos choix et vous contactera prochainement."
+  "A journey designer from ELAVA8 TRAVELS will review your selections and be in touch shortly.": {
+    "de": "Ein Reisegestalter von ELAVA8 TRAVELS prüft Ihre Auswahl und meldet sich in Kürze bei Ihnen.",
+    "fr": "Un créateur de voyages d’ELAVA8 TRAVELS étudiera vos choix et vous contactera prochainement."
   },
   "A journey from {name} begins with a conversation. You bring the places, interests and moments that matter to you; we listen closely and begin with a fresh page.": {
     "de": "Eine Reise mit {name} beginnt mit einem Gespräch. Sie erzählen uns von den Orten, Interessen und Momenten, die Ihnen wichtig sind; wir hören aufmerksam zu und beginnen auf einem leeren Blatt.",
@@ -168,9 +168,9 @@ export const publicMessages:Record<string,{de:string;fr:string}>={
     "de": "Verbinden Sie diese Ideen zu einer Reise, die Ihre Interessen, Ihr Tempo und Ihre Mitreisenden berücksichtigt.",
     "fr": "Rassemblez ces idées en un voyage qui vous ressemble, adapté à vos envies, à votre rythme et à ceux qui vous accompagnent."
   },
-  "Chat with The Ceylon Edition on WhatsApp": {
-    "de": "Mit The Ceylon Edition auf WhatsApp chatten",
-    "fr": "Échanger avec The Ceylon Edition sur WhatsApp"
+  "Chat with ELAVA8 TRAVELS on WhatsApp": {
+    "de": "Mit ELAVA8 TRAVELS auf WhatsApp chatten",
+    "fr": "Échanger avec ELAVA8 TRAVELS sur WhatsApp"
   },
   "Choose an Edition": {
     "de": "Eine Edition wählen",
@@ -216,9 +216,9 @@ export const publicMessages:Record<string,{de:string;fr:string}>={
     "de": "Sorgfalt in jedem Detail. Menschlichkeit in den entscheidenden Momenten.",
     "fr": "Du soin dans les détails. De l’attention dans les moments qui comptent."
   },
-  "Contact The Ceylon Edition": {
-    "de": "The Ceylon Edition kontaktieren",
-    "fr": "Contacter The Ceylon Edition"
+  "Contact ELAVA8 TRAVELS": {
+    "de": "ELAVA8 TRAVELS kontaktieren",
+    "fr": "Contacter ELAVA8 TRAVELS"
   },
   "Continue the conversation": {
     "de": "Das Gespräch fortsetzen",
@@ -404,9 +404,9 @@ export const publicMessages:Record<string,{de:string;fr:string}>={
     "de": "Persönliche Unterstützung vor und während der Reise",
     "fr": "Un accompagnement humain avant et pendant le voyage"
   },
-  "If the details are relevant to a journey or future collaboration, The Ceylon Edition may contact you using your chosen method.": {
-    "de": "Wenn die Angaben für eine Reise oder eine künftige Zusammenarbeit relevant sind, kann The Ceylon Edition Sie über Ihren gewählten Kontaktweg ansprechen.",
-    "fr": "Si ces informations sont pertinentes pour un voyage ou une future collaboration, The Ceylon Edition pourra vous contacter par le moyen que vous avez choisi."
+  "If the details are relevant to a journey or future collaboration, ELAVA8 TRAVELS may contact you using your chosen method.": {
+    "de": "Wenn die Angaben für eine Reise oder eine künftige Zusammenarbeit relevant sind, kann ELAVA8 TRAVELS Sie über Ihren gewählten Kontaktweg ansprechen.",
+    "fr": "Si ces informations sont pertinentes pour un voyage ou une future collaboration, ELAVA8 TRAVELS pourra vous contacter par le moyen que vous avez choisi."
   },
   "Image awaiting review": {
     "de": "Bild wird noch geprüft",
@@ -736,9 +736,9 @@ export const publicMessages:Record<string,{de:string;fr:string}>={
     "de": "Das Wesentliche mitteilen",
     "fr": "Partager l’essentiel"
   },
-  "Share your details and our journey designer will review availability, refine every arrangement and prepare your personal proposal from The Ceylon Edition.": {
-    "de": "Teilen Sie uns Ihre Wünsche mit. Unser Reisegestalter prüft die Verfügbarkeit, stimmt alle Einzelheiten ab und erstellt Ihren persönlichen Reisevorschlag von The Ceylon Edition.",
-    "fr": "Partagez vos souhaits. Notre créateur de voyages vérifiera les disponibilités, affinera chaque arrangement et préparera votre proposition personnelle de The Ceylon Edition."
+  "Share your details and our journey designer will review availability, refine every arrangement and prepare your personal proposal from ELAVA8 TRAVELS.": {
+    "de": "Teilen Sie uns Ihre Wünsche mit. Unser Reisegestalter prüft die Verfügbarkeit, stimmt alle Einzelheiten ab und erstellt Ihren persönlichen Reisevorschlag von ELAVA8 TRAVELS.",
+    "fr": "Partagez vos souhaits. Notre créateur de voyages vérifiera les disponibilités, affinera chaque arrangement et préparera votre proposition personnelle d’ELAVA8 TRAVELS."
   },
   "Signature moments": {
     "de": "Besondere Momente",
@@ -824,29 +824,29 @@ export const publicMessages:Record<string,{de:string;fr:string}>={
     "de": "Vielen Dank für Ihre Angaben.",
     "fr": "Merci d’avoir partagé vos informations."
   },
-  "The Ceylon Edition difference": {
-    "de": "Was The Ceylon Edition auszeichnet",
-    "fr": "La différence The Ceylon Edition"
+  "ELAVA8 TRAVELS difference": {
+    "de": "Was ELAVA8 TRAVELS auszeichnet",
+    "fr": "La différence ELAVA8 TRAVELS"
   },
-  "The Ceylon Edition on Facebook": {
-    "de": "The Ceylon Edition auf Facebook",
-    "fr": "The Ceylon Edition sur Facebook"
+  "ELAVA8 TRAVELS on Facebook": {
+    "de": "ELAVA8 TRAVELS auf Facebook",
+    "fr": "ELAVA8 TRAVELS sur Facebook"
   },
-  "The Ceylon Edition point of view": {
-    "de": "Die Perspektive von The Ceylon Edition",
-    "fr": "Le regard de The Ceylon Edition"
+  "ELAVA8 TRAVELS point of view": {
+    "de": "Die Perspektive von ELAVA8 TRAVELS",
+    "fr": "Le regard d’ELAVA8 TRAVELS"
   },
-  "The Ceylon Edition story": {
-    "de": "Die Geschichte von The Ceylon Edition",
-    "fr": "L’histoire de The Ceylon Edition"
+  "ELAVA8 TRAVELS story": {
+    "de": "Die Geschichte von ELAVA8 TRAVELS",
+    "fr": "L’histoire d’ELAVA8 TRAVELS"
   },
-  "The Ceylon Edition welcomes considered conversations with accommodation providers, transport operators and guides whose work may be relevant to thoughtfully designed journeys.": {
-    "de": "The Ceylon Edition freut sich auf fundierte Gespräche mit Unterkunftsanbietern, Transportunternehmen und Reiseleitern, deren Arbeit zu sorgfältig gestalteten Reisen beitragen kann.",
-    "fr": "The Ceylon Edition accueille les échanges réfléchis avec les hébergeurs, transporteurs et guides dont le travail peut contribuer à des voyages conçus avec soin."
+  "ELAVA8 TRAVELS welcomes considered conversations with accommodation providers, transport operators and guides whose work may be relevant to thoughtfully designed journeys.": {
+    "de": "ELAVA8 TRAVELS freut sich auf fundierte Gespräche mit Unterkunftsanbietern, Transportunternehmen und Reiseleitern, deren Arbeit zu sorgfältig gestalteten Reisen beitragen kann.",
+    "fr": "ELAVA8 TRAVELS accueille les échanges réfléchis avec les hébergeurs, transporteurs et guides dont le travail peut contribuer à des voyages conçus avec soin."
   },
-  "The Ceylon Journal": {
-    "de": "The Ceylon Journal",
-    "fr": "The Ceylon Journal"
+  "ELAVA8 Journal": {
+    "de": "ELAVA8 Journal",
+    "fr": "ELAVA8 Journal"
   },
   "The Editions": {
     "de": "Die Editionen",
@@ -1056,9 +1056,9 @@ export const publicMessages:Record<string,{de:string;fr:string}>={
     "de": "Ihre Reise durch Sri Lanka sollte ganz Ihre eigene sein.",
     "fr": "Votre voyage au Sri Lanka devrait vous ressembler."
   },
-  "Your application has entered The Ceylon Edition’s manual review workspace. This acknowledgement does not create a listing, account, partnership or commercial agreement.": {
-    "de": "Ihre Bewerbung ist im Bereich für die persönliche Prüfung bei The Ceylon Edition eingegangen. Diese Bestätigung begründet weder einen Eintrag noch ein Konto, eine Partnerschaft oder eine geschäftliche Vereinbarung.",
-    "fr": "Votre candidature a rejoint l’espace d’étude manuelle de The Ceylon Edition. Cet accusé de réception ne crée ni annonce, ni compte, ni partenariat, ni accord commercial."
+  "Your application has entered ELAVA8 TRAVELS’s manual review workspace. This acknowledgement does not create a listing, account, partnership or commercial agreement.": {
+    "de": "Ihre Bewerbung ist im Bereich für die persönliche Prüfung bei ELAVA8 TRAVELS eingegangen. Diese Bestätigung begründet weder einen Eintrag noch ein Konto, eine Partnerschaft oder eine geschäftliche Vereinbarung.",
+    "fr": "Votre candidature a rejoint l’espace d’étude manuelle d’ELAVA8 TRAVELS. Cet accusé de réception ne crée ni annonce, ni compte, ni partenariat, ni accord commercial."
   },
   "Your draft stays in this browser until you choose to submit. Submission begins a manual review; it does not create a listing, account or agreement.": {
     "de": "Ihr Entwurf bleibt in diesem Browser, bis Sie ihn absenden. Mit dem Absenden beginnt eine persönliche Prüfung; es entsteht weder ein Eintrag noch ein Konto oder eine Vereinbarung.",

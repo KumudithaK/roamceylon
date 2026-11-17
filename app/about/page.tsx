@@ -6,16 +6,16 @@ import {brand} from "@/lib/brand";
 const siteUrl=(process.env.NEXT_PUBLIC_SITE_URL||brand.canonicalUrl).replace(/\/$/,"");
 
 export const metadata:Metadata={
-  title:"About The Ceylon Edition — Bespoke Sri Lanka Journeys",
-  description:"Meet The Ceylon Edition, a Sri Lankan journey design brand creating tailor-made, personalised journeys through local expertise, thoughtful design and human care.",
+  title:"About ELAVA8 TRAVELS — Bespoke Sri Lanka Journeys",
+  description:"Meet ELAVA8 TRAVELS, a Sri Lankan journey design brand creating tailor-made, personalised journeys through local expertise, thoughtful design and human care.",
   alternates:{canonical:"/about"},
   openGraph:{
-    title:"About The Ceylon Edition — Journeys thoughtfully designed",
+    title:"About ELAVA8 TRAVELS — Journeys thoughtfully designed",
     description:"Local knowledge, thoughtful design and deeply personal journeys, composed with care across Sri Lanka.",
     url:"/about",
-    images:[{url:"/og.png",width:1200,height:630,alt:"The Ceylon Edition — tailor-made journeys across Sri Lanka"}]
+    images:[{url:"/og.png",width:1200,height:630,alt:"ELAVA8 TRAVELS — tailor-made journeys across Sri Lanka"}]
   },
-  twitter:{card:"summary_large_image",title:"About The Ceylon Edition",description:"Journeys thoughtfully designed. Sri Lanka deeply understood.",images:["/og.png"]}
+  twitter:{card:"summary_large_image",title:"About ELAVA8 TRAVELS",description:"Journeys thoughtfully designed. Sri Lanka deeply understood.",images:["/og.png"]}
 };
 
 async function companyDetails(){

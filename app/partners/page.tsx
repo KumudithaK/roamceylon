@@ -11,10 +11,10 @@ import {listContent} from "@/lib/data";
 import {publiclyDiscoverableExperiences} from "@/lib/experience-discovery";
 
 export const metadata:Metadata={
-  title:"Work with The Ceylon Edition",
+  title:"Work with ELAVA8 TRAVELS",
   description:"Begin a considered commercial conversation about accommodation, transport or guiding within thoughtfully designed Sri Lanka journeys.",
   alternates:{canonical:"/partners"},
-  openGraph:{title:"Work with The Ceylon Edition",description:"A considered starting point for Sri Lankan accommodation, transport and guiding conversations.",url:"/partners",images:["/og.png"]}
+  openGraph:{title:"Work with ELAVA8 TRAVELS",description:"A considered starting point for Sri Lankan accommodation, transport and guiding conversations.",url:"/partners",images:["/og.png"]}
 };
 
 const heroImage="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Sun_setting_over_Kandalama_Lake%2C_Sri_Lanka.jpg/1920px-Sun_setting_over_Kandalama_Lake%2C_Sri_Lanka.jpg";
@@ -26,7 +26,7 @@ const partnerPaths=[
 const conversation=[
   ["01","Share the essentials","Choose the relevant path and tell us what you offer, where you work and how we can reach you."],
   ["02","A human review","The submission enters the existing partner review workspace. It does not create a public listing or commercial agreement."],
-  ["03","Continue the conversation","If the details are relevant to a journey or future collaboration, The Ceylon Edition may contact you using your chosen method."],
+  ["03","Continue the conversation","If the details are relevant to a journey or future collaboration, ELAVA8 TRAVELS may contact you using your chosen method."],
   ["04","Publication is separate","Any catalogue publication follows a distinct review and manual decision. An application alone never makes information public."]
 ] as const;
 
@@ -50,7 +50,7 @@ export default async function Page(){
         <FadeIn className="max-w-4xl">
           <p className="eyebrow text-gold-light"><Text>{"For those who help shape the journey"}</Text></p>
           <h1 className="display mt-5"><Text>{"Sri Lanka is experienced through people who know it well."}</Text></h1>
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-ivory/76"><Text>{"The Ceylon Edition welcomes considered conversations with accommodation providers, transport operators and guides whose work may be relevant to thoughtfully designed journeys."}</Text></p>
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-ivory/76"><Text>{"ELAVA8 TRAVELS welcomes considered conversations with accommodation providers, transport operators and guides whose work may be relevant to thoughtfully designed journeys."}</Text></p>
           <div className="mt-9 flex flex-wrap gap-3"><Button asChild variant="accent" size="lg"><Link href="/partners/apply"><Text>{"Begin a partner conversation"}</Text><ArrowRight aria-hidden="true"/></Link></Button><Button asChild variant="outline" size="lg" className="border-ivory/45 text-ivory hover:bg-ivory/10"><Link href="#our-approach"><Text>{"Our approach"}</Text></Link></Button></div>
         </FadeIn>
       </div>

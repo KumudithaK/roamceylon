@@ -1,31 +1,26 @@
 import Image from "next/image";
-import {BrandWordmark} from "@/components/brand/brand-wordmark";
+import {Text} from "@/components/i18n/text";
 import {brand} from "@/lib/brand";
 import {cn} from "@/lib/utils";
 
 type BrandLogoProps={variant?:"full"|"compact"|"emblem";inverse?:boolean;decorative?:boolean;className?:string};
 
-/**
- * Graphical variants are faithful crops of the approved raster, not new lockups.
- * The dark/compact wordmark is intentionally HTML until an approved export exists.
- */
 export function BrandLogo({variant="compact",inverse=false,decorative=false,className}:BrandLogoProps){
   if(variant==="compact"){
-    return <span aria-hidden={decorative?true:undefined} className={cn("inline-flex items-center gap-3",className)}>
-      <Image src="/brand/the-ceylon-edition-emblem.png" alt="" width={218} height={320} sizes="56px" className="h-12 w-auto shrink-0 object-contain sm:h-14"/>
-      <BrandWordmark showTagline={false}/>
-    </span>;
-  }
-  if(inverse){
-    return <span aria-hidden={decorative?true:undefined}><BrandWordmark inverse={inverse} showTagline={variant==="full"} className={className}/></span>;
+    return <Image
+      src="/brand/elava8-travels-horizontal.webp"
+      alt={decorative?"":brand.name}
+      width={720}
+      height={240}
+      sizes="(min-width: 640px) 230px, 204px"
+      className={cn("h-auto w-[204px] max-w-full object-contain sm:w-[230px]",className)}
+    />;
   }
   if(variant==="emblem"){
-    return <Image src="/brand/the-ceylon-edition-emblem.png" alt={decorative?"":brand.name} width={218} height={320} sizes="80px" className={cn("h-28 w-auto object-contain",className)}/>;
+    return <Image src="/brand/elava8-travels-symbol.png" alt={decorative?"":brand.name} width={256} height={256} sizes="96px" className={cn("h-24 w-24 object-contain",className)}/>;
   }
   return <figure className={cn("m-0",className)}>
-    <Image src="/brand/the-ceylon-edition-lockup.webp" alt={decorative?"":brand.name} width={960} height={654} sizes="(min-width: 1024px) 720px, 90vw" className="hidden h-auto w-full min-[800px]:block"/>
-    <span aria-hidden={decorative?true:undefined} className="min-[800px]:hidden"><BrandWordmark showTagline={false}/></span>
-    {/* Important copy remains readable text, never only tiny raster lettering. */}
-    <figcaption className="mt-4 text-center text-sm leading-6 text-muted">{brand.tagline}</figcaption>
+    <Image src="/brand/elava8-travels-lockup.webp" alt={decorative?"":brand.name} width={480} height={390} sizes="256px" className={cn("h-auto w-64 max-w-full object-contain",inverse?"rounded-xl bg-ivory p-5":undefined)}/>
+    <figcaption className={cn("mt-4 text-sm leading-6",inverse?"text-ivory/85":"text-muted")}><Text>{brand.tagline}</Text></figcaption>
   </figure>;
 }

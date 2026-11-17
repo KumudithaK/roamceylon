@@ -1,7 +1,7 @@
 import type {Translations} from "./locale";
 
 export const commonMessages:Translations={
-  "By Elevate Travels":{de:"Von Elevate Travels",fr:"Par Elevate Travels"},
+  "By ELAVA8 TRAVELS":{de:"Von ELAVA8 TRAVELS",fr:"Par ELAVA8 TRAVELS"},
   "Website language: {language}":{de:"Sprache der Website: {language}",fr:"Langue du site : {language}"},
   "Choose your website language.":{de:"Wählen Sie die Sprache der Website.",fr:"Choisissez la langue du site."},
   "Some content remains in English.":{de:"Einige Inhalte bleiben auf Englisch verfügbar.",fr:"Certains contenus restent disponibles en anglais."},
@@ -37,7 +37,7 @@ export const commonMessages:Translations={
   "Our story":{de:"Unsere Geschichte",fr:"Notre histoire"},
   "Partner with us":{de:"Partner werden",fr:"Devenir partenaire"},
   "Plan Your Journey":{de:"Ihre Reise planen",fr:"Créer votre voyage"},
-  "Explore The Ceylon Edition":{de:"The Ceylon Edition entdecken",fr:"Explorer The Ceylon Edition"},
+  "Explore ELAVA8 TRAVELS":{de:"ELAVA8 TRAVELS entdecken",fr:"Explorer ELAVA8 TRAVELS"},
   "Open navigation menu":{de:"Navigationsmenü öffnen",fr:"Ouvrir le menu de navigation"},
   "Public navigation and journey planning. Close this menu with Escape or the close button.":{de:"Navigation und Reiseplanung. Schließen Sie das Menü mit Escape oder der Schließen-Schaltfläche.",fr:"Navigation et création de voyage. Fermez ce menu avec Échap ou le bouton de fermeture."},
   "Close menu or dialog":{de:"Menü oder Dialog schließen",fr:"Fermer le menu ou la fenêtre"},

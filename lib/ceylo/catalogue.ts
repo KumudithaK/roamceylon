@@ -1,4 +1,5 @@
 import {applyPublicExperienceCopy,isPubliclyDiscoverableExperience} from "../experience-discovery.ts";
+import {publicBrandText} from "../brand.ts";
 
 export type CeyloPlace={id:string;slug:string;name:string;summary:string;region:string;season:string};
 export type CeyloExperience={id:string;slug:string;name:string;summary:string;category:string;season:string;familyFriendly:boolean;childSuitable:boolean;destinationIds:string[]};
@@ -11,13 +12,13 @@ const valid=(r:Row)=>r.status==="published"&&r.active===true&&typeof r.id==="str
 
 /** Explicit public DTO: never spread repository rows into client assistant context. */
 export function createCeyloCatalogue(destinations:Row[],experiences:Row[],links:Row[]):CeyloCatalogue{
-  const places=destinations.filter(r=>valid(r)&&r.coming_soon!==true).slice(0,100).map(r=>({id:r.id as string,slug:r.slug as string,name:clean(r.name,160),summary:clean(r.short_description),region:clean(r.region||r.province,80),season:clean(r.best_time_to_visit,160)}));
+  const places=destinations.filter(r=>valid(r)&&r.coming_soon!==true).slice(0,100).map(r=>({id:r.id as string,slug:r.slug as string,name:clean(r.name,160),summary:clean(typeof r.short_description==="string"?publicBrandText(r.short_description):r.short_description),region:clean(r.region||r.province,80),season:clean(r.best_time_to_visit,160)}));
   const allowedPlaces=new Set(places.map(p=>p.id));
   const moments=experiences.filter(r=>valid(r)&&isPubliclyDiscoverableExperience({slug:r.slug as string})).slice(0,300).flatMap(r=>{
     const destinationIds=[...new Set(links.filter(l=>l.experience_id===r.id&&typeof l.destination_id==="string"&&allowedPlaces.has(l.destination_id)).map(l=>l.destination_id as string))];
     if(!destinationIds.length)return [];
     const copy=applyPublicExperienceCopy({slug:r.slug as string,name:r.name as string,short_description:typeof r.short_description==="string"?r.short_description:null,full_description:null,image_alt:null,highlights:[]});
-    return [{id:r.id as string,slug:r.slug as string,name:clean(copy.name,180),summary:clean(copy.short_description),category:clean(r.category,80),season:clean(r.best_season,160),familyFriendly:r.family_friendly===true,childSuitable:r.suitable_for_children===true,destinationIds}];
+    return [{id:r.id as string,slug:r.slug as string,name:clean(copy.name,180),summary:clean(copy.short_description===null?null:publicBrandText(copy.short_description)),category:clean(r.category,80),season:clean(r.best_season,160),familyFriendly:r.family_friendly===true,childSuitable:r.suitable_for_children===true,destinationIds}];
   });
   return {destinations:places,experiences:moments};
 }

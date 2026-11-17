@@ -37,7 +37,7 @@ export function SiteHeader(){
       </div>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild><button type="button" className="inline-flex size-12 shrink-0 items-center justify-center rounded-md hover:bg-sand xl:hidden" aria-label={t("Open navigation menu")}><Menu className="size-6" aria-hidden="true"/></button></DialogTrigger>
-        <DialogContent title={t("Explore The Ceylon Edition")} description={t("Public navigation and journey planning. Close this menu with Escape or the close button.")}>
+        <DialogContent title={t("Explore ELAVA8 TRAVELS")} description={t("Public navigation and journey planning. Close this menu with Escape or the close button.")}>
           <nav className="grid gap-2" aria-label={t("Mobile primary")}>
             {publicNavigation.map(({label,href})=><DialogClose asChild key={href}><Link href={href} aria-current={isActiveNavigation(pathname,href)?"page":undefined} className="flex min-h-12 items-center rounded-md px-3 text-lg hover:bg-sand aria-[current=page]:bg-sand">{t(label)}</Link></DialogClose>)}
             <DialogClose asChild><Button asChild variant="outline" className="mt-2 border-gold/70"><Link href="/partners">{t("Partner with us")}</Link></Button></DialogClose>

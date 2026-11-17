@@ -253,13 +253,13 @@ export const journeyMessages:Record<string,{de:string;fr:string}>={
     "de": "Die Insel entdecken",
     "fr": "Découvrez l’île"
   },
-  "Your Ceylon Edition journey summary": {
-    "de": "Zusammenfassung Ihrer Ceylon Edition Reise",
-    "fr": "Récapitulatif de votre voyage Ceylon Edition"
+  "Your ELAVA8 TRAVELS journey summary": {
+    "de": "Zusammenfassung Ihrer ELAVA8 TRAVELS Reise",
+    "fr": "Récapitulatif de votre voyage ELAVA8 TRAVELS"
   },
-  "Your Ceylon Edition": {
-    "de": "Ihre Ceylon Edition",
-    "fr": "Votre Ceylon Edition"
+  "Your ELAVA8 TRAVELS": {
+    "de": "Ihre ELAVA8 TRAVELS",
+    "fr": "Votre ELAVA8 TRAVELS"
   },
   "The journey taking shape.": {
     "de": "Ihre Reise nimmt Gestalt an.",
@@ -353,9 +353,9 @@ export const journeyMessages:Record<string,{de:string;fr:string}>={
     "de": "Reiseanfrage eingegangen",
     "fr": "Demande de voyage reçue"
   },
-  "Your journey is now with The Ceylon Edition.": {
-    "de": "Ihre Reise liegt nun bei The Ceylon Edition.",
-    "fr": "Votre voyage est désormais entre les mains de The Ceylon Edition."
+  "Your journey is now with ELAVA8 TRAVELS.": {
+    "de": "Ihre Reise liegt nun bei ELAVA8 TRAVELS.",
+    "fr": "Votre voyage est désormais entre les mains de ELAVA8 TRAVELS."
   },
   "We have received the places, experiences and preferences you shared. They will form the brief for the next stage of your journey proposal.": {
     "de": "Wir haben Ihre Reiseziele, Erlebnisse und Wünsche erhalten. Sie bilden die Grundlage für den nächsten Schritt Ihres Reisevorschlags.",
@@ -377,9 +377,9 @@ export const journeyMessages:Record<string,{de:string;fr:string}>={
     "de": "Eine weitere Reise planen",
     "fr": "Préparer un autre voyage"
   },
-  "Return to The Ceylon Edition": {
-    "de": "Zurück zu The Ceylon Edition",
-    "fr": "Retour à The Ceylon Edition"
+  "Return to ELAVA8 TRAVELS": {
+    "de": "Zurück zu ELAVA8 TRAVELS",
+    "fr": "Retour à ELAVA8 TRAVELS"
   },
   "Your private journey": {
     "de": "Ihre individuelle Reise",
@@ -937,9 +937,9 @@ export const journeyMessages:Record<string,{de:string;fr:string}>={
     "de": "Keine Reisebegleitung erforderlich",
     "fr": "Pas de guide nécessaire"
   },
-  "Let The Ceylon Edition Recommend": {
-    "de": "Empfehlung von The Ceylon Edition",
-    "fr": "Laisser The Ceylon Edition recommander"
+  "Let ELAVA8 TRAVELS Recommend": {
+    "de": "Empfehlung von ELAVA8 TRAVELS",
+    "fr": "Laisser ELAVA8 TRAVELS recommander"
   },
   "English": {
     "de": "Englisch",
@@ -1249,9 +1249,9 @@ export const journeyMessages:Record<string,{de:string;fr:string}>={
     "de": "Wie viele Personen nehmen an dieser Reise teil?",
     "fr": "Combien de personnes participent à ce voyage ?"
   },
-  "Enter everyone travelling with The Ceylon Edition, including people who may skip this particular experience.": {
-    "de": "Geben Sie alle mit The Ceylon Edition reisenden Personen an, auch wenn sie an diesem Erlebnis nicht teilnehmen.",
-    "fr": "Indiquez toutes les personnes voyageant avec The Ceylon Edition, même celles qui ne participent pas à cette expérience."
+  "Enter everyone travelling with ELAVA8 TRAVELS, including people who may skip this particular experience.": {
+    "de": "Geben Sie alle mit ELAVA8 TRAVELS reisenden Personen an, auch wenn sie an diesem Erlebnis nicht teilnehmen.",
+    "fr": "Indiquez toutes les personnes voyageant avec ELAVA8 TRAVELS, même celles qui ne participent pas à cette expérience."
   },
   "Trip travellers and experience participants are different.": {
     "de": "Reisende und Teilnehmende eines Erlebnisses sind nicht dasselbe.",
@@ -1337,9 +1337,9 @@ export const journeyMessages:Record<string,{de:string;fr:string}>={
     "de": "Ein besonderer Moment in Sri Lanka, mit Bedacht entdeckt.",
     "fr": "Un moment remarquable au Sri Lanka, découvert avec attention."
   },
-  "The Ceylon Edition Recommended": {
-    "de": "Von The Ceylon Edition empfohlen",
-    "fr": "Recommandé par The Ceylon Edition"
+  "ELAVA8 TRAVELS Recommended": {
+    "de": "Von ELAVA8 TRAVELS empfohlen",
+    "fr": "Recommandé par ELAVA8 TRAVELS"
   },
   "Excellent": {
     "de": "Ausgezeichnet",
@@ -1473,9 +1473,9 @@ export const journeyMessages:Record<string,{de:string;fr:string}>={
     "de": "Für {detail} ist noch kein Erlebnis ausgewählt. Sie können so fortfahren oder passende Erlebnisse entdecken.",
     "fr": "Aucune expérience n’est encore sélectionnée pour {detail}. Vous pouvez continuer ainsi ou explorer ce qui vous y intéresse."
   },
-  "Your stay style in {detail} is open for The Ceylon Edition to recommend. You may also choose a preference if you already have one.": {
-    "de": "Für Ihren Aufenthalt in {detail} kann The Ceylon Edition Empfehlungen geben. Sie können auch selbst einen Unterkunftswunsch auswählen.",
-    "fr": "The Ceylon Edition peut vous recommander un style d’hébergement à {detail}. Vous pouvez aussi choisir une préférence si vous en avez déjà une."
+  "Your stay style in {detail} is open for ELAVA8 TRAVELS to recommend. You may also choose a preference if you already have one.": {
+    "de": "Für Ihren Aufenthalt in {detail} kann ELAVA8 TRAVELS Empfehlungen geben. Sie können auch selbst einen Unterkunftswunsch auswählen.",
+    "fr": "ELAVA8 TRAVELS peut vous recommander un style d’hébergement à {detail}. Vous pouvez aussi choisir une préférence si vous en avez déjà une."
   },
   "Most of your planned nights are in {detail}. You may prefer this slower focus, or you can share the time more evenly across your route.": {
     "de": "Die meisten Übernachtungen sind in {detail} geplant. Vielleicht gefällt Ihnen dieser ruhigere Schwerpunkt; Sie können die Zeit auch gleichmäßiger verteilen.",
@@ -1489,9 +1489,9 @@ export const journeyMessages:Record<string,{de:string;fr:string}>={
     "de": "{detail} könnte während Ihrer Reise saisonalen Einflüssen unterliegen. Ihre Reiseplanung wird die aktuellen Bedingungen prüfen.",
     "fr": "{detail} peut être affecté par les conditions saisonnières pendant votre voyage. Votre conseiller vérifiera les conditions actuelles."
   },
-  "{detail} may require additional accessibility planning. The Ceylon Edition will review access arrangements with you before confirming the journey.": {
-    "de": "Für {detail} könnte eine zusätzliche Planung der Zugänglichkeit nötig sein. The Ceylon Edition bespricht die Möglichkeiten vor der Reisebestätigung mit Ihnen.",
-    "fr": "{detail} peut nécessiter une préparation supplémentaire de l’accessibilité. The Ceylon Edition examinera les accès avec vous avant de confirmer le voyage."
+  "{detail} may require additional accessibility planning. ELAVA8 TRAVELS will review access arrangements with you before confirming the journey.": {
+    "de": "Für {detail} könnte eine zusätzliche Planung der Zugänglichkeit nötig sein. ELAVA8 TRAVELS bespricht die Möglichkeiten vor der Reisebestätigung mit Ihnen.",
+    "fr": "{detail} peut nécessiter une préparation supplémentaire de l’accessibilité. ELAVA8 TRAVELS examinera les accès avec vous avant de confirmer le voyage."
   },
   "{detail} may need a little extra family planning. Your journey designer will confirm age guidance, timing and practical arrangements.": {
     "de": "Für {detail} könnte etwas zusätzliche Familienplanung nötig sein. Ihre Reiseplanung klärt Altersangaben, Zeiten und praktische Einzelheiten.",

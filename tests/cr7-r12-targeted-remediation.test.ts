@@ -73,10 +73,10 @@ function snapshot():ProposalSnapshot{return {
 test("business content uses approved contacts, omits mailboxes, preserves identity, amounts and technical keys",()=>{
   const source=snapshot(),before=JSON.stringify(source),result=customerProposalContent(source);
   assert.equal(JSON.stringify(source),before);assert.deepEqual(result.contact,approvedProposalContact());assert(!("email" in result.contact));assert(!("businessRegistrationNumber" in result.contact));
-  assert.equal(result.brand.name,"The Ceylon Edition");assert.equal(result.brand.logo,"");assert.doesNotMatch(result.introduction+result.terms,/roam ceylon|@/i);
+  assert.equal(result.brand.name,"ELAVA8 TRAVELS");assert.equal(result.brand.logo,"");assert.doesNotMatch(result.introduction+result.terms,/roam ceylon|@/i);
   assert.deepEqual(result.traveller,source.traveller);assert.equal(result.journey.route[0].key,"roam_ceylon_legacy_key");assert.equal(result.pricing.breakdown[0].key,"roam_ceylon_technical_key");assert.equal(result.pricing.total,100.25);assert.deepEqual(result.payment,source.payment);
   assert.equal(result.benefits![0].type,"roam_ceylon_complimentary");assert.equal(result.benefits![0].confidence,"guaranteed_by_roam_ceylon");assert.equal(result.benefits![0].code,"roam_ceylon_test");
-  assert.equal(result.experiences[0].thingsToKnow[0],"Contact The Ceylon Edition");assert.deepEqual(customerProposalContent(result),result);
+  assert.equal(result.experiences[0].thingsToKnow[0],"Contact ELAVA8 TRAVELS");assert.deepEqual(customerProposalContent(result),result);
 });
 test("actual customer DTO strips private canaries and normalizes frozen legacy content without mutation",()=>{
   const dto=modules()("lib/proposals/customer-proposal-dto.ts").customerSafeProposalDto as (v:unknown)=>ProposalSnapshot|null;
@@ -87,7 +87,7 @@ test("actual HTML/print view shows approved contacts and public benefit labels, 
   const Component=modules()("components/proposal/proposal-document.tsx").ProposalDocument as React.ComponentType<{snapshot:ProposalSnapshot;status:string}>;
   const value=snapshot();value.traveller.name="CR7 TEST ONLY Traveller";
   const html=renderToStaticMarkup(createElement(Component,{snapshot:value,status:"approved"}));
-  assert.match(html,/The Ceylon Edition/);assert.match(html,/78 799 7897/);assert.doesNotMatch(html,/hello@|unapproved@|mailto:|Roam Ceylon|roam ceylon complimentary/i);
+  assert.match(html,/ELAVA8 TRAVELS/);assert.match(html,/78 799 7897/);assert.doesNotMatch(html,/hello@|unapproved@|mailto:|Roam Ceylon|roam ceylon complimentary/i);
 });
 test("composer, PDF, traveller acceptance and print paths retain the shared contact/privacy boundary",()=>{
   const composer=read("lib/proposals/customer-proposal.ts"),pdf=read("lib/proposals/export-proposal-pdf.ts"),service=read("lib/proposals/traveller-proposal-service.ts");
@@ -113,7 +113,7 @@ test("actual PDF exporter draws approved business content without changing the f
     await exporter({sent_snapshot:source,proposal_reference:"CR7-LOCAL",version:1},{name:"CR7 TEST ONLY Traveller"});
     assert.equal(JSON.stringify(source),before);assert(downloaded);assert(saved&&saved.length>1000);
     assert.match(Buffer.from(saved!).subarray(0,8).toString(),/^%PDF-/);
-    const text=drawn.join("\n");assert.match(text,/THE CEYLON EDITION/);assert.match(text,/78 799 7897/);
+    const text=drawn.join("\n");assert.match(text,/ELAVA8 TRAVELS/);assert.match(text,/78 799 7897/);
     assert.doesNotMatch(text,/hello@|unapproved@|Roam Ceylon|unverified|PRIVATE_/i);
     assert.equal(requests.length,1);assert.match(requests[0],/^https:\/\/api\.qrserver\.com\//);
     assert.equal((await actualPdf.PDFDocument.load(saved!)).getPageCount()>0,true);

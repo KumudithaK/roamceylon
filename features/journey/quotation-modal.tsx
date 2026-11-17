@@ -169,11 +169,11 @@ export function QuotationModal({open,onClose,onSubmitted,state,quote,data}:{
             <div className="max-w-2xl">
               <CheckCircle2 aria-hidden="true" className="size-12 stroke-1.5 text-gold"/>
               <p className="eyebrow mt-7">{t("Journey request received")}</p>
-              <DialogPrimitive.Title asChild><h2 ref={successRef} tabIndex={-1} className="mt-4 font-serif text-4xl leading-[1.05] outline-none md:text-6xl">{t("Your journey is now with The Ceylon Edition.")}</h2></DialogPrimitive.Title>
+              <DialogPrimitive.Title asChild><h2 ref={successRef} tabIndex={-1} className="mt-4 font-serif text-4xl leading-[1.05] outline-none md:text-6xl">{t("Your journey is now with ELAVA8 TRAVELS.")}</h2></DialogPrimitive.Title>
               <DialogPrimitive.Description className="mt-6 max-w-xl text-base leading-8 text-stone">{t("We have received the places, experiences and preferences you shared. They will form the brief for the next stage of your journey proposal.")}</DialogPrimitive.Description>
               {reference?<div className="mt-8 border-y border-gold/35 py-5"><p className="text-[.65rem] font-bold uppercase tracking-[.2em] text-gold">{t("Journey reference")}</p><p className="mt-2 font-serif text-3xl" aria-label={t("Journey reference {reference}",{reference})}>{reference}</p><p className="mt-2 text-sm text-stone">{t("Keep this reference with your journey correspondence.")}</p></div>:null}
               <p className="mt-6 text-sm leading-6 text-stone">{t("This confirms receipt of your request only. No booking, payment or availability has been confirmed.")}</p>
-              <div className="mt-8 flex flex-wrap gap-3"><Button onClick={onClose} variant="accent">{t("Plan another journey")}</Button><Button asChild variant="outline"><Link href="/">{t("Return to The Ceylon Edition")}</Link></Button></div>
+              <div className="mt-8 flex flex-wrap gap-3"><Button onClick={onClose} variant="accent">{t("Plan another journey")}</Button><Button asChild variant="outline"><Link href="/">{t("Return to ELAVA8 TRAVELS")}</Link></Button></div>
             </div>
           </div>
         </div>:
